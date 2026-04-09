@@ -1,2 +1,21 @@
+# OS
+.DS_Store
+
+# Python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# Environments
+venv/
+.venv/
+
+# Secrets
+.env
+aion_terminal/.env
+
+# Databases
+*.db
+
+# Editor
+.vscode/
