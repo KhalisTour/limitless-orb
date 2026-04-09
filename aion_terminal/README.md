@@ -19,6 +19,7 @@ python -m uvicorn aion_terminal.app.main:app --host 0.0.0.0 --port 8000
    - `WS /ws/{ticker}`
 5. If migrating from a custom DB path, set `OPTIONS_DB_PATH=/path/to/legacy.db` before startup.
 
+<<<<<<< HEAD
 ## Research schema tables
 
 - `raw_chain_snapshots`
@@ -28,6 +29,8 @@ python -m uvicorn aion_terminal.app.main:app --host 0.0.0.0 --port 8000
 - `setup_outcomes`
 - `manual_narrative_tags`
 
+=======
+>>>>>>> origin/main
 ## Notes
 
 - SQL is centralized in `storage/repositories.py` and `storage/schema.sql`.

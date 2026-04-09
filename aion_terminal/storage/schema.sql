@@ -1,6 +1,9 @@
 PRAGMA foreign_keys = ON;
 
+<<<<<<< HEAD
 -- Legacy tables preserved for backward compatibility.
+=======
+>>>>>>> origin/main
 CREATE TABLE IF NOT EXISTS raw_chain (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp TEXT NOT NULL,
@@ -33,6 +36,7 @@ ON raw_chain(symbol, expiry, timestamp);
 
 CREATE INDEX IF NOT EXISTS idx_computed_levels_symbol_timestamp
 ON computed_levels(symbol, timestamp);
+<<<<<<< HEAD
 
 -- Research-grade normalized tables.
 CREATE TABLE IF NOT EXISTS raw_chain_snapshots (
@@ -179,3 +183,5 @@ ON setup_outcomes(outcome_ts);
 
 CREATE INDEX IF NOT EXISTS idx_manual_tags_symbol_date
 ON manual_narrative_tags(symbol, tag_date);
+=======
+>>>>>>> origin/main

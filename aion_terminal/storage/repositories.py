@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Any
 
+<<<<<<< HEAD
 from aion_terminal.models.dto import (
     FeatureSnapshotRecord,
     ManualNarrativeTagRecord,
@@ -15,6 +16,10 @@ from aion_terminal.utils.math_utils import as_float, as_int
 from aion_terminal.utils.time_utils import utc_now_iso
 
 # Legacy SQL used by current API behavior.
+=======
+from aion_terminal.utils.math_utils import as_float, as_int
+
+>>>>>>> origin/main
 INSERT_RAW_CHAIN = """
 INSERT OR IGNORE INTO raw_chain (
     timestamp, symbol, option_symbol, strike, expiry,
@@ -52,6 +57,7 @@ ORDER BY timestamp DESC
 LIMIT 2
 """
 
+<<<<<<< HEAD
 # Research-grade SQL.
 UPSERT_UNDERLYING_BAR = """
 INSERT INTO underlying_bars (
@@ -153,6 +159,9 @@ def _resolve_audit_timestamps(created_at: str, updated_at: str) -> tuple[str, st
 
 
 # -------- Legacy behavior functions --------
+=======
+
+>>>>>>> origin/main
 def save_contracts(conn: sqlite3.Connection, contracts: list[dict[str, Any]]) -> int:
     """Insert normalized contracts and return rows inserted."""
     if not contracts:
@@ -213,6 +222,7 @@ def query_previous_levels(conn: sqlite3.Connection, symbol: str) -> dict[str, An
 def query_expiries(conn: sqlite3.Connection, symbol: str, dte_max: int = 60) -> list[str]:
     rows = query_latest_chain(conn, symbol)
     return sorted({r.get("expiry") for r in rows if r.get("expiry") and r.get("dte", 999) <= dte_max})
+<<<<<<< HEAD
 
 
 # -------- Research engine repository functions --------
@@ -417,3 +427,5 @@ def query_ranked_candidates_by_date_range(
         (start_ts, end_ts, symbol, symbol, setup_class, setup_class, limit),
     ).fetchall()
     return [SetupCandidateRecord(**dict(row)) for row in rows]
+=======
+>>>>>>> origin/main

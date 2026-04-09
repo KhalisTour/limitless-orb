@@ -31,6 +31,7 @@ class LevelsDTO:
     regime: str = "range"
     distances: dict[str, float | None] = field(default_factory=dict)
     curve: list[dict[str, Any]] = field(default_factory=list)
+<<<<<<< HEAD
 
 
 @dataclass(slots=True)
@@ -138,3 +139,5 @@ class ManualNarrativeTagRecord:
     context_json: str | None = None
     created_at: str = ""
     updated_at: str = ""
+=======
+>>>>>>> origin/main
