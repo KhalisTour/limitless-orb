@@ -29,6 +29,13 @@ class FetchResult:
     error: str | None = None
 
 
+@dataclass(slots=True)
+class ExpiryCandidate:
+    expiry: str
+    dte: int
+    is_monthly_anchor: bool = False
+
+
 class MarketDataClient:
     """Resilient MarketData API client with timeout/retry and graceful entitlement handling."""
 
@@ -81,12 +88,6 @@ class MarketDataClient:
 
         return FetchResult(ok=False, status_code=None, payload=None, error=last_error or "request_failed")
 
-    @staticmethod
-    def _iso_date(d: date | str) -> str:
-        if isinstance(d, str):
-            return d
-        return d.strftime("%Y-%m-%d")
-
     def fetch_latest_quote(self, symbol: str) -> FetchResult:
         candidate_paths = [f"/stocks/quotes/{symbol}/", f"/stocks/quote/{symbol}/"]
         result = FetchResult(ok=False, status_code=None, payload=None, error="not_attempted")
@@ -106,6 +107,15 @@ class MarketDataClient:
                 return result
         return result
 
+    def fetch_option_expiries(self, symbol: str) -> FetchResult:
+        candidate_paths = [f"/options/expirations/{symbol}/", f"/options/expiry/{symbol}/"]
+        result = FetchResult(ok=False, status_code=None, payload=None, error="not_attempted")
+        for path in candidate_paths:
+            result = self._request_json(path)
+            if result.ok or result.error == "unauthorized":
+                return result
+        return result
+
     def fetch_options_chain(self, symbol: str, expiration: str | None = None) -> FetchResult:
         params = {"expiration": expiration} if expiration else None
         return self._request_json(f"/options/chain/{symbol}/", params=params)
@@ -121,24 +131,97 @@ class MarketDataClient:
         return result
 
 
-def next_monthly_expiries(n: int = 3) -> list[str]:
-    expiries: list[str] = []
+def _is_monthly_anchor(expiry_str: str) -> bool:
+    d = datetime.strptime(expiry_str, "%Y-%m-%d").date()
+    first = d.replace(day=1)
+    first_friday = (4 - first.weekday()) % 7 + 1
+    third_friday = first_friday + 14
+    return d.day == third_friday and d.weekday() == 4
+
+
+def _parse_expiry_candidates(payload: dict[str, Any] | list[Any] | None) -> list[ExpiryCandidate]:
     today = datetime.now(timezone.utc).date()
-    year, month = today.year, today.month
+    out: list[ExpiryCandidate] = []
+    seen: set[str] = set()
 
-    while len(expiries) < n:
-        first_day = datetime(year, month, 1)
-        first_friday = (4 - first_day.weekday()) % 7 + 1
-        third_friday = first_friday + 14
-        expiry = datetime(year, month, third_friday).date()
-        if expiry >= today:
-            expiries.append(expiry.strftime("%Y-%m-%d"))
-        month += 1
-        if month > 12:
-            month = 1
-            year += 1
+    def add(expiry_str: str, dte_value: int | None = None):
+        if expiry_str in seen:
+            return
+        try:
+            expiry_date = datetime.strptime(expiry_str, "%Y-%m-%d").date()
+        except ValueError:
+            return
+        dte = dte_value if dte_value is not None else max((expiry_date - today).days, 0)
+        out.append(ExpiryCandidate(expiry=expiry_str, dte=dte, is_monthly_anchor=_is_monthly_anchor(expiry_str)))
+        seen.add(expiry_str)
 
-    return expiries
+    if isinstance(payload, list):
+        for item in payload:
+            if isinstance(item, str):
+                add(item)
+            elif isinstance(item, dict):
+                expiry = item.get("expiry") or item.get("expiration")
+                if expiry:
+                    add(str(expiry), as_int(item.get("dte"), default=-1) if item.get("dte") is not None else None)
+    elif isinstance(payload, dict):
+        expiries = payload.get("expirations") or payload.get("expiry") or payload.get("expiration") or []
+        if isinstance(expiries, list):
+            for idx, item in enumerate(expiries):
+                expiry_str = str(item)
+                dtes = payload.get("dte") or []
+                dte = as_int(dtes[idx], default=-1) if idx < len(dtes) else None
+                add(expiry_str, dte if dte is not None and dte >= 0 else None)
+
+    return sorted(out, key=lambda c: (c.dte, c.expiry))
+
+
+def fallback_expiry_candidates(weeks_ahead: int = 10) -> list[ExpiryCandidate]:
+    """Fallback weekly calendar when expiries endpoint is unavailable."""
+    today = datetime.now(timezone.utc).date()
+    candidates: list[ExpiryCandidate] = []
+    for offset in range(0, weeks_ahead * 7 + 1):
+        d = today + timedelta(days=offset)
+        if d.weekday() == 4:  # Friday weekly cycle
+            expiry = d.strftime("%Y-%m-%d")
+            candidates.append(
+                ExpiryCandidate(expiry=expiry, dte=offset, is_monthly_anchor=_is_monthly_anchor(expiry))
+            )
+    return candidates
+
+
+def select_relevant_expiry_buckets(candidates: list[ExpiryCandidate]) -> list[ExpiryCandidate]:
+    """Select expiries by edge buckets: 0-2, 3-7, 8-14 DTE + nearest monthly anchor."""
+    if not candidates:
+        return []
+
+    chosen: dict[str, ExpiryCandidate] = {}
+    for c in candidates:
+        if 0 <= c.dte <= 2 or 3 <= c.dte <= 7 or 8 <= c.dte <= 14:
+            chosen[c.expiry] = c
+
+    monthly_anchors = [c for c in candidates if c.is_monthly_anchor and c.dte >= 0]
+    if monthly_anchors:
+        nearest_anchor = min(monthly_anchors, key=lambda c: c.dte)
+        chosen[nearest_anchor.expiry] = nearest_anchor
+
+    return sorted(chosen.values(), key=lambda c: (c.dte, c.expiry))
+
+
+def discover_relevant_expiries(client: MarketDataClient, symbol: str) -> tuple[list[ExpiryCandidate], str | None]:
+    """Discover expiries and bucket-select for ingestion. Returns (expiries, warning)."""
+    fetch = client.fetch_option_expiries(symbol)
+    if fetch.ok:
+        parsed = _parse_expiry_candidates(fetch.payload)
+        selected = select_relevant_expiry_buckets(parsed)
+        if selected:
+            return selected, None
+
+    if fetch.error == "unauthorized":
+        return [], "expiries_unauthorized"
+
+    fallback = select_relevant_expiry_buckets(fallback_expiry_candidates())
+    warning = "expiries_fallback_calendar"
+    return fallback, warning
 
 
 def _extract_quote_price(payload: dict[str, Any] | list[Any] | None) -> float | None:
@@ -331,6 +414,46 @@ def normalize_chain_snapshots(
             )
 
     return research_rows, legacy_rows, spot
+
+
+def group_chain_by_expiry(rows: list[RawChainSnapshotRecord]) -> dict[str, dict[str, Any]]:
+    """Grouped chain structure for expiry-aware dealer positioning analysis."""
+    grouped: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        expiry_key = row.expiry or "unknown"
+        bucket = grouped.setdefault(
+            expiry_key,
+            {
+                "expiry": expiry_key,
+                "dte_min": row.dte,
+                "dte_max": row.dte,
+                "contracts": [],
+                "contract_count": 0,
+            },
+        )
+
+        bucket["contracts"].append(
+            {
+                "option_symbol": row.option_symbol,
+                "side": row.side,
+                "strike": row.strike,
+                "gamma": row.gamma,
+                "open_interest": row.open_interest,
+                "iv": row.iv,
+                "dte": row.dte,
+                "mark": row.mark,
+                "bid": row.bid,
+                "ask": row.ask,
+            }
+        )
+        bucket["contract_count"] += 1
+        if row.dte is not None:
+            if bucket["dte_min"] is None or row.dte < bucket["dte_min"]:
+                bucket["dte_min"] = row.dte
+            if bucket["dte_max"] is None or row.dte > bucket["dte_max"]:
+                bucket["dte_max"] = row.dte
+
+    return {k: grouped[k] for k in sorted(grouped.keys())}
 
 
 def default_recent_window(days: int = 7) -> tuple[str, str]:

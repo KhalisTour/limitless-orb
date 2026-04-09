@@ -7,11 +7,12 @@ from typing import Any
 from aion_terminal.app.config import settings
 from aion_terminal.data_sources.marketdata import (
     MarketDataClient,
+    _extract_quote_price,
     default_recent_window,
-    next_monthly_expiries,
+    discover_relevant_expiries,
+    group_chain_by_expiry,
     normalize_chain_snapshots,
     normalize_underlying_bars,
-    _extract_quote_price,
 )
 from aion_terminal.services.snapshot_service import build_levels_snapshot
 from aion_terminal.storage import repositories
@@ -31,6 +32,8 @@ class RefreshResult:
     bars_upserted: int = 0
     option_history_rows: int = 0
     levels: dict[str, Any] | None = None
+    grouped_chain: dict[str, dict[str, Any]] = field(default_factory=dict)
+    attempted_expiries: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
 
 
@@ -78,19 +81,37 @@ def refresh_one_symbol(symbol: str, conn=None, *, dte_max: int | None = None) ->
             result.errors.append(f"bars_error:{bars_fetch.error}")
             logger.warning("ingestion bars failed symbol=%s error=%s", symbol, bars_fetch.error)
 
+        expiry_candidates, expiry_warning = discover_relevant_expiries(client, symbol)
+        if expiry_warning:
+            result.errors.append(expiry_warning)
+            logger.info("ingestion expiry discovery symbol=%s warning=%s", symbol, expiry_warning)
+
+        result.attempted_expiries = [e.expiry for e in expiry_candidates]
+
         spot = result.quote_price
         research_rows = []
         legacy_rows: list[dict[str, Any]] = []
 
-        for expiry in next_monthly_expiries(3):
-            chain_fetch = client.fetch_options_chain(symbol, expiration=expiry)
+        for candidate in expiry_candidates:
+            chain_fetch = client.fetch_options_chain(symbol, expiration=candidate.expiry)
             if not chain_fetch.ok:
                 if chain_fetch.error == "unauthorized":
-                    result.errors.append(f"chain_unauthorized:{expiry}")
-                    logger.warning("ingestion chain unauthorized symbol=%s expiry=%s", symbol, expiry)
+                    result.errors.append(f"chain_unauthorized:{candidate.expiry}")
+                    logger.warning(
+                        "ingestion chain unauthorized symbol=%s expiry=%s dte=%s",
+                        symbol,
+                        candidate.expiry,
+                        candidate.dte,
+                    )
                 else:
-                    result.errors.append(f"chain_error:{expiry}:{chain_fetch.error}")
-                    logger.warning("ingestion chain failed symbol=%s expiry=%s error=%s", symbol, expiry, chain_fetch.error)
+                    result.errors.append(f"chain_error:{candidate.expiry}:{chain_fetch.error}")
+                    logger.warning(
+                        "ingestion chain failed symbol=%s expiry=%s dte=%s error=%s",
+                        symbol,
+                        candidate.expiry,
+                        candidate.dte,
+                        chain_fetch.error,
+                    )
                 continue
 
             rows, legacy, spot = normalize_chain_snapshots(
@@ -102,6 +123,7 @@ def refresh_one_symbol(symbol: str, conn=None, *, dte_max: int | None = None) ->
             research_rows.extend(rows)
             legacy_rows.extend(legacy)
 
+        result.grouped_chain = group_chain_by_expiry(research_rows)
         result.chain_rows_inserted = repositories.insert_chain_snapshots(conn, research_rows)
         result.legacy_chain_inserted = repositories.save_contracts(conn, legacy_rows)
 
@@ -114,9 +136,11 @@ def refresh_one_symbol(symbol: str, conn=None, *, dte_max: int | None = None) ->
             result.ok = False
 
         logger.info(
-            "ingestion refresh symbol=%s ok=%s chain_rows=%s legacy_rows=%s bars=%s errors=%s",
+            "ingestion refresh symbol=%s ok=%s expiries=%s grouped_expiries=%s chain_rows=%s legacy_rows=%s bars=%s errors=%s",
             symbol,
             result.ok,
+            len(result.attempted_expiries),
+            list(result.grouped_chain.keys()),
             result.chain_rows_inserted,
             result.legacy_chain_inserted,
             result.bars_upserted,
@@ -200,7 +224,6 @@ def backfill_option_history(contract_symbol: str, start_date: str, end_date: str
             )
             return RefreshResult(symbol=contract_symbol, ok=False, errors=[reason])
 
-        # Option history endpoint support varies by entitlement. Persist only when payload resembles bars.
         bars = normalize_underlying_bars(contract_symbol, "option", history.payload, source="marketdata_option")
         upserted = repositories.upsert_underlying_bars(conn, bars)
         logger.info(
@@ -217,7 +240,7 @@ def backfill_option_history(contract_symbol: str, start_date: str, end_date: str
 
 def ingest_symbol(conn, *, symbol: str, token: str, api_url_template: str, dte_max: int) -> dict[str, Any]:
     """Legacy-compatible wrapper used by existing pipeline loop and snapshot endpoints."""
-    _ = api_url_template  # maintained for signature compatibility
+    _ = api_url_template
     _token_backup = settings.marketdata_token
     try:
         if token:
@@ -226,7 +249,6 @@ def ingest_symbol(conn, *, symbol: str, token: str, api_url_template: str, dte_m
         if result.levels:
             return result.levels
 
-        # Fallback: try latest computed levels from db if ingestion had partial failures.
         latest = conn.execute(
             """
             SELECT symbol, spot, king_node, call_wall, put_wall, regime
