@@ -1,2 +1,24 @@
+# Python
 __pycache__/
 *.pyc
+
+# Environments
+venv/
+.venv/
+.venv-nba/
+
+# Secrets
+.env
+aion_terminal/.env
+
+# Databases
+*.db
+
+# macOS
+.DS_Store
+
+# Other local project artifacts
+nba_prop_pipeline/
+README.nba.md
+requirements.nba.txt
+run_pipeline.py
