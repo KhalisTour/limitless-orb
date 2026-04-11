@@ -11,7 +11,7 @@ from .clients import CachedHTTPClient
 from .config import PipelineConfig
 from .exporter import export_json
 from .features import build_feature_table
-from .ingestion import (
+from .ingestion_nba_api import (
     get_pbpstats_possessions,
     get_positional_defense_stats,
     get_opponent_stats_for_slate,
@@ -82,6 +82,7 @@ def run_daily_pipeline(
             feature_df = feature_df[keep_mask].copy()
 
     projected = add_projections(feature_df, config=config)
+    projected = projected[projected["projected_minutes"] >= 23]
     probabilistic = add_probabilities(projected)
 
     if include_monte_carlo:
@@ -91,7 +92,7 @@ def run_daily_pipeline(
         probabilistic = attach_ev(probabilistic, odds_map)
 
     if probabilistic.empty:
-        logger.warning("No rows generated for today's slate. Output will be an empty file.")
+        logger.warning("No starter-level rows generated for today's slate. Output will be an empty file.")
 
     output_path = export_json(probabilistic, config.output_json)
     if write_to_db:

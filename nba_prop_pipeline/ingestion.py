@@ -34,11 +34,42 @@ def get_player_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.Dat
     payload = client.get_json(
         f"{NBA_BASE}/leaguedashplayerstats",
         params={
-            "Season": config.season,
-            "SeasonType": config.season_type,
-            "PerMode": "PerGame",
-            "MeasureType": "Base",
+            "College": "",
+            "Conference": "",
+            "Country": "",
+            "DateFrom": "",
+            "DateTo": "",
+            "Division": "",
+            "DraftPick": "",
+            "DraftYear": "",
+            "GameScope": "",
+            "GameSegment": "",
+            "Height": "",
+            "LastNGames": 0,
             "LeagueID": "00",
+            "Location": "",
+            "MeasureType": "Base",
+            "Month": 0,
+            "OpponentTeamID": 0,
+            "Outcome": "",
+            "PORound": "",
+            "PaceAdjust": "N",
+            "PerMode": "Totals",
+            "Period": 0,
+            "PlayerExperience": "",
+            "PlayerPosition": "",
+            "PlusMinus": "N",
+            "Rank": "N",
+            "Season": config.season,
+            "SeasonSegment": "",
+            "SeasonType": config.season_type,
+            "ShotClockRange": "",
+            "StarterBench": "",
+            "TeamID": 0,
+            "TwoWay": "",
+            "VsConference": "",
+            "VsDivision": "",
+            "Weight": "",
         },
         namespace="nba_player_stats",
     )
@@ -288,23 +319,80 @@ def get_team_defensive_scheme_stats(client: CachedHTTPClient, config: PipelineCo
 
 
 def get_today_matchups(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
-    payload = client.get_json(config.today_scoreboard_url, namespace="nba_scoreboard")
-    games = payload.get("scoreboard", {}).get("games", [])
-    rows: List[Dict[str, Any]] = []
-    for game in games:
-        game_id = game.get("gameId")
-        home = game.get("homeTeam", {}).get("teamTricode")
-        away = game.get("awayTeam", {}).get("teamTricode")
-        game_date = game.get("gameEt") or game.get("gameTimeUTC")
-        if home and away:
-            rows.append({"GAME_ID": game_id, "TEAM_ABBREVIATION": home, "OPPONENT_ABBREVIATION": away, "GAME_DATETIME": game_date})
-            rows.append({"GAME_ID": game_id, "TEAM_ABBREVIATION": away, "OPPONENT_ABBREVIATION": home, "GAME_DATETIME": game_date})
-    return pd.DataFrame(rows)
+    try:
+        from nba_api.stats.endpoints import ScoreboardV2
+    except ImportError:
+        return pd.DataFrame(columns=["GAME_ID", "TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_DATETIME"])
 
+    game_date = None
+    if getattr(config, "slate_date", None) is not None:
+        game_date = config.slate_date.strftime("%Y-%m-%d")
+    else:
+        game_date = dt.date.today().strftime("%Y-%m-%d")
+
+    try:
+        sb = ScoreboardV2(
+            game_date=game_date,
+            day_offset=0,
+            league_id="00",
+            timeout=config.timeout_seconds,
+        )
+
+        frames = sb.get_data_frames()
+        if not frames:
+            return pd.DataFrame(columns=["GAME_ID", "TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_DATETIME"])
+
+        game_header = frames[0]
+        line_score = None
+        for df in frames[1:]:
+            if "GAME_ID" in df.columns and "TEAM_ABBREVIATION" in df.columns:
+                line_score = df
+                break
+
+        if game_header is None or line_score is None or game_header.empty or line_score.empty:
+            return pd.DataFrame(columns=["GAME_ID", "TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_DATETIME"])
+
+        header_cols = [c for c in ["GAME_ID", "GAME_DATE_EST"] if c in game_header.columns]
+        games = game_header[header_cols].drop_duplicates()
+
+        rows = []
+        for game_id, group in line_score.groupby("GAME_ID"):
+            teams = group["TEAM_ABBREVIATION"].dropna().tolist()
+            if len(teams) != 2:
+                continue
+            game_dt = None
+            hit = games[games["GAME_ID"] == game_id]
+            if not hit.empty and "GAME_DATE_EST" in hit.columns:
+                game_dt = hit.iloc[0]["GAME_DATE_EST"]
+
+            rows.append(
+                {
+                    "GAME_ID": game_id,
+                    "TEAM_ABBREVIATION": teams[0],
+                    "OPPONENT_ABBREVIATION": teams[1],
+                    "GAME_DATETIME": game_dt,
+                }
+            )
+            rows.append(
+                {
+                    "GAME_ID": game_id,
+                    "TEAM_ABBREVIATION": teams[1],
+                    "OPPONENT_ABBREVIATION": teams[0],
+                    "GAME_DATETIME": game_dt,
+                }
+            )
+
+        return pd.DataFrame(rows)
+
+    except Exception:
+        return pd.DataFrame(columns=["GAME_ID", "TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_DATETIME"])
 
 def get_starting_lineups_scrape(config: PipelineConfig) -> pd.DataFrame:
     """Fallback lineup scraper from ESPN's daily NBA lineups page."""
-    date_string = dt.datetime.utcnow().strftime("%Y%m%d")
+    if config.slate_date is not None:
+        date_string = config.slate_date.strftime("%Y%m%d")
+    else:
+        date_string = dt.datetime.utcnow().strftime("%Y%m%d")
     url = f"https://www.espn.com/nba/lineups/_/date/{date_string}"
     try:
         response = requests.get(url, timeout=config.timeout_seconds, headers={"User-Agent": config.user_agent})

@@ -34,35 +34,52 @@ def build_feature_table(
     elif "GP" in base.columns:
         base = base[pd.to_numeric(base["GP"], errors="coerce").fillna(0) >= config.min_games_started]
 
-    for external in [tracking_stats, reb_tracking, pbp_possessions]:
+    for suffix, external in zip(["_tracking", "_reb", "_pbp"], [tracking_stats, reb_tracking, pbp_possessions]):
         if external.empty:
             continue
         key_cols = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in base.columns and k in external.columns]
         if not key_cols and "PLAYER_ID" in external.columns and "PLAYER_ID" in base.columns:
             key_cols = ["PLAYER_ID"]
         if key_cols:
-            base = base.merge(external, on=key_cols, how="left", suffixes=("", "_x"))
+            base = base.merge(external, on=key_cols, how="left", suffixes=("", suffix))
 
-    if not matchups.empty:
-        base = base.merge(matchups[["TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"]], on="TEAM_ABBREVIATION", how="inner")
+    valid_matchups = (
+        not matchups.empty
+        and "TEAM_ABBREVIATION" in base.columns
+        and {"TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"}.issubset(matchups.columns)
+    )
+    if valid_matchups:
+        base = base.merge(
+            matchups[["TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"]],
+            on="TEAM_ABBREVIATION",
+            how="inner",
+        )
+    else:
+        base["OPPONENT_ABBREVIATION"] = pd.NA
+        base["GAME_ID"] = pd.NA
+        base["GAME_DATETIME"] = pd.NA
 
-    if not team_defense.empty and "OPPONENT_ABBREVIATION" in base.columns:
-        team_def = team_defense.copy().rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
-        keep = [
-            c
-            for c in [
-                "OPPONENT_ABBREVIATION",
-                "OPP_AST",
-                "OPP_FGA",
-                "OPP_FG3A",
-                "OPP_PTS",
-                "DEF_RATING",
-                "PACE",
-            ]
-            if c in team_def.columns
-        ]
-        if keep:
-            base = base.merge(team_def[keep], on="OPPONENT_ABBREVIATION", how="left")
+        if not team_defense.empty and "OPPONENT_ABBREVIATION" in base.columns:
+            team_def = team_defense.copy()
+            if "TEAM_ABBREVIATION" in team_def.columns:
+                team_def = team_def.rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
+
+            if "OPPONENT_ABBREVIATION" in team_def.columns:
+                keep = [
+                    c
+                    for c in [
+                        "OPPONENT_ABBREVIATION",
+                        "OPP_AST",
+                        "OPP_FGA",
+                        "OPP_FG3A",
+                        "OPP_PTS",
+                        "DEF_RATING",
+                        "PACE",
+                    ]
+                    if c in team_def.columns
+                ]
+                if "OPPONENT_ABBREVIATION" in keep:
+                    base = base.merge(team_def[keep], on="OPPONENT_ABBREVIATION", how="left")
 
     if positional_defense_stats is not None and not positional_defense_stats.empty and "OPPONENT_ABBREVIATION" in base.columns:
         def _position_group(raw: str) -> str:
@@ -96,22 +113,26 @@ def build_feature_table(
             base = base.merge(pos, on=["OPPONENT_ABBREVIATION", "POSITION_GROUP"], how="left")
 
     if not team_scheme_stats.empty and "OPPONENT_ABBREVIATION" in base.columns:
-        scheme = team_scheme_stats.copy().rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
-        keep_scheme = [
-            c
-            for c in [
-                "OPPONENT_ABBREVIATION",
-                "opp_trap_blitz_rate",
-                "opp_hedge_rate",
-                "opp_drop_rate",
-                "opp_switch_rate",
-                "opp_spot_up_efg",
-                "opp_rim_fg_pct",
+        scheme = team_scheme_stats.copy()
+        if "TEAM_ABBREVIATION" in scheme.columns:
+            scheme = scheme.rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
+
+        if "OPPONENT_ABBREVIATION" in scheme.columns:
+            keep_scheme = [
+                c
+                for c in [
+                    "OPPONENT_ABBREVIATION",
+                    "opp_trap_blitz_rate",
+                    "opp_hedge_rate",
+                    "opp_drop_rate",
+                    "opp_switch_rate",
+                    "opp_spot_up_efg",
+                    "opp_rim_fg_pct",
+                ]
+                if c in scheme.columns
             ]
-            if c in scheme.columns
-        ]
-        if keep_scheme:
-            base = base.merge(scheme[keep_scheme], on="OPPONENT_ABBREVIATION", how="left")
+            if "OPPONENT_ABBREVIATION" in keep_scheme:
+                base = base.merge(scheme[keep_scheme], on="OPPONENT_ABBREVIATION", how="left")
 
     base["projected_minutes"] = np.where(
         _safe_col(base, "MIN") > 0,

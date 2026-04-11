@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import json
 import logging
 from pathlib import Path
@@ -18,6 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--odds-json", default=None, help="Path to optional odds JSON for EV")
     parser.add_argument("--no-monte-carlo", action="store_true", help="Disable Monte Carlo probability simulation")
     parser.add_argument("--force-refresh", action="store_true", help="Bypass cache and fetch fresh API responses")
+    parser.add_argument("--slate-date", default=None, help="Slate date in YYYY-MM-DD format")
     parser.add_argument("--assist-trap-blitz-weight", type=float, default=0.35, help="Assist scheme weight for trap/blitz deltas")
     parser.add_argument("--assist-hedge-weight", type=float, default=0.18, help="Assist scheme weight for hedge deltas")
     parser.add_argument("--scoring-trap-blitz-weight", type=float, default=-0.12, help="Scoring scheme weight for trap/blitz deltas")
@@ -38,8 +40,11 @@ def main() -> None:
     if args.odds_json:
         odds_map = json.loads(Path(args.odds_json).read_text())
 
+    slate_date = date.today() if args.slate_date is None else date.fromisoformat(args.slate_date)
+
     config = PipelineConfig(
         season=args.season,
+        slate_date=slate_date,
         min_games_started=args.min_games_started,
         cache_dir=Path(args.cache_dir),
         output_json=Path(args.output),

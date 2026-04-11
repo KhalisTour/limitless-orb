@@ -19,3 +19,7 @@ aion_terminal/.env
 
 # Editor
 .vscode/
+
+# Cache and output
+cache/
+output/
