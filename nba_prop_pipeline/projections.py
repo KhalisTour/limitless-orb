@@ -6,6 +6,37 @@ import pandas as pd
 from .config import PipelineConfig
 
 
+def compute_zone_based_points_projection(df: pd.DataFrame, config: PipelineConfig) -> pd.Series:
+    """
+    Final points projection using zone decomposition + play type factor + opponent.
+
+        points_proj = zone_points_raw
+                      * (projected_minutes / avg_minutes)
+                      * dampened_strategy_factor
+                      * opp_points_factor
+
+    zone_points_raw is already at the player's season-average minutes pace.
+    We scale it to the projected minutes for tonight's game, then apply the
+    strategy and opponent multipliers.
+    """
+    def _safe(col: str, default: float = 0.0) -> pd.Series:
+        if col in df.columns:
+            return pd.to_numeric(df[col], errors="coerce").fillna(default)
+        return pd.Series(default, index=df.index)
+
+    zone_points = _safe("zone_points_raw")
+    proj_min = _safe("projected_minutes", 30)
+    season_min = _safe("MIN", 30)
+    # Avoid divide by zero
+    season_min = season_min.where(season_min > 0, 30)
+    minutes_scale = (proj_min / season_min).clip(lower=0.5, upper=1.5)
+
+    strategy = _safe("dampened_strategy_factor", 1.0)
+    opp_factor = _safe("opp_points_factor", 1.0)
+
+    return zone_points * minutes_scale * strategy * opp_factor
+
+
 def add_projections(df: pd.DataFrame, *, config: PipelineConfig) -> pd.DataFrame:
     out = df.copy()
 
@@ -32,7 +63,13 @@ def add_projections(df: pd.DataFrame, *, config: PipelineConfig) -> pd.DataFrame
     trap_delta = (out.get("opp_trap_blitz_rate", config.league_avg_trap_blitz_rate) - config.league_avg_trap_blitz_rate) / 100
     hedge_delta = (out.get("opp_hedge_rate", config.league_avg_hedge_rate) - config.league_avg_hedge_rate) / 100
     scoring_scheme_adj = 1 + (config.scoring_trap_blitz_weight * trap_delta)
-    out["points_proj"] = (points_from_twos + points_from_threes) * out["opp_points_factor"] * scoring_scheme_adj
+    legacy_points_proj = (points_from_twos + points_from_threes) * out["opp_points_factor"] * scoring_scheme_adj
+
+    # New zone + play type based projection (overrides the legacy formula)
+    zone_proj = compute_zone_based_points_projection(out, config)
+    # Keep the legacy projection for backtest comparison
+    out["points_proj_legacy"] = legacy_points_proj
+    out["points_proj"] = np.where(zone_proj > 0, zone_proj, legacy_points_proj)
 
     assist_conversion = np.where(out["potential_assists"] > 0, (out.get("AST", 0) / out["potential_assists"]).clip(0.35, 0.78), 0.58)
     assist_scheme_adj = 1 + (config.assist_trap_blitz_weight * trap_delta) + (config.assist_hedge_weight * hedge_delta)

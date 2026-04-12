@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 from typing import List
 
+import numpy as np
 import pandas as pd
 
 from .clients import CachedHTTPClient
@@ -51,6 +52,28 @@ def get_player_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.Dat
         return result.get_data_frames()[0]
     except Exception as exc:
         logger.warning("nba_api player stats failed: %s", exc)
+        return pd.DataFrame()
+
+
+def get_player_advanced_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    if not _nba_api_available():
+        logger.error("nba_api not installed. Run: pip install nba_api")
+        return pd.DataFrame()
+
+    from nba_api.stats.endpoints import LeagueDashPlayerStats
+
+    try:
+        result = LeagueDashPlayerStats(
+            season=config.season,
+            season_type_all_star=config.season_type,
+            per_mode_detailed="PerGame",
+            measure_type_detailed_defense="Advanced",
+            league_id_nullable="00",
+            timeout=config.timeout_seconds,
+        )
+        return result.get_data_frames()[0]
+    except Exception as exc:
+        logger.warning("nba_api advanced player stats failed: %s", exc)
         return pd.DataFrame()
 
 
@@ -233,6 +256,141 @@ def get_team_defensive_scheme_stats(client: CachedHTTPClient, config: PipelineCo
     out["opp_rim_fg_pct"] = (0.64 + (opp_pts - opp_pts.mean()) * 0.0018).clip(lower=0.54, upper=0.73)
 
     return out
+
+
+def get_shot_locations_by_zone(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """
+    Pull per-zone shooting splits from LeagueDashPlayerShotLocations.
+
+    The endpoint returns a MultiIndex DataFrame with columns like
+    ('Restricted Area', 'FGA'). We flatten to underscored strings and
+    combine Left Corner 3 + Right Corner 3 into a single Corner 3 bucket.
+    Backcourt is dropped (noise, near-zero volume).
+
+    Returns columns like: PLAYER_ID, TEAM_ID, RA_FGA, RA_FG_PCT,
+    PAINT_NON_RA_FGA, PAINT_NON_RA_FG_PCT, MID_RANGE_FGA, MID_RANGE_FG_PCT,
+    CORNER_3_FGA, CORNER_3_FG_PCT, ABOVE_THE_BREAK_3_FGA, ABOVE_THE_BREAK_3_FG_PCT
+    """
+    try:
+        from nba_api.stats.endpoints import LeagueDashPlayerShotLocations
+    except ImportError:
+        logger.error("nba_api not installed")
+        return pd.DataFrame()
+
+    try:
+        result = LeagueDashPlayerShotLocations(
+            season=config.season,
+            season_type_all_star=config.season_type,
+            per_mode_detailed="PerGame",
+            distance_range="By Zone",
+            league_id_nullable="00",
+            timeout=config.timeout_seconds,
+        )
+        df = result.get_data_frames()[0]
+    except Exception as exc:
+        logger.warning("Shot locations pull failed: %s", exc)
+        return pd.DataFrame()
+
+    if df.empty:
+        return df
+
+    # Flatten MultiIndex columns like ('Restricted Area', 'FGA') -> 'RA_FGA'
+    zone_abbrev = {
+        "Restricted Area": "RA",
+        "In The Paint (Non-RA)": "PAINT_NON_RA",
+        "Mid-Range": "MID_RANGE",
+        "Left Corner 3": "LEFT_CORNER_3",
+        "Right Corner 3": "RIGHT_CORNER_3",
+        "Above the Break 3": "ABOVE_BREAK_3",
+        "Backcourt": "BACKCOURT",
+        "Corner 3": "CORNER_3_AGG",
+    }
+
+    flat_cols = []
+    for col in df.columns:
+        if isinstance(col, tuple):
+            zone, stat = col[0], col[1] if len(col) > 1 else ""
+            zone = str(zone).strip()
+            stat = str(stat).strip()
+            if zone == "":
+                flat_cols.append(stat)
+            else:
+                prefix = zone_abbrev.get(zone, zone.upper().replace(" ", "_"))
+                flat_cols.append(f"{prefix}_{stat}")
+        else:
+            flat_cols.append(str(col))
+    df.columns = flat_cols
+
+    # Combine Left + Right Corner 3 into a single Corner 3 bucket (how defenses think about it)
+    if "LEFT_CORNER_3_FGA" in df.columns and "RIGHT_CORNER_3_FGA" in df.columns:
+        df["CORNER_3_FGA"] = df["LEFT_CORNER_3_FGA"].fillna(0) + df["RIGHT_CORNER_3_FGA"].fillna(0)
+        df["CORNER_3_FGM"] = df["LEFT_CORNER_3_FGM"].fillna(0) + df["RIGHT_CORNER_3_FGM"].fillna(0)
+        df["CORNER_3_FG_PCT"] = np.where(
+            df["CORNER_3_FGA"] > 0,
+            df["CORNER_3_FGM"] / df["CORNER_3_FGA"],
+            0.0,
+        )
+
+    # Keep only the columns we need for the projection
+    keep_cols = ["PLAYER_ID", "TEAM_ID", "PLAYER_NAME"]
+    for prefix in ["RA", "PAINT_NON_RA", "MID_RANGE", "CORNER_3", "ABOVE_BREAK_3"]:
+        for stat in ["FGA", "FG_PCT"]:
+            col = f"{prefix}_{stat}"
+            if col in df.columns:
+                keep_cols.append(col)
+
+    available = [c for c in keep_cols if c in df.columns]
+    return df[available].copy()
+
+
+def get_synergy_play_types(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """
+    Pull 4 Synergy play types (Transition, PRBallHandler, Isolation, Spotup)
+    and return a combined DataFrame with a PLAY_TYPE_GROUP column.
+
+    One row per player per play type they participate in. Used by features.py
+    to compute the team strategy factor.
+    """
+    try:
+        from nba_api.stats.endpoints import SynergyPlayTypes
+    except ImportError:
+        logger.error("nba_api not installed")
+        return pd.DataFrame()
+
+    play_types = ["Transition", "PRBallHandler", "Isolation", "Spotup"]
+    frames = []
+
+    for pt in play_types:
+        try:
+            result = SynergyPlayTypes(
+                league_id="00",
+                per_mode_simple="PerGame",
+                play_type_nullable=pt,
+                player_or_team_abbreviation="P",
+                season=config.season,
+                season_type_all_star=config.season_type,
+                type_grouping_nullable="offensive",
+                timeout=config.timeout_seconds,
+            )
+            df = result.get_data_frames()[0]
+            if not df.empty:
+                df["PLAY_TYPE_GROUP"] = pt
+                frames.append(df)
+        except Exception as exc:
+            logger.warning("Synergy play type %s failed: %s", pt, exc)
+            continue
+
+    if not frames:
+        return pd.DataFrame()
+
+    combined = pd.concat(frames, ignore_index=True)
+
+    # Keep only the columns we need
+    keep = [c for c in [
+        "PLAYER_ID", "TEAM_ID", "PLAYER_NAME", "PLAY_TYPE_GROUP",
+        "GP", "POSS", "PPP", "FG_PCT", "EFG_PCT", "PTS",
+    ] if c in combined.columns]
+    return combined[keep].copy()
 
 
 # These two don't go through stats.nba.com so they're imported from the original ingestion module

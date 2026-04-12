@@ -15,9 +15,12 @@ from .ingestion_nba_api import (
     get_pbpstats_possessions,
     get_positional_defense_stats,
     get_opponent_stats_for_slate,
+    get_player_advanced_stats,
     get_player_stats,
     get_rebounding_tracking_stats,
+    get_shot_locations_by_zone,
     get_starting_lineups_scrape,
+    get_synergy_play_types,
     get_team_defensive_scheme_stats,
     get_today_matchups,
     get_tracking_stats,
@@ -42,6 +45,11 @@ def run_daily_pipeline(
 
     matchups = get_today_matchups(client, config)
     player_stats = get_player_stats(client, config)
+    try:
+        player_advanced = get_player_advanced_stats(client, config)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Advanced player stats pull failed: %s", exc)
+        player_advanced = pd.DataFrame()
     tracking = get_tracking_stats(client, config)
     reb_tracking = get_rebounding_tracking_stats(client, config)
     team_defense = get_opponent_stats_for_slate(client, config, matchups)
@@ -52,6 +60,8 @@ def run_daily_pipeline(
         logger.warning("Positional defense pull failed, using team-wide defense only: %s", exc)
     team_scheme = get_team_defensive_scheme_stats(client, config)
     pbp_possessions = get_pbpstats_possessions(client, config)
+    zone_shot_locations = get_shot_locations_by_zone(client, config)
+    playtype_stats = get_synergy_play_types(client, config)
 
     feature_df = build_feature_table(
         player_stats=player_stats,
@@ -62,6 +72,9 @@ def run_daily_pipeline(
         positional_defense_stats=positional_defense,
         matchups=matchups,
         pbp_possessions=pbp_possessions,
+        player_advanced=player_advanced,
+        zone_shot_locations=zone_shot_locations,
+        playtype_stats=playtype_stats,
         config=config,
     )
 

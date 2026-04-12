@@ -76,6 +76,52 @@ def get_player_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.Dat
     return _to_dataframe(payload)
 
 
+def get_player_advanced_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    payload = client.get_json(
+        f"{NBA_BASE}/leaguedashplayerstats",
+        params={
+            "College": "",
+            "Conference": "",
+            "Country": "",
+            "DateFrom": "",
+            "DateTo": "",
+            "Division": "",
+            "DraftPick": "",
+            "DraftYear": "",
+            "GameScope": "",
+            "GameSegment": "",
+            "Height": "",
+            "LastNGames": 0,
+            "LeagueID": "00",
+            "Location": "",
+            "MeasureType": "Advanced",
+            "Month": 0,
+            "OpponentTeamID": 0,
+            "Outcome": "",
+            "PORound": "",
+            "PaceAdjust": "N",
+            "PerMode": "Totals",
+            "Period": 0,
+            "PlayerExperience": "",
+            "PlayerPosition": "",
+            "PlusMinus": "N",
+            "Rank": "N",
+            "Season": config.season,
+            "SeasonSegment": "",
+            "SeasonType": config.season_type,
+            "ShotClockRange": "",
+            "StarterBench": "",
+            "TeamID": 0,
+            "TwoWay": "",
+            "VsConference": "",
+            "VsDivision": "",
+            "Weight": "",
+        },
+        namespace="nba_player_stats_advanced",
+    )
+    return _to_dataframe(payload)
+
+
 def get_tracking_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
     payload = client.get_json(
         f"{NBA_BASE}/leaguedashptstats",

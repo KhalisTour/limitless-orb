@@ -13,6 +13,7 @@ venv/
 # Secrets
 .env
 aion_terminal/.env
+aion_terminal/
 
 # Databases
 *.db
@@ -23,3 +24,5 @@ aion_terminal/.env
 # Cache and output
 cache/
 output/
+probe_zones.py
+test_endpoints_nba_api.py

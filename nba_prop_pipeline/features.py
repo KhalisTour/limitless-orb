@@ -16,6 +16,117 @@ def _safe_col(df: pd.DataFrame, col: str, default: float = 0.0) -> pd.Series:
     return pd.Series(default, index=df.index)
 
 
+def add_zone_and_playtype_features(
+    base: pd.DataFrame,
+    zone_df: pd.DataFrame,
+    playtype_df: pd.DataFrame,
+    config: PipelineConfig,
+) -> pd.DataFrame:
+    """
+    Merge zone shooting splits and play type efficiency into the feature table.
+
+    Computes:
+        - zone_points_raw: sum of (zone_FGA * points_per_attempt) per zone
+        - team_strategy_factor: weighted avg of play type efficiency vs league
+          median, gated by 1.2x median POSS threshold per play type
+        - dampened_strategy_factor: 1 + alpha * (factor - 1) where
+          alpha = config.points_projection_alpha (default 0.85)
+    """
+    out = base.copy()
+
+    # --- Zone shooting merge ---
+    if zone_df is not None and not zone_df.empty:
+        merge_keys = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in out.columns and k in zone_df.columns]
+        if not merge_keys and "PLAYER_ID" in zone_df.columns and "PLAYER_ID" in out.columns:
+            merge_keys = ["PLAYER_ID"]
+        if merge_keys:
+            # Drop duplicate name column from zone_df before merge
+            zone_merge = zone_df.drop(columns=[c for c in ["PLAYER_NAME"] if c in zone_df.columns])
+            out = out.merge(zone_merge, on=merge_keys, how="left", suffixes=("", "_zone"))
+
+    # Compute zone-based points (points per attempt by zone)
+    # PPA = 2 * FG% for 2pt zones, 3 * FG% for 3pt zones
+    def _safe(col: str, default: float = 0.0) -> pd.Series:
+        if col in out.columns:
+            return pd.to_numeric(out[col], errors="coerce").fillna(default)
+        return pd.Series(default, index=out.index)
+
+    ra_points = _safe("RA_FGA") * _safe("RA_FG_PCT", 0.6) * 2
+    paint_points = _safe("PAINT_NON_RA_FGA") * _safe("PAINT_NON_RA_FG_PCT", 0.42) * 2
+    mid_points = _safe("MID_RANGE_FGA") * _safe("MID_RANGE_FG_PCT", 0.42) * 2
+    corner3_points = _safe("CORNER_3_FGA") * _safe("CORNER_3_FG_PCT", 0.38) * 3
+    atb3_points = _safe("ABOVE_BREAK_3_FGA") * _safe("ABOVE_BREAK_3_FG_PCT", 0.35) * 3
+
+    out["zone_points_raw"] = ra_points + paint_points + mid_points + corner3_points + atb3_points
+
+    # --- Play type merge and team strategy factor ---
+    if playtype_df is not None and not playtype_df.empty and "PLAY_TYPE_GROUP" in playtype_df.columns:
+        # Compute league medians and thresholds per play type
+        league_medians = {}
+        league_avg_ppp = {}
+        thresh_multiplier = getattr(config, "playtype_poss_threshold_multiplier", 1.2)
+
+        for pt in playtype_df["PLAY_TYPE_GROUP"].unique():
+            subset = playtype_df[
+                (playtype_df["PLAY_TYPE_GROUP"] == pt)
+                & (pd.to_numeric(playtype_df["POSS"], errors="coerce") > 0)
+            ]
+            if len(subset):
+                median_poss = pd.to_numeric(subset["POSS"], errors="coerce").median()
+                avg_ppp = pd.to_numeric(subset["PPP"], errors="coerce").mean()
+                league_medians[pt] = median_poss * thresh_multiplier
+                league_avg_ppp[pt] = avg_ppp
+
+        # For each player, compute team_strategy_factor from their qualifying play types
+        def compute_player_factor(player_id, team_id):
+            player_rows = playtype_df[
+                (playtype_df["PLAYER_ID"] == player_id)
+                & (playtype_df["TEAM_ID"] == team_id)
+            ]
+            if len(player_rows) == 0:
+                return 1.0  # no play type data, neutral factor
+
+            qualifying = []
+            for _, row in player_rows.iterrows():
+                pt = row["PLAY_TYPE_GROUP"]
+                poss = pd.to_numeric(row.get("POSS", 0), errors="coerce")
+                ppp = pd.to_numeric(row.get("PPP", 0), errors="coerce")
+                threshold = league_medians.get(pt, float("inf"))
+                league_ppp = league_avg_ppp.get(pt, 1.0)
+
+                if pd.notna(poss) and pd.notna(ppp) and poss >= threshold and league_ppp > 0:
+                    efficiency_ratio = ppp / league_ppp
+                    qualifying.append({"poss": poss, "ratio": efficiency_ratio})
+
+            if not qualifying:
+                return 1.0  # no qualifying play types, neutral factor
+
+            total_poss = sum(q["poss"] for q in qualifying)
+            if total_poss == 0:
+                return 1.0
+
+            weighted = sum((q["poss"] / total_poss) * q["ratio"] for q in qualifying)
+            return float(weighted)
+
+        factors = []
+        for _, row in out.iterrows():
+            pid = row.get("PLAYER_ID")
+            tid = row.get("TEAM_ID")
+            if pd.isna(pid) or pd.isna(tid):
+                factors.append(1.0)
+            else:
+                factors.append(compute_player_factor(int(pid), int(tid)))
+        out["team_strategy_factor"] = factors
+    else:
+        out["team_strategy_factor"] = 1.0
+
+    # Apply dampening alpha
+    alpha = getattr(config, "points_projection_alpha", 0.85)
+    out["dampened_strategy_factor"] = 1 + alpha * (out["team_strategy_factor"] - 1)
+
+    return out
+
+
 def build_feature_table(
     player_stats: pd.DataFrame,
     tracking_stats: pd.DataFrame,
@@ -25,7 +136,10 @@ def build_feature_table(
     positional_defense_stats: pd.DataFrame | None,
     matchups: pd.DataFrame,
     pbp_possessions: pd.DataFrame,
-    config: PipelineConfig,
+    player_advanced: pd.DataFrame = None,
+    zone_shot_locations: pd.DataFrame | None = None,
+    playtype_stats: pd.DataFrame | None = None,
+    config: PipelineConfig = None,
 ) -> pd.DataFrame:
     base = player_stats.copy()
 
@@ -43,6 +157,14 @@ def build_feature_table(
         if key_cols:
             base = base.merge(external, on=key_cols, how="left", suffixes=("", suffix))
 
+    if player_advanced is not None and not player_advanced.empty:
+        adv_keep = [c for c in ["PLAYER_ID", "TEAM_ID", "USG_PCT", "TS_PCT", "EFG_PCT",
+                                "AST_PCT", "OREB_PCT", "DREB_PCT", "TOV_PCT",
+                                "NET_RATING", "OFF_RATING"] if c in player_advanced.columns]
+        if "PLAYER_ID" in adv_keep:
+            key_cols = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in base.columns and k in player_advanced.columns]
+            base = base.merge(player_advanced[adv_keep], on=key_cols, how="left", suffixes=("", "_adv"))
+
     valid_matchups = (
         not matchups.empty
         and "TEAM_ABBREVIATION" in base.columns
@@ -59,27 +181,35 @@ def build_feature_table(
         base["GAME_ID"] = pd.NA
         base["GAME_DATETIME"] = pd.NA
 
-        if not team_defense.empty and "OPPONENT_ABBREVIATION" in base.columns:
-            team_def = team_defense.copy()
-            if "TEAM_ABBREVIATION" in team_def.columns:
-                team_def = team_def.rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
+    # Team defense merge ALWAYS runs, regardless of matchup validity.
+    if not team_defense.empty and "OPPONENT_ABBREVIATION" in base.columns:
+        team_def = team_defense.copy()
+        
+        # If team_def doesn't have TEAM_ABBREVIATION but base does, create a mapping from TEAM_ID
+        if "TEAM_ABBREVIATION" not in team_def.columns and "TEAM_ID" in team_def.columns and "TEAM_ID" in base.columns:
+            team_abbrev_map = base[["TEAM_ID", "TEAM_ABBREVIATION"]].drop_duplicates().dropna()
+            if not team_abbrev_map.empty:
+                team_def = team_def.merge(team_abbrev_map, on="TEAM_ID", how="left")
+        
+        if "TEAM_ABBREVIATION" in team_def.columns:
+            team_def = team_def.rename(columns={"TEAM_ABBREVIATION": "OPPONENT_ABBREVIATION"})
 
-            if "OPPONENT_ABBREVIATION" in team_def.columns:
-                keep = [
-                    c
-                    for c in [
-                        "OPPONENT_ABBREVIATION",
-                        "OPP_AST",
-                        "OPP_FGA",
-                        "OPP_FG3A",
-                        "OPP_PTS",
-                        "DEF_RATING",
-                        "PACE",
-                    ]
-                    if c in team_def.columns
+        if "OPPONENT_ABBREVIATION" in team_def.columns:
+            keep = [
+                c
+                for c in [
+                    "OPPONENT_ABBREVIATION",
+                    "OPP_AST",
+                    "OPP_FGA",
+                    "OPP_FG3A",
+                    "OPP_PTS",
+                    "DEF_RATING",
+                    "PACE",
                 ]
-                if "OPPONENT_ABBREVIATION" in keep:
-                    base = base.merge(team_def[keep], on="OPPONENT_ABBREVIATION", how="left")
+                if c in team_def.columns
+            ]
+            if "OPPONENT_ABBREVIATION" in keep:
+                base = base.merge(team_def[keep], on="OPPONENT_ABBREVIATION", how="left", suffixes=("", "_teamdef"))
 
     if positional_defense_stats is not None and not positional_defense_stats.empty and "OPPONENT_ABBREVIATION" in base.columns:
         def _position_group(raw: str) -> str:
@@ -144,7 +274,8 @@ def build_feature_table(
         _safe_col(base, "POSS_PER_GAME_EST"),
         _safe_col(base, "PACE", 98) * (_safe_col(base, "projected_minutes") / 48),
     )
-    base["usage_rate"] = _safe_col(base, "USG_PCT", 20) / 100
+    usg_raw = _safe_col(base, "USG_PCT", 20)
+    base["usage_rate"] = np.where(usg_raw > 1.0, usg_raw / 100, usg_raw)
     base["touches"] = _safe_col(base, "TOUCHES", _safe_col(base, "PASSES_RECEIVED", 40))
     base["time_of_poss"] = _safe_col(base, "TIME_OF_POSS", 2.5)
     base["potential_assists"] = _safe_col(base, "POTENTIAL_AST", _safe_col(base, "PBP_POT_AST", _safe_col(base, "AST") * 1.7))
@@ -192,5 +323,13 @@ def build_feature_table(
     base["foul_risk_penalty"] = (
         (_safe_col(base, "opp_trap_blitz_rate", config.league_avg_trap_blitz_rate) - config.league_avg_trap_blitz_rate) / 400
     ).clip(lower=0, upper=0.04)
+
+    if zone_shot_locations is not None or playtype_stats is not None:
+        base = add_zone_and_playtype_features(
+            base,
+            zone_shot_locations if zone_shot_locations is not None else pd.DataFrame(),
+            playtype_stats if playtype_stats is not None else pd.DataFrame(),
+            config,
+        )
 
     return base

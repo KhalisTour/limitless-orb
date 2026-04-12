@@ -36,6 +36,8 @@ class PipelineConfig:
     foul_minutes_penalty_weight: float = 1.0
     league_avg_trap_blitz_rate: float = 20.0
     league_avg_hedge_rate: float = 18.0
+    points_projection_alpha: float = 0.7
+    playtype_poss_threshold_multiplier: float = 1.2
 
     nba_headers: Dict[str, str] = field(
         default_factory=lambda: {
