@@ -36,6 +36,9 @@ class PipelineConfig:
     foul_minutes_penalty_weight: float = 1.0
     league_avg_trap_blitz_rate: float = 20.0
     league_avg_hedge_rate: float = 18.0
+    league_avg_ts: float = 0.575
+    usage_boost_strength: float = 1.5
+    ts_modulation_strength: float = 4.0
     points_projection_alpha: float = 0.7
     playtype_poss_threshold_multiplier: float = 1.2
 

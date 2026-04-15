@@ -8,33 +8,56 @@ from .config import PipelineConfig
 
 def compute_zone_based_points_projection(df: pd.DataFrame, config: PipelineConfig) -> pd.Series:
     """
-    Final points projection using zone decomposition + play type factor + opponent.
+    Final points projection with three additive layers:
+      1. Zone-based field goal points (zone_FGA × zone_FG% × point_value, summed across zones)
+      2. Free throw points (FTA × FT% scaled to projected minutes)
+      3. Scoring engine multiplier (usage × TS interaction, captures star scorers)
 
-        points_proj = zone_points_raw
-                      * (projected_minutes / avg_minutes)
-                      * dampened_strategy_factor
-                      * opp_points_factor
+    Formula:
+        fg_projection = zone_points × minutes_scale × dampened_strategy_factor × engine_factor
+        final = (fg_projection + ft_points) × opp_points_factor
 
-    zone_points_raw is already at the player's season-average minutes pace.
-    We scale it to the projected minutes for tonight's game, then apply the
-    strategy and opponent multipliers.
+    The engine_factor uses a usage × TS interaction: high-usage players only get
+    the full boost if they maintain TS% above league average. This prevents
+    volume gunners from being projected like real stars.
     """
     def _safe(col: str, default: float = 0.0) -> pd.Series:
         if col in df.columns:
             return pd.to_numeric(df[col], errors="coerce").fillna(default)
         return pd.Series(default, index=df.index)
 
+    # Layer 1: Zone-based field goal points (already computed upstream as zone_points_raw)
     zone_points = _safe("zone_points_raw")
+
+    # Minutes scaling: scale season-pace zone points to tonight's projected minutes
     proj_min = _safe("projected_minutes", 30)
     season_min = _safe("MIN", 30)
-    # Avoid divide by zero
     season_min = season_min.where(season_min > 0, 30)
     minutes_scale = (proj_min / season_min).clip(lower=0.5, upper=1.5)
 
+    # Layer 2: Free throw points (currently missing from the projection — adds 5-8 pts/game for stars)
+    fta = _safe("FTA", 2.0)
+    ft_pct = _safe("FT_PCT", 0.78)
+    ft_points = fta * ft_pct * minutes_scale
+
+    # Layer 3: Scoring engine multiplier
+    # Uses usage × TS interaction. High-usage players only get full boost if TS is elite.
+    # Volume gunners with low TS get a floored, partial boost.
+    usage = _safe("usage_rate", 0.22)
+    ts = _safe("TS_PCT", config.league_avg_ts)
+    usage_above_starter = (usage - 0.25).clip(lower=0)
+    ts_modulation = (1 + (ts - config.league_avg_ts) * config.ts_modulation_strength).clip(lower=0.5)
+    engine_factor = 1 + (usage_above_starter * config.usage_boost_strength * ts_modulation)
+
+    # Existing factors
     strategy = _safe("dampened_strategy_factor", 1.0)
     opp_factor = _safe("opp_points_factor", 1.0)
 
-    return zone_points * minutes_scale * strategy * opp_factor
+    # Combine: FG side gets engine boost; FT side does not (free throws are already efficiency-priced)
+    fg_projection = zone_points * minutes_scale * strategy * engine_factor
+    final = (fg_projection + ft_points) * opp_factor
+
+    return final
 
 
 def add_projections(df: pd.DataFrame, *, config: PipelineConfig) -> pd.DataFrame:

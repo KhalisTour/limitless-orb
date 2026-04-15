@@ -34,6 +34,16 @@ def add_zone_and_playtype_features(
     """
     out = base.copy()
 
+    # Verify columns required by the new scoring engine projection are present
+    required_cols = ["FTA", "FT_PCT", "TS_PCT", "usage_rate"]
+    missing = [c for c in required_cols if c not in out.columns]
+    if missing:
+        logger.warning(
+            "Missing columns required by scoring engine projection: %s. "
+            "Free throw points and star multiplier may use defaults.",
+            missing,
+        )
+
     # --- Zone shooting merge ---
     if zone_df is not None and not zone_df.empty:
         merge_keys = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in out.columns and k in zone_df.columns]
