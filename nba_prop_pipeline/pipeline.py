@@ -9,7 +9,7 @@ import pandas as pd
 
 from .clients import CachedHTTPClient
 from .config import PipelineConfig
-from .exporter import export_json
+from .exporter import export_json, export_zone_playtype_breakdown
 from .features import build_feature_table
 from .ingestion_nba_api import (
     get_pbpstats_possessions,
@@ -108,6 +108,7 @@ def run_daily_pipeline(
         logger.warning("No starter-level rows generated for today's slate. Output will be an empty file.")
 
     output_path = export_json(probabilistic, config.output_json)
+    zone_breakdown_path = export_zone_playtype_breakdown(probabilistic)
     if write_to_db:
         try:
             from .storage import insert_projections
