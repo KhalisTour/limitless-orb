@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.marketdata.app/v1"
 DEFAULT_TIMEOUT_SECONDS = 20
-DEFAULT_RETRIES = 3
+DEFAULT_RETRIES = 1
 
 
 @dataclass(slots=True)
@@ -71,6 +71,11 @@ class MarketDataClient:
             except HTTPError as exc:
                 if exc.code in (401, 403):
                     return FetchResult(ok=False, status_code=exc.code, payload=None, error="unauthorized")
+                if exc.code == 429:
+                    wait = 60 * attempt
+                    logger.warning("rate limited (429) on attempt %s/%s — backing off %ss", attempt, self._retries, wait)
+                    time.sleep(wait)
+                    continue
                 if exc.code >= 500:
                     last_error = f"server_error_{exc.code}"
                     time.sleep(0.25 * attempt)
@@ -98,8 +103,8 @@ class MarketDataClient:
         return result
 
     def fetch_underlying_bars(self, symbol: str, timeframe: str, start_date: str, end_date: str) -> FetchResult:
-        params = {"from": start_date, "to": end_date, "resolution": timeframe}
-        candidate_paths = [f"/stocks/candles/{symbol}/", f"/stocks/history/{symbol}/"]
+        params = {"from": start_date, "to": end_date}
+        candidate_paths = [f"/stocks/candles/{timeframe}/{symbol}/", f"/stocks/candles/{symbol}/"]
         result = FetchResult(ok=False, status_code=None, payload=None, error="not_attempted")
         for path in candidate_paths:
             result = self._request_json(path, params=params)
