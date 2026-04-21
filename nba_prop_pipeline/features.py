@@ -127,6 +127,18 @@ def add_zone_and_playtype_features(
             else:
                 factors.append(compute_player_factor(int(pid), int(tid)))
         out["team_strategy_factor"] = factors
+        # Pivot individual play type PPP onto the feature table for downstream use
+        if "PPP" in playtype_df.columns:
+            for pt in playtype_df["PLAY_TYPE_GROUP"].unique():
+                pt_subset = playtype_df[playtype_df["PLAY_TYPE_GROUP"] == pt][["PLAYER_ID", "TEAM_ID", "PPP", "POSS"]].copy()
+                pt_label = pt.upper().replace(" ", "")  # e.g. "Spotup" -> "SPOTUP"
+                pt_subset = pt_subset.rename(columns={
+                    "PPP": f"{pt_label}_PPP",
+                    "POSS": f"{pt_label}_POSS",
+                })
+                merge_keys = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in out.columns and k in pt_subset.columns]
+                if merge_keys:
+                    out = out.merge(pt_subset, on=merge_keys, how="left", suffixes=("", f"_{pt_label}"))
     else:
         out["team_strategy_factor"] = 1.0
 
@@ -149,14 +161,31 @@ def build_feature_table(
     player_advanced: pd.DataFrame = None,
     zone_shot_locations: pd.DataFrame | None = None,
     playtype_stats: pd.DataFrame | None = None,
+    catch_and_shoot_stats: pd.DataFrame | None = None,
+    pullup_shot_stats: pd.DataFrame | None = None,
     config: PipelineConfig = None,
 ) -> pd.DataFrame:
     base = player_stats.copy()
 
+    # Filter to starter-caliber players.
+    # Use GS/GP start rate when GS column exists, otherwise fall back to GP + minutes threshold.
+    gp_col = pd.to_numeric(base["GP"], errors="coerce").fillna(0) if "GP" in base.columns else pd.Series(0, index=base.index)
+    min_gp = max(15, config.min_games_started // 2)
+
     if "GS" in base.columns:
-        base = base[pd.to_numeric(base["GS"], errors="coerce").fillna(0) >= config.min_games_started]
-    elif "GP" in base.columns:
-        base = base[pd.to_numeric(base["GP"], errors="coerce").fillna(0) >= config.min_games_started]
+        gs_col = pd.to_numeric(base["GS"], errors="coerce").fillna(0)
+        start_rate = gs_col / gp_col.where(gp_col > 0, 1)
+        starter_mask = (start_rate >= 0.7) & (gp_col >= min_gp)
+        logger.info("Starter filter (GS/GP mode): keeping %d of %d players (GS/GP >= 0.7, GP >= %d)", starter_mask.sum(), len(base), min_gp)
+    elif "MIN" in base.columns:
+        mpg = pd.to_numeric(base["MIN"], errors="coerce").fillna(0)
+        starter_mask = (gp_col >= min_gp) & (mpg >= 20)
+        logger.info("Starter filter (GP+MIN mode): keeping %d of %d players (GP >= %d, MPG >= 20)", starter_mask.sum(), len(base), min_gp)
+    else:
+        starter_mask = gp_col >= min_gp
+        logger.info("Starter filter (GP only mode): keeping %d of %d players (GP >= %d)", starter_mask.sum(), len(base), min_gp)
+
+    base = base[starter_mask].copy()
 
     for suffix, external in zip(["_tracking", "_reb", "_pbp"], [tracking_stats, reb_tracking, pbp_possessions]):
         if external.empty:
@@ -174,7 +203,29 @@ def build_feature_table(
         if "PLAYER_ID" in adv_keep:
             key_cols = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in base.columns and k in player_advanced.columns]
             base = base.merge(player_advanced[adv_keep], on=key_cols, how="left", suffixes=("", "_adv"))
+# Merge catch-and-shoot tracking stats
+    if catch_and_shoot_stats is not None and not catch_and_shoot_stats.empty:
+        cs_keep = [c for c in [
+            "PLAYER_ID", "TEAM_ID",
+            "CATCH_SHOOT_FGM", "CATCH_SHOOT_FGA", "CATCH_SHOOT_FG_PCT",
+            "CATCH_SHOOT_PTS", "CATCH_SHOOT_FG3M", "CATCH_SHOOT_FG3A", "CATCH_SHOOT_FG3_PCT",
+            "CATCH_SHOOT_EFG_PCT",
+        ] if c in catch_and_shoot_stats.columns]
+        if "PLAYER_ID" in cs_keep:
+            cs_keys = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in base.columns and k in catch_and_shoot_stats.columns]
+            base = base.merge(catch_and_shoot_stats[cs_keep], on=cs_keys, how="left", suffixes=("", "_cs"))
 
+    # Merge pull-up shot tracking stats
+    if pullup_shot_stats is not None and not pullup_shot_stats.empty:
+        pu_keep = [c for c in [
+            "PLAYER_ID", "TEAM_ID",
+            "PULL_UP_FGM", "PULL_UP_FGA", "PULL_UP_FG_PCT",
+            "PULL_UP_PTS", "PULL_UP_FG3M", "PULL_UP_FG3A", "PULL_UP_FG3_PCT",
+            "PULL_UP_EFG_PCT",
+        ] if c in pullup_shot_stats.columns]
+        if "PLAYER_ID" in pu_keep:
+            pu_keys = [k for k in ["PLAYER_ID", "TEAM_ID"] if k in base.columns and k in pullup_shot_stats.columns]
+            base = base.merge(pullup_shot_stats[pu_keep], on=pu_keys, how="left", suffixes=("", "_pu"))
     valid_matchups = (
         not matchups.empty
         and "TEAM_ABBREVIATION" in base.columns
@@ -211,7 +262,8 @@ def build_feature_table(
                     "OPPONENT_ABBREVIATION",
                     "OPP_AST",
                     "OPP_FGA",
-                    "OPP_FG3A",
+                    "OPP_FG3A"
+                    "OPP_FG3_PCT",
                     "OPP_PTS",
                     "DEF_RATING",
                     "PACE",

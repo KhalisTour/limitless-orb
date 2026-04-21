@@ -5,7 +5,14 @@ from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
+import numpy as np
 
+def _sanitize_for_export(df: pd.DataFrame) -> pd.DataFrame:
+    """Ensure JSON-safe numeric output by replacing NaN/None with 0."""
+    return (
+        df.replace([np.inf, -np.inf], 0)  # optional but safe
+          .fillna(0)
+    )
 
 DEFAULT_EXPORT_COLUMNS: Iterable[str] = [
     "PLAYER_ID",
@@ -30,6 +37,7 @@ DEFAULT_EXPORT_COLUMNS: Iterable[str] = [
     "opp_points_factor",
     "opp_reb_factor",
     "opp_3pa_factor",
+    "OPP_FG3_PCT",
     "zone_points_raw",
     "team_strategy_factor",
     "dampened_strategy_factor",
@@ -37,6 +45,15 @@ DEFAULT_EXPORT_COLUMNS: Iterable[str] = [
     "assists_proj",
     "rebounds_proj",
     "threes_proj",
+    "threes_proj_legacy",
+    "CATCH_SHOOT_FG3A",
+    "CATCH_SHOOT_FG3_PCT",
+    "PULL_UP_FG3A",
+    "PULL_UP_FG3_PCT",
+    "SPOTUP_PPP",
+    "SPOTUP_POSS",
+    "OFFSCREEN_PPP",
+    "OFFSCREEN_POSS",
     "P_points_ge_20",
     "P_assists_ge_6",
     "P_rebounds_ge_8",
@@ -44,7 +61,38 @@ DEFAULT_EXPORT_COLUMNS: Iterable[str] = [
     "MC_P_points_ge_20",
     "MC_P_assists_ge_6",
     "MC_P_rebounds_ge_8",
-    "MC_P_3pm_ge_3",
+    "MC_P_3pm_ge_3","P_points_ge_15",
+    "P_points_ge_25",
+    "P_points_ge_30",
+    "P_assists_ge_4",
+    "P_assists_ge_8",
+    "P_assists_ge_10",
+    "P_rebounds_ge_6",
+    "P_rebounds_ge_10",
+    "P_rebounds_ge_12",
+    "P_3pm_ge_2",
+    "P_3pm_ge_4",
+    "P_3pm_ge_5",
+    "P_3pm_ge_6",
+    "P_3pm_ge_7",
+    "MC_P_points_ge_15",
+    "MC_P_points_ge_25",
+    "MC_P_points_ge_30",
+    "MC_P_assists_ge_4",
+    "MC_P_assists_ge_8",
+    "MC_P_assists_ge_10",
+    "MC_P_rebounds_ge_6",
+    "MC_P_rebounds_ge_10",
+    "MC_P_rebounds_ge_12",
+    "MC_P_3pm_ge_2",
+    "MC_P_3pm_ge_4",
+    "MC_P_3pm_ge_5",
+    "MC_P_3pm_ge_6",
+    "MC_P_3pm_ge_7",
+    "P_poisson_points_ge_20",
+    "P_poisson_assists_ge_6",
+    "P_poisson_rebounds_ge_8",
+    "P_poisson_3pm_ge_3",
 ]
 
 ZONE_PLAYTYPE_BREAKDOWN_COLUMNS: Iterable[str] = [
@@ -73,7 +121,8 @@ ZONE_PLAYTYPE_BREAKDOWN_COLUMNS: Iterable[str] = [
 def export_json(df: pd.DataFrame, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     columns = [col for col in DEFAULT_EXPORT_COLUMNS if col in df.columns]
-    records = df[columns].to_dict(orient="records")
+    clean_df = _sanitize_for_export(df[columns])
+    records = clean_df.to_dict(orient="records")
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     return output_path
@@ -91,7 +140,8 @@ def export_zone_playtype_breakdown(df: pd.DataFrame, output_path: Path = None) -
     
     output_path.parent.mkdir(parents=True, exist_ok=True)
     columns = [col for col in ZONE_PLAYTYPE_BREAKDOWN_COLUMNS if col in df.columns]
-    records = df[columns].to_dict(orient="records")
+    clean_df = _sanitize_for_export(df[columns])
+    records = clean_df.to_dict(orient="records")
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     return output_path

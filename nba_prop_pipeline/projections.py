@@ -102,6 +102,73 @@ def add_projections(df: pd.DataFrame, *, config: PipelineConfig) -> pd.DataFrame
     stretch_boost = 1 + (config.rebound_stretch_big_weight * out.get("high5_stretch_indicator", 0))
     out["rebounds_proj"] = out["rebound_chances"] * rebound_conversion * out["opp_reb_factor"] * stretch_boost
 
-    out["threes_proj"] = out["three_attempts_proj"] * out["fg3_pct"]
+    # Decomposed 3PM projection with opponent defensive 3P% adjustment
+    def _safe(col, default=0.0):
+        if col in out.columns:
+            return pd.to_numeric(out[col], errors="coerce").fillna(default)
+        return pd.Series(default, index=out.index)
+
+    cs_3pa = _safe("CATCH_SHOOT_FG3A")
+    cs_3pct = _safe("CATCH_SHOOT_FG3_PCT")
+    pu_3pa = _safe("PULL_UP_FG3A")
+    pu_3pct = _safe("PULL_UP_FG3_PCT")
+    has_decomposed = (cs_3pa + pu_3pa) > 0
+
+    # Scale attempts by possessions AND opponent 3PA factor (volume adjustment)
+    cs_3pa_scaled = cs_3pa * possessions_scale * out["opp_3pa_factor"]
+    pu_3pa_scaled = pu_3pa * possessions_scale * out["opp_3pa_factor"]
+
+    # Opponent defensive 3P% adjustment — shifts EFFICIENCY not just volume.
+    # League average opponent 3P% is ~35.8%. Teams that allow higher % make
+    # shooters more efficient; teams that contest well suppress efficiency.
+    opp_fg3_pct_allowed = _safe("OPP_FG3_PCT", 0.358)
+    league_avg_opp_3pct = 0.358
+    # Efficiency modifier: if opponent allows 38% vs league avg 35.8%, that's
+    # a +2.2% boost to the shooter's 3P% (not additive — multiplicative ratio)
+    opp_3pct_modifier = np.where(
+        opp_fg3_pct_allowed > 0,
+        opp_fg3_pct_allowed / league_avg_opp_3pct,
+        1.0,
+    )
+
+    # Apply efficiency modifier to each shot type's conversion rate
+    cs_3pct_adj = cs_3pct * opp_3pct_modifier
+    pu_3pct_adj = pu_3pct * opp_3pct_modifier
+
+    # Type-specific 3PM
+    threes_from_catch_shoot = cs_3pa_scaled * cs_3pct_adj
+    threes_from_pullup = pu_3pa_scaled * pu_3pct_adj
+
+    # Corner 3 relocation bonus for catch-and-shoot specialists
+    corner_3_fga = _safe("CORNER_3_FGA")
+    total_3pa = _safe("fg3a", 1).clip(lower=0.1)
+    corner_share = (corner_3_fga / total_3pa).clip(lower=0, upper=0.5)
+    relocation_bonus = 1 + corner_share * 0.15
+
+    # Play type 3PM boost from Spot Up and Off Screen PPP
+    spotup_ppp = _safe("SPOTUP_PPP")
+    offscreen_ppp = _safe("OFFSCREEN_PPP")
+    league_avg_spotup = 1.03
+    league_avg_offscreen = 0.98
+
+    spotup_boost = np.where(
+        spotup_ppp > 0,
+        (spotup_ppp / league_avg_spotup).clip(0.85, 1.2),
+        1.0,
+    )
+    offscreen_boost = np.where(
+        offscreen_ppp > 0,
+        (offscreen_ppp / league_avg_offscreen).clip(0.85, 1.2),
+        1.0,
+    )
+    three_pt_playtype_factor = (0.6 * spotup_boost) + (0.4 * offscreen_boost)
+
+    decomposed_threes = (threes_from_catch_shoot * relocation_bonus * three_pt_playtype_factor) + threes_from_pullup
+
+    # Legacy flat projection as fallback
+    legacy_threes = out["three_attempts_proj"] * out["fg3_pct"]
+
+    out["threes_proj_legacy"] = legacy_threes
+    out["threes_proj"] = np.where(has_decomposed, decomposed_threes, legacy_threes)
 
     return out

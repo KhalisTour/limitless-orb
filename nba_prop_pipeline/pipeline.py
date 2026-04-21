@@ -24,6 +24,9 @@ from .ingestion_nba_api import (
     get_team_defensive_scheme_stats,
     get_today_matchups,
     get_tracking_stats,
+    get_injury_report,
+    get_catch_and_shoot_stats,
+    get_pullup_shot_stats,
 )
 from .probability import add_monte_carlo_probs, add_probabilities, attach_ev
 from .projections import add_projections
@@ -62,6 +65,8 @@ def run_daily_pipeline(
     pbp_possessions = get_pbpstats_possessions(client, config)
     zone_shot_locations = get_shot_locations_by_zone(client, config)
     playtype_stats = get_synergy_play_types(client, config)
+    catch_and_shoot_stats = get_catch_and_shoot_stats(client, config)
+    pullup_shot_stats = get_pullup_shot_stats(client, config)
 
     feature_df = build_feature_table(
         player_stats=player_stats,
@@ -76,6 +81,8 @@ def run_daily_pipeline(
         zone_shot_locations=zone_shot_locations,
         playtype_stats=playtype_stats,
         config=config,
+        catch_and_shoot_stats=catch_and_shoot_stats,
+        pullup_shot_stats=pullup_shot_stats,
     )
 
     # Optional starting lineup filter enhancement.
@@ -93,7 +100,23 @@ def run_daily_pipeline(
                 | feature_df["IS_CONFIRMED_STARTER"].fillna(False)
             )
             feature_df = feature_df[keep_mask].copy()
-
+# Remove injured players (OUT and DOUBTFUL excluded, QUESTIONABLE kept)
+    try:
+        injuries = get_injury_report(client, config)
+        if not injuries.empty and "PLAYER_NAME" in feature_df.columns:
+            out_players = injuries[injuries["STATUS"].isin(["OUT", "DOUBTFUL"])]["PLAYER_NAME"].tolist()
+            if out_players:
+                before_count = len(feature_df)
+                feature_df = feature_df[~feature_df["PLAYER_NAME"].isin(out_players)].copy()
+                removed = before_count - len(feature_df)
+                if removed > 0:
+                    logger.info(
+                        "Removed %d injured players (OUT/DOUBTFUL): %s",
+                        removed,
+                        ", ".join(out_players[:10]) + ("..." if len(out_players) > 10 else ""),
+                    )
+    except Exception as exc:
+        logger.warning("Injury filter failed, proceeding without it: %s", exc)
     projected = add_projections(feature_df, config=config)
     projected = projected[projected["projected_minutes"] >= 23]
     probabilistic = add_probabilities(projected)

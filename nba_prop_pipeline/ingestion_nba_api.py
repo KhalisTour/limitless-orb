@@ -357,7 +357,7 @@ def get_synergy_play_types(client: CachedHTTPClient, config: PipelineConfig) -> 
         logger.error("nba_api not installed")
         return pd.DataFrame()
 
-    play_types = ["Transition", "PRBallHandler", "Isolation", "Spotup"]
+    play_types = ["Transition", "PRBallHandler", "Isolation", "Spotup", "OffScreen"]
     frames = []
 
     for pt in play_types:
@@ -391,8 +391,102 @@ def get_synergy_play_types(client: CachedHTTPClient, config: PipelineConfig) -> 
         "GP", "POSS", "PPP", "FG_PCT", "EFG_PCT", "PTS",
     ] if c in combined.columns]
     return combined[keep].copy()
+def get_catch_and_shoot_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """Pull per-player catch-and-shoot tracking stats (3PA, 3P%, FGA, FG%)."""
+    if not _nba_api_available():
+        return pd.DataFrame()
+
+    from nba_api.stats.endpoints import LeagueDashPtStats
+
+    try:
+        result = LeagueDashPtStats(
+            season=config.season,
+            season_type_all_star=config.season_type,
+            per_mode_simple="PerGame",
+            pt_measure_type="CatchShoot",
+            player_or_team="Player",
+            timeout=config.timeout_seconds,
+        ).get_data_frames()[0]
+        if not result.empty:
+            logger.info("Catch-and-shoot stats: %d players", len(result))
+        return result
+    except Exception as exc:
+        logger.warning("Catch-and-shoot stats pull failed: %s", exc)
+        return pd.DataFrame()
 
 
+def get_pullup_shot_stats(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """Pull per-player pull-up shooting tracking stats (3PA, 3P%, FGA, FG%)."""
+    if not _nba_api_available():
+        return pd.DataFrame()
+
+    from nba_api.stats.endpoints import LeagueDashPtStats
+
+    try:
+        result = LeagueDashPtStats(
+            season=config.season,
+            season_type_all_star=config.season_type,
+            per_mode_simple="PerGame",
+            pt_measure_type="PullUpShot",
+            player_or_team="Player",
+            timeout=config.timeout_seconds,
+        ).get_data_frames()[0]
+        if not result.empty:
+            logger.info("Pull-up shot stats: %d players", len(result))
+        return result
+    except Exception as exc:
+        logger.warning("Pull-up shot stats pull failed: %s", exc)
+        return pd.DataFrame()
+def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """Scrape ESPN injury page. Returns DataFrame with PLAYER_NAME and STATUS columns."""
+    import requests as req
+    from bs4 import BeautifulSoup
+
+    try:
+        url = "https://www.espn.com/nba/injuries"
+        response = req.get(url, timeout=config.timeout_seconds, headers={"User-Agent": config.user_agent})
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        rows = []
+        team_sections = soup.select("div.ResponsiveTable")
+        for section in team_sections:
+            team_header = section.find_previous("h3")
+            if not team_header:
+                team_header = section.find_previous("div", class_="injuries__teamName")
+            team_name = team_header.get_text(strip=True) if team_header else ""
+
+            table_rows = section.select("tbody tr")
+            for tr in table_rows:
+                cells = tr.select("td")
+                if len(cells) >= 2:
+                    player_name = cells[0].get_text(strip=True)
+                    status_cell = cells[1].get_text(strip=True).upper()
+
+                    status = "UNKNOWN"
+                    if "OUT" in status_cell or status_cell == "O":
+                        status = "OUT"
+                    elif "DOUBTFUL" in status_cell or status_cell == "D":
+                        status = "DOUBTFUL"
+                    elif "QUESTIONABLE" in status_cell or status_cell == "Q":
+                        status = "QUESTIONABLE"
+                    elif "DAY-TO-DAY" in status_cell or "DTD" in status_cell:
+                        status = "QUESTIONABLE"
+
+                    if player_name and status in ("OUT", "DOUBTFUL", "QUESTIONABLE"):
+                        rows.append({
+                            "PLAYER_NAME": player_name,
+                            "TEAM_NAME": team_name,
+                            "STATUS": status,
+                        })
+
+        if rows:
+            logger.info("Pulled %d injury entries from ESPN", len(rows))
+            return pd.DataFrame(rows)
+    except Exception as exc:
+        logger.warning("ESPN injury scrape failed: %s", exc)
+
+    return pd.DataFrame(columns=["PLAYER_NAME", "TEAM_NAME", "STATUS"])
 # These two don't go through stats.nba.com so they're imported from the original ingestion module
 from .ingestion import (  # noqa: E402
     get_today_matchups,
