@@ -70,73 +70,77 @@ def fetch_bars_batch(
     period: str = "2y",
     interval: str = "1d",
 ) -> dict[str, pd.DataFrame]:
-    if not tickers:
-        return {}
+    """Fetch OHLCV bars from Yahoo Finance directly. No yfinance dependency."""
+    import urllib.request
+    import json
+    import time
 
-    # Imported locally by requirement: only this function may import yfinance.
-    import yfinance as yf
+    # Map period string to range parameter
+    period_to_range = {
+        "2y": "2y", "1y": "1y", "6mo": "6mo", "3mo": "3mo", "5d": "5d"
+    }
+    range_param = period_to_range.get(period, "2y")
 
-    bars_by_ticker: dict[str, pd.DataFrame] = {}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    }
+
+    result: dict[str, pd.DataFrame] = {}
+    fetched = 0
     skipped = 0
-    try:
-        raw = yf.download(
-            tickers,
-            period=period,
-            interval=interval,
-            group_by="ticker",
-            auto_adjust=True,
-            progress=False,
-            threads=True,
+
+    for ticker in tickers:
+        url = (
+            f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+            f"?interval={interval}&range={range_param}"
         )
-    except Exception as exc:
-        logger.warning("yfinance download failed for batch of %d tickers: %s", len(tickers), exc)
-        return {}
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = json.loads(r.read().decode())
 
-    wanted_cols = ["Open", "High", "Low", "Close", "Volume"]
-
-    def _normalize_frame(frame: pd.DataFrame) -> pd.DataFrame | None:
-        if frame is None or frame.empty:
-            return None
-        out = frame.copy()
-        cols = [c for c in wanted_cols if c in out.columns]
-        if not cols:
-            return None
-        out = out[cols].dropna(subset=["Close"]) if "Close" in cols else out.dropna()
-        if len(out) < MIN_BARS_REQUIRED:
-            return None
-        return out
-
-    if isinstance(raw.columns, pd.MultiIndex):
-        for ticker in tickers:
-            if ticker not in raw.columns.get_level_values(0):
+            chart = data.get("chart", {})
+            result_data = chart.get("result")
+            if not result_data:
                 skipped += 1
                 continue
-            try:
-                frame = raw[ticker]
-                normalized = _normalize_frame(frame)
-                if normalized is None:
-                    skipped += 1
-                    continue
-                bars_by_ticker[ticker] = normalized
-            except Exception as exc:
+
+            res = result_data[0]
+            timestamps = res.get("timestamp", [])
+            quote = res["indicators"]["quote"][0]
+
+            if len(timestamps) < MIN_BARS_REQUIRED:
                 skipped += 1
-                logger.debug("Failed normalizing ticker %s: %s", ticker, exc)
-    else:
-        # Single ticker sometimes returns a flat dataframe.
-        ticker = tickers[0]
-        normalized = _normalize_frame(raw)
-        if normalized is None:
+                continue
+
+            df = pd.DataFrame({
+                "Open":   quote.get("open", []),
+                "High":   quote.get("high", []),
+                "Low":    quote.get("low", []),
+                "Close":  quote.get("close", []),
+                "Volume": quote.get("volume", []),
+            }, index=pd.to_datetime(timestamps, unit="s", utc=True))
+
+            df = df.dropna(subset=["Close"])
+            if len(df) < MIN_BARS_REQUIRED:
+                skipped += 1
+                continue
+
+            result[ticker] = df
+            fetched += 1
+
+        except Exception as exc:
+            logger.debug("Failed to fetch %s: %s", ticker, exc)
             skipped += 1
-        else:
-            bars_by_ticker[ticker] = normalized
+
+        # Small delay to avoid rate limiting
+        time.sleep(0.05)
 
     logger.info(
-        "Fetched bars: %d tickers; skipped: %d tickers (min bars: %d)",
-        len(bars_by_ticker),
-        skipped,
-        MIN_BARS_REQUIRED,
+        "Fetched bars: %s tickers; skipped: %s tickers (min bars: %s)",
+        fetched, skipped, MIN_BARS_REQUIRED
     )
-    return bars_by_ticker
+    return result
 
 
 def _aligned(close: pd.Series, bench_close: pd.Series) -> tuple[pd.Series, pd.Series]:
