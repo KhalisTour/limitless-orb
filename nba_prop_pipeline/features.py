@@ -158,6 +158,7 @@ def build_feature_table(
     positional_defense_stats: pd.DataFrame | None,
     matchups: pd.DataFrame,
     pbp_possessions: pd.DataFrame,
+    game_logs: pd.DataFrame | None = None,
     player_advanced: pd.DataFrame = None,
     zone_shot_locations: pd.DataFrame | None = None,
     playtype_stats: pd.DataFrame | None = None,
@@ -195,6 +196,11 @@ def build_feature_table(
             key_cols = ["PLAYER_ID"]
         if key_cols:
             base = base.merge(external, on=key_cols, how="left", suffixes=("", suffix))
+
+    if game_logs is not None and not game_logs.empty:
+        gl_keep = [c for c in game_logs.columns if c.startswith("recent_") or c == "PLAYER_ID"]
+        if "PLAYER_ID" in gl_keep:
+            base = base.merge(game_logs[gl_keep], on="PLAYER_ID", how="left", suffixes=("", "_gl"))
 
     if player_advanced is not None and not player_advanced.empty:
         adv_keep = [c for c in ["PLAYER_ID", "TEAM_ID", "USG_PCT", "TS_PCT", "EFG_PCT",
@@ -326,11 +332,34 @@ def build_feature_table(
             if "OPPONENT_ABBREVIATION" in keep_scheme:
                 base = base.merge(scheme[keep_scheme], on="OPPONENT_ABBREVIATION", how="left")
 
-    base["projected_minutes"] = np.where(
-        _safe_col(base, "MIN") > 0,
-        _safe_col(base, "MIN") * 1.02,
-        _safe_col(base, "PBP_MINUTES", 28),
+    # Minutes projection: blend season average with recent form.
+    # If game logs exist, use 40% season avg + 60% recent 15-game avg.
+    # This captures hot/cold streaks, injury returns, and role changes.
+    season_min = _safe_col(base, "MIN", 28)
+    recent_min = _safe_col(base, "recent_min_avg", 0)
+    has_recent = recent_min > 0
+
+    blended_min = np.where(
+        has_recent,
+        (0.4 * season_min) + (0.6 * recent_min),
+        season_min,
     )
+
+    # Apply a small playoff/importance bump (2%) only when recent data
+    # shows the player is getting consistent minutes (low std dev)
+    recent_std = _safe_col(base, "recent_min_std", 5)
+    consistency_bonus = np.where(
+        (has_recent) & (recent_std < 4),
+        1.02,
+        1.0,
+    )
+
+    base["projected_minutes"] = blended_min * consistency_bonus
+    base["minutes_source"] = np.where(has_recent, "blended", "season_avg")
+
+    # Store recent form columns for export visibility
+    base["recent_min_avg"] = recent_min
+    base["recent_min_std"] = recent_std
     base["possessions_per_game"] = np.where(
         _safe_col(base, "POSS_PER_GAME_EST") > 0,
         _safe_col(base, "POSS_PER_GAME_EST"),

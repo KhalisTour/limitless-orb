@@ -437,6 +437,147 @@ def get_pullup_shot_stats(client: CachedHTTPClient, config: PipelineConfig) -> p
     except Exception as exc:
         logger.warning("Pull-up shot stats pull failed: %s", exc)
         return pd.DataFrame()
+
+
+def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_n_games: int = 15) -> pd.DataFrame:
+    """
+    Pull recent game logs for all players from the PBP Stats API.
+
+    Returns per-player rolling stats from the last N games:
+    - Recent minutes (rolling average and std dev)
+    - Recent FGA, FG3A, PTS, AST, REB per game
+    - Games played in last 7/14 days (recency signal)
+
+    This data powers:
+    1. Real minutes projection (rolling avg instead of season avg × 1.02)
+    2. Recent form weighting for counting stats
+    3. Empirical variance for negative binomial dispersion
+    """
+    if not _nba_api_available():
+        return pd.DataFrame()
+
+    from nba_api.stats.endpoints import PlayerGameLogs
+
+    try:
+        result = PlayerGameLogs(
+            season_nullable=config.season,
+            season_type_nullable=config.season_type,
+            last_n_games_nullable=last_n_games,
+            timeout=config.timeout_seconds,
+        )
+        df = result.get_data_frames()[0]
+        if df.empty:
+            logger.warning("PlayerGameLogs returned empty")
+            return pd.DataFrame()
+
+        logger.info("Player game logs: %d rows across %d games", len(df), last_n_games)
+
+        agg = df.groupby("PLAYER_ID").agg(
+            recent_games=("PLAYER_ID", "count"),
+            recent_min_avg=("MIN", "mean"),
+            recent_min_std=("MIN", "std"),
+            recent_min_max=("MIN", "max"),
+            recent_min_min=("MIN", "min"),
+            recent_pts_avg=("PTS", "mean"),
+            recent_ast_avg=("AST", "mean"),
+            recent_reb_avg=("REB", "mean"),
+            recent_fga_avg=("FGA", "mean"),
+            recent_fg3a_avg=("FG3A", "mean"),
+            recent_fg3m_avg=("FG3M", "mean"),
+            recent_fta_avg=("FTA", "mean"),
+            recent_ftm_avg=("FTM", "mean"),
+            recent_pts_std=("PTS", "std"),
+            recent_ast_std=("AST", "std"),
+            recent_reb_std=("REB", "std"),
+            recent_fg3m_std=("FG3M", "std"),
+        ).reset_index()
+
+        for col in agg.columns:
+            if col.endswith("_std"):
+                agg[col] = agg[col].fillna(0)
+
+        return agg
+
+    except Exception as exc:
+        logger.warning("Player game logs pull failed: %s", exc)
+        return pd.DataFrame()
+
+
+def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
+    """
+    Pull player possession data directly from PBP Stats API.
+    Bypasses CachedHTTPClient to avoid header contamination.
+    Uses plain requests with minimal headers.
+    """
+    import requests as req
+
+    games_url = "https://api.pbpstats.com/get-games/nba"
+    details_url = "https://api.pbpstats.com/get-game-details/nba"
+
+    headers = {
+        "User-Agent": config.user_agent,
+        "Accept": "application/json",
+    }
+
+    empty_cols = ["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"]
+
+    try:
+        resp = req.get(
+            games_url,
+            params={"Season": config.season, "SeasonType": "Regular Season"},
+            headers=headers,
+            timeout=30,
+        )
+        resp.raise_for_status()
+        games = resp.json().get("games", [])[-15:]
+    except Exception as exc:
+        logger.warning("PBP Stats games list failed: %s", exc)
+        return pd.DataFrame(columns=empty_cols)
+
+    records = []
+    for game in games:
+        game_id = game.get("game_id") or game.get("GameId")
+        if not game_id:
+            continue
+        try:
+            detail_resp = req.get(
+                details_url,
+                params={"GameId": game_id},
+                headers=headers,
+                timeout=30,
+            )
+            detail_resp.raise_for_status()
+            details = detail_resp.json()
+        except Exception as exc:
+            logger.warning("PBP Stats game %s details failed: %s", game_id, exc)
+            continue
+
+        boxscore = details.get("boxscore", {})
+        players = boxscore.get("players", {}) if isinstance(boxscore, dict) else {}
+        for player_id, statline in players.items():
+            records.append(
+                {
+                    "PLAYER_ID": int(player_id),
+                    "PBP_MINUTES": statline.get("minutes", 0),
+                    "PBP_POSS": statline.get("possessions", 0),
+                    "PBP_REB_CHANCES": statline.get("rebound_chances", 0),
+                    "PBP_POT_AST": statline.get("potential_assists", 0),
+                }
+            )
+
+    if not records:
+        logger.warning("PBP Stats returned 0 player records across %d games", len(games))
+        return pd.DataFrame(columns=empty_cols)
+
+    df = pd.DataFrame(records)
+    logger.info("PBP Stats: %d player-game records from %d games", len(df), len(games))
+    return (
+        df.groupby("PLAYER_ID", as_index=False)
+        .mean(numeric_only=True)
+        .rename(columns={"PBP_POSS": "POSS_PER_GAME_EST"})
+    )
+
+
 def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
     """Scrape ESPN injury page. Returns DataFrame with PLAYER_NAME and STATUS columns."""
     import requests as req
@@ -491,5 +632,4 @@ def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.Da
 from .ingestion import (  # noqa: E402
     get_today_matchups,
     get_starting_lineups_scrape,
-    get_pbpstats_possessions,
 )

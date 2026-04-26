@@ -23,7 +23,10 @@ class CachedHTTPClient:
         self.config = config
         self.force_refresh = force_refresh
         self.session = requests.Session()
-        self.session.headers.update(config.request_headers)
+        # Only set User-Agent at session level. Domain-specific headers
+        # are applied per-request in get_json() to avoid sending
+        # NBA.com headers to PBP Stats and other non-NBA endpoints.
+        self.session.headers.update({"User-Agent": config.user_agent})
 
         retry = Retry(
             total=3,

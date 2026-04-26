@@ -12,9 +12,10 @@ from .config import PipelineConfig
 from .exporter import export_json, export_zone_playtype_breakdown
 from .features import build_feature_table
 from .ingestion_nba_api import (
-    get_pbpstats_possessions,
+    get_pbpstats_possessions_direct,
     get_positional_defense_stats,
     get_opponent_stats_for_slate,
+    get_player_game_logs,
     get_player_advanced_stats,
     get_player_stats,
     get_rebounding_tracking_stats,
@@ -62,12 +63,12 @@ def run_daily_pipeline(
     except Exception as exc:  # noqa: BLE001
         logger.warning("Positional defense pull failed, using team-wide defense only: %s", exc)
     team_scheme = get_team_defensive_scheme_stats(client, config)
-    pbp_possessions = get_pbpstats_possessions(client, config)
     zone_shot_locations = get_shot_locations_by_zone(client, config)
     playtype_stats = get_synergy_play_types(client, config)
+    game_logs = get_player_game_logs(client, config)
     catch_and_shoot_stats = get_catch_and_shoot_stats(client, config)
     pullup_shot_stats = get_pullup_shot_stats(client, config)
-
+    pbp_possessions = get_pbpstats_possessions_direct(config)
     feature_df = build_feature_table(
         player_stats=player_stats,
         tracking_stats=tracking,
@@ -77,6 +78,7 @@ def run_daily_pipeline(
         positional_defense_stats=positional_defense,
         matchups=matchups,
         pbp_possessions=pbp_possessions,
+        game_logs=game_logs,
         player_advanced=player_advanced,
         zone_shot_locations=zone_shot_locations,
         playtype_stats=playtype_stats,
