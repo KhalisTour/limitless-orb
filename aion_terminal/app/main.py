@@ -17,6 +17,7 @@ from aion_terminal.api import (
 from aion_terminal.app.config import settings
 from aion_terminal.app.dependencies import runtime_state
 from aion_terminal.services.engine_service import pipeline_loop
+from aion_terminal.api import routes_agents
 from aion_terminal.utils.logging_utils import configure_logging
 
 configure_logging()
@@ -24,6 +25,7 @@ configure_logging()
 app = FastAPI(title=settings.app_name)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+app.include_router(routes_agents.router)
 app.include_router(routes_snapshot.router)
 app.include_router(routes_universe.router)
 app.include_router(routes_rankings.router)
