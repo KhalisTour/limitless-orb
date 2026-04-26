@@ -102,6 +102,14 @@ DEFAULT_EXPORT_COLUMNS: Iterable[str] = [
     "P_poisson_assists_ge_6",
     "P_poisson_rebounds_ge_8",
     "P_poisson_3pm_ge_3",
+    "pts_streak",
+    "pts_streak_ratio",
+    "ast_streak",
+    "ast_streak_ratio",
+    "reb_streak",
+    "reb_streak_ratio",
+    "fg3m_streak",
+    "fg3m_streak_ratio",
 ]
 
 ZONE_PLAYTYPE_BREAKDOWN_COLUMNS: Iterable[str] = [
@@ -151,6 +159,65 @@ def export_zone_playtype_breakdown(df: pd.DataFrame, output_path: Path = None) -
     columns = [col for col in ZONE_PLAYTYPE_BREAKDOWN_COLUMNS if col in df.columns]
     clean_df = _sanitize_for_export(df[columns])
     records = clean_df.to_dict(orient="records")
+    with output_path.open("w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+    return output_path
+
+def export_game_logs_with_streaks(
+    df: pd.DataFrame,
+    output_path: Path = None,
+) -> Path:
+    """
+    Export recent game log aggregates with hot/cold streak flags.
+
+    A player is HOT if their recent median is >= 1.15x their projection.
+    A player is COLD if their recent median is <= 0.85x their projection.
+    Otherwise NEUTRAL.
+    """
+    if output_path is None:
+        output_path = Path("output/game_logs_recent.json")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if df.empty:
+        with output_path.open("w") as f:
+            json.dump([], f)
+        return output_path
+
+    out = df.copy()
+
+    # Streak detection per stat category
+    for stat, proj_col, median_col in [
+        ("pts", "points_proj", "recent_pts_median"),
+        ("ast", "assists_proj", "recent_ast_median"),
+        ("reb", "rebounds_proj", "recent_reb_median"),
+        ("fg3m", "threes_proj", "recent_fg3m_median"),
+    ]:
+        if proj_col in out.columns and median_col in out.columns:
+            proj = pd.to_numeric(out[proj_col], errors="coerce").fillna(0)
+            median = pd.to_numeric(out[median_col], errors="coerce").fillna(0)
+            ratio = (median / proj.where(proj > 0, 1)).fillna(1.0)
+            out[f"{stat}_streak"] = "NEUTRAL"
+            out.loc[ratio >= 1.15, f"{stat}_streak"] = "HOT"
+            out.loc[ratio <= 0.85, f"{stat}_streak"] = "COLD"
+            out[f"{stat}_streak_ratio"] = ratio.round(3)
+
+    keep = [c for c in [
+        "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION",
+        "points_proj", "assists_proj", "rebounds_proj", "threes_proj",
+        "recent_games",
+        "recent_min_avg", "recent_min_std",
+        "recent_pts_avg", "recent_pts_median", "recent_pts_std",
+        "recent_ast_avg", "recent_ast_median", "recent_ast_std",
+        "recent_reb_avg", "recent_reb_median", "recent_reb_std",
+        "recent_fg3m_avg", "recent_fg3m_median", "recent_fg3m_std",
+        "pts_streak", "pts_streak_ratio",
+        "ast_streak", "ast_streak_ratio",
+        "reb_streak", "reb_streak_ratio",
+        "fg3m_streak", "fg3m_streak_ratio",
+    ] if c in out.columns]
+
+    records = out[keep].to_dict(orient="records")
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
     return output_path

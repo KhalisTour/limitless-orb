@@ -439,7 +439,7 @@ def get_pullup_shot_stats(client: CachedHTTPClient, config: PipelineConfig) -> p
         return pd.DataFrame()
 
 
-def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_n_games: int = 15) -> pd.DataFrame:
+def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_n_games: int = 5) -> pd.DataFrame:
     """
     Pull recent game logs for all players from the PBP Stats API.
 
@@ -506,68 +506,91 @@ def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_
 def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
     """
     Pull player possession data directly from PBP Stats API.
-    Bypasses CachedHTTPClient to avoid header contamination.
-    Uses plain requests with minimal headers.
+    Uses get-game-stats endpoint with Type=Player.
     """
     import requests as req
 
-    games_url = "https://api.pbpstats.com/get-games/nba"
-    details_url = "https://api.pbpstats.com/get-game-details/nba"
+    GAMES_URL = "https://api.pbpstats.com/get-games/nba"
+    GAME_STATS_URL = "https://api.pbpstats.com/get-game-stats"
 
     headers = {
         "User-Agent": config.user_agent,
         "Accept": "application/json",
     }
 
-    empty_cols = ["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"]
-
     try:
         resp = req.get(
-            games_url,
+            GAMES_URL,
             params={"Season": config.season, "SeasonType": "Regular Season"},
             headers=headers,
             timeout=30,
         )
         resp.raise_for_status()
-        games = resp.json().get("games", [])[-15:]
+        data = resp.json()
+        games = (data.get("results") or data.get("games") or [])[-15:]
     except Exception as exc:
         logger.warning("PBP Stats games list failed: %s", exc)
-        return pd.DataFrame(columns=empty_cols)
+        return pd.DataFrame(columns=["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"])
 
     records = []
     for game in games:
-        game_id = game.get("game_id") or game.get("GameId")
+        game_id = game.get("GameId") or game.get("game_id")
         if not game_id:
             continue
         try:
             detail_resp = req.get(
-                details_url,
-                params={"GameId": game_id},
+                GAME_STATS_URL,
+                params={"Type": "Player", "GameId": game_id},
                 headers=headers,
                 timeout=30,
             )
             detail_resp.raise_for_status()
             details = detail_resp.json()
         except Exception as exc:
-            logger.warning("PBP Stats game %s details failed: %s", game_id, exc)
+            logger.warning("PBP Stats game %s failed: %s", game_id, exc)
             continue
 
-        boxscore = details.get("boxscore", {})
-        players = boxscore.get("players", {}) if isinstance(boxscore, dict) else {}
-        for player_id, statline in players.items():
-            records.append(
-                {
-                    "PLAYER_ID": int(player_id),
-                    "PBP_MINUTES": statline.get("minutes", 0),
-                    "PBP_POSS": statline.get("possessions", 0),
-                    "PBP_REB_CHANCES": statline.get("rebound_chances", 0),
-                    "PBP_POT_AST": statline.get("potential_assists", 0),
-                }
-            )
+        # Players are under stats -> Home/Away -> period keys ("1","2",..."FullGame")
+        # Use "FullGame" if available, otherwise combine from period "1"
+        for side in ["Home", "Away"]:
+            side_data = details.get("stats", {}).get(side, {})
+            # Prefer FullGame, fall back to period "1"
+            players = side_data.get("FullGame") or side_data.get("1") or []
+            for p in players:
+                if p.get("Name") == "Team":
+                    continue
+                entity_id = p.get("EntityId")
+                if not entity_id or entity_id == "0":
+                    continue
+
+                # Parse minutes from "MM:SS" format
+                min_str = p.get("Minutes", "0:00")
+                try:
+                    parts = str(min_str).split(":")
+                    minutes = int(parts[0]) + int(parts[1]) / 60 if len(parts) == 2 else float(min_str)
+                except (ValueError, IndexError):
+                    minutes = 0
+
+                off_poss = p.get("OffPoss", 0) or 0
+                def_poss = p.get("DefPoss", 0) or 0
+                total_poss = off_poss + def_poss
+
+                records.append({
+                    "PLAYER_ID": int(entity_id),
+                    "PBP_MINUTES": minutes,
+                    "PBP_POSS": total_poss,
+                    "PBP_OFF_POSS": off_poss,
+                    "PBP_REB_CHANCES": (p.get("Rebounds", 0) or 0) + (p.get("DefRebounds", 0) or 0) * 0.3,
+                    "PBP_POT_AST": (p.get("Assists", 0) or 0) * 1.7,
+                    "PBP_USAGE": p.get("Usage", 0) or 0,
+                    "PBP_SHOT_QUALITY": p.get("ShotQualityAvg", 0) or 0,
+                })
+        import time
+        time.sleep(0.2)  # rate limit between games
 
     if not records:
         logger.warning("PBP Stats returned 0 player records across %d games", len(games))
-        return pd.DataFrame(columns=empty_cols)
+        return pd.DataFrame(columns=["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"])
 
     df = pd.DataFrame(records)
     logger.info("PBP Stats: %d player-game records from %d games", len(df), len(games))
@@ -577,57 +600,218 @@ def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
         .rename(columns={"PBP_POSS": "POSS_PER_GAME_EST"})
     )
 
+def get_player_game_logs_pbpstats(config: PipelineConfig, last_n_games: int = 5) -> pd.DataFrame:
+    """
+    Pull per-player game logs from PBP Stats as a fallback when nba_api times out.
+    Uses the get-game-stats endpoint we already know works.
 
-def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
-    """Scrape ESPN injury page. Returns DataFrame with PLAYER_NAME and STATUS columns."""
+    Returns per-player rolling aggregates from the last N games:
+    - recent_min_avg, recent_min_std
+    - recent_pts_avg, recent_ast_avg, recent_reb_avg, recent_fg3m_avg
+    - recent_pts_median, recent_ast_median, recent_reb_median, recent_fg3m_median
+    - Plus per-game raw logs for streak detection
+    """
     import requests as req
-    from bs4 import BeautifulSoup
+    import time as _time
+
+    GAMES_URL = "https://api.pbpstats.com/get-games/nba"
+    GAME_STATS_URL = "https://api.pbpstats.com/get-game-stats"
+
+    headers = {
+        "User-Agent": config.user_agent,
+        "Accept": "application/json",
+    }
 
     try:
-        url = "https://www.espn.com/nba/injuries"
-        response = req.get(url, timeout=config.timeout_seconds, headers={"User-Agent": config.user_agent})
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
+        games = []
+        for season_type in ["Playoffs", "Regular Season"]:
+            resp = req.get(
+                GAMES_URL,
+                params={"Season": config.season, "SeasonType": season_type},
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            found = data.get("results") or data.get("games") or []
+            if found:
+                games = found[-last_n_games:]
+                logger.info("PBP Stats game logs using %s (%d games)", season_type, len(games))
+                break
+    except Exception as exc:
+        logger.warning("PBP Stats game logs - games list failed: %s", exc)
+        return pd.DataFrame()
+
+    player_games = []
+
+    for game in games:
+        game_id = game.get("GameId") or game.get("game_id")
+        game_date = game.get("Date", "")
+        if not game_id:
+            continue
+        try:
+            detail_resp = req.get(
+                GAME_STATS_URL,
+                params={"Type": "Player", "GameId": game_id},
+                headers=headers,
+                timeout=30,
+            )
+            detail_resp.raise_for_status()
+            details = detail_resp.json()
+        except Exception as exc:
+            logger.warning("PBP Stats game log %s failed: %s", game_id, exc)
+            continue
+
+        for side in ["Home", "Away"]:
+            side_data = details.get("stats", {}).get(side, {})
+            players = side_data.get("FullGame") or side_data.get("1") or []
+            team_abbrev = details.get(f"{side.lower()}_team_abbreviation", "")
+
+            for p in players:
+                if p.get("Name") == "Team":
+                    continue
+                entity_id = p.get("EntityId")
+                if not entity_id or entity_id == "0":
+                    continue
+
+                # Parse minutes
+                min_str = p.get("Minutes", "0:00")
+                try:
+                    parts = str(min_str).split(":")
+                    minutes = int(parts[0]) + int(parts[1]) / 60 if len(parts) == 2 else float(min_str)
+                except (ValueError, IndexError):
+                    minutes = 0
+
+                # Derive points from available fields
+                # PBP Stats has FG2M, FG3M (or Arc3FGM), FTM
+                fg2m = p.get("FG2M", 0) or 0
+                fg3m = p.get("FG3M", 0) or p.get("Arc3FGM", 0) or 0
+                ftm = p.get("FTM", 0) or p.get("FreeThrowsMade", 0) or 0
+                pts = (fg2m * 2) + (fg3m * 3) + ftm
+
+                ast = p.get("Assists", 0) or 0
+                reb = p.get("Rebounds", 0) or 0
+                off_reb = p.get("OffRebounds", 0) or 0
+                def_reb = p.get("DefRebounds", 0) or 0
+                if reb == 0 and (off_reb or def_reb):
+                    reb = off_reb + def_reb
+
+                fga = (p.get("FG2A", 0) or 0) + (p.get("FG3A", 0) or p.get("Arc3FGA", 0) or 0)
+                fg3a = p.get("FG3A", 0) or p.get("Arc3FGA", 0) or 0
+
+                player_games.append({
+                    "PLAYER_ID": int(entity_id),
+                    "PLAYER_NAME": p.get("Name", ""),
+                    "GAME_DATE": game_date,
+                    "GAME_ID": game_id,
+                    "TEAM": team_abbrev,
+                    "MIN": minutes,
+                    "PTS": pts,
+                    "AST": ast,
+                    "REB": reb,
+                    "FGA": fga,
+                    "FG3A": fg3a,
+                    "FG3M": fg3m,
+                    "FTM": ftm,
+                })
+
+        _time.sleep(0.2)
+
+    if not player_games:
+        logger.warning("PBP Stats game logs: 0 records")
+        return pd.DataFrame()
+
+    raw = pd.DataFrame(player_games)
+    logger.info("PBP Stats game logs: %d player-game records from %d games", len(raw), len(games))
+
+    # Compute per-player aggregates
+    agg = raw.groupby("PLAYER_ID").agg(
+        recent_games=("PLAYER_ID", "count"),
+        recent_min_avg=("MIN", "mean"),
+        recent_min_std=("MIN", "std"),
+        recent_pts_avg=("PTS", "mean"),
+        recent_pts_median=("PTS", "median"),
+        recent_ast_avg=("AST", "mean"),
+        recent_ast_median=("AST", "median"),
+        recent_reb_avg=("REB", "mean"),
+        recent_reb_median=("REB", "median"),
+        recent_fg3m_avg=("FG3M", "mean"),
+        recent_fg3m_median=("FG3M", "median"),
+        recent_pts_std=("PTS", "std"),
+        recent_ast_std=("AST", "std"),
+        recent_reb_std=("REB", "std"),
+        recent_fg3m_std=("FG3M", "std"),
+        recent_fga_avg=("FGA", "mean"),
+        recent_fg3a_avg=("FG3A", "mean"),
+        recent_fta_avg=("FTM", "mean"),
+    ).reset_index()
+
+    for col in agg.columns:
+        if col.endswith("_std"):
+            agg[col] = agg[col].fillna(0)
+
+    return agg
+
+def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
+    """Pull NBA injury report from RotoWire's internal JSON endpoint."""
+    import requests as req
+
+    try:
+        resp = req.get(
+            "https://www.rotowire.com/basketball/tables/injury-report.php",
+            params={"team": "ALL", "pos": "ALL"},
+            headers={
+                "User-Agent": config.user_agent,
+                "Referer": "https://www.rotowire.com/basketball/injury-report.php",
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json",
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
 
         rows = []
-        team_sections = soup.select("div.ResponsiveTable")
-        for section in team_sections:
-            team_header = section.find_previous("h3")
-            if not team_header:
-                team_header = section.find_previous("div", class_="injuries__teamName")
-            team_name = team_header.get_text(strip=True) if team_header else ""
+        for entry in data:
+            player_name = entry.get("player", "").strip()
+            status_raw = entry.get("status", "").strip().upper()
+            team = entry.get("team", "").strip()
+            injury = entry.get("injury", "").strip()
 
-            table_rows = section.select("tbody tr")
-            for tr in table_rows:
-                cells = tr.select("td")
-                if len(cells) >= 2:
-                    player_name = cells[0].get_text(strip=True)
-                    status_cell = cells[1].get_text(strip=True).upper()
+            status = "UNKNOWN"
+            if "OUT FOR SEASON" in status_raw:
+                status = "OUT"
+            elif "OUT" in status_raw:
+                status = "OUT"
+            elif "DOUBTFUL" in status_raw or "QUESTIONABLE" in status_raw:
+                status = "DOUBTFUL"
+            elif "GTD" in status_raw or "GAME TIME" in status_raw:
+                status = "QUESTIONABLE"
+            elif "PROBABLE" in status_raw:
+                status = "PROBABLE"
+            elif "DAY-TO-DAY" in status_raw or "DTD" in status_raw:
+                status = "QUESTIONABLE"
 
-                    status = "UNKNOWN"
-                    if "OUT" in status_cell or status_cell == "O":
-                        status = "OUT"
-                    elif "DOUBTFUL" in status_cell or status_cell == "D":
-                        status = "DOUBTFUL"
-                    elif "QUESTIONABLE" in status_cell or status_cell == "Q":
-                        status = "QUESTIONABLE"
-                    elif "DAY-TO-DAY" in status_cell or "DTD" in status_cell:
-                        status = "QUESTIONABLE"
-
-                    if player_name and status in ("OUT", "DOUBTFUL", "QUESTIONABLE"):
-                        rows.append({
-                            "PLAYER_NAME": player_name,
-                            "TEAM_NAME": team_name,
-                            "STATUS": status,
-                        })
+            if player_name and status in ("OUT", "DOUBTFUL", "QUESTIONABLE"):
+                rows.append({
+                    "PLAYER_NAME": player_name,
+                    "TEAM_ABBREVIATION": team,
+                    "STATUS": status,
+                    "INJURY": injury,
+                })
 
         if rows:
-            logger.info("Pulled %d injury entries from ESPN", len(rows))
+            logger.info("RotoWire injury report: %d entries (%d OUT, %d DOUBTFUL, %d QUESTIONABLE)",
+                len(rows),
+                sum(1 for r in rows if r["STATUS"] == "OUT"),
+                sum(1 for r in rows if r["STATUS"] == "DOUBTFUL"),
+                sum(1 for r in rows if r["STATUS"] == "QUESTIONABLE"),
+            )
             return pd.DataFrame(rows)
     except Exception as exc:
-        logger.warning("ESPN injury scrape failed: %s", exc)
+        logger.warning("RotoWire injury report failed: %s", exc)
 
-    return pd.DataFrame(columns=["PLAYER_NAME", "TEAM_NAME", "STATUS"])
+    return pd.DataFrame(columns=["PLAYER_NAME", "TEAM_ABBREVIATION", "STATUS", "INJURY"])
 # These two don't go through stats.nba.com so they're imported from the original ingestion module
 from .ingestion import (  # noqa: E402
     get_today_matchups,

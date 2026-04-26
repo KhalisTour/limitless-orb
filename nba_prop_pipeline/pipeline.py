@@ -9,13 +9,12 @@ import pandas as pd
 
 from .clients import CachedHTTPClient
 from .config import PipelineConfig
-from .exporter import export_json, export_zone_playtype_breakdown
+from .exporter import export_json, export_zone_playtype_breakdown, export_game_logs_with_streaks
 from .features import build_feature_table
 from .ingestion_nba_api import (
     get_pbpstats_possessions_direct,
     get_positional_defense_stats,
     get_opponent_stats_for_slate,
-    get_player_game_logs,
     get_player_advanced_stats,
     get_player_stats,
     get_rebounding_tracking_stats,
@@ -28,6 +27,7 @@ from .ingestion_nba_api import (
     get_injury_report,
     get_catch_and_shoot_stats,
     get_pullup_shot_stats,
+    get_player_game_logs_pbpstats,
 )
 from .probability import add_monte_carlo_probs, add_probabilities, attach_ev
 from .projections import add_projections
@@ -65,7 +65,7 @@ def run_daily_pipeline(
     team_scheme = get_team_defensive_scheme_stats(client, config)
     zone_shot_locations = get_shot_locations_by_zone(client, config)
     playtype_stats = get_synergy_play_types(client, config)
-    game_logs = get_player_game_logs(client, config)
+    game_logs = get_player_game_logs_pbpstats(config, last_n_games=5)
     catch_and_shoot_stats = get_catch_and_shoot_stats(client, config)
     pullup_shot_stats = get_pullup_shot_stats(client, config)
     pbp_possessions = get_pbpstats_possessions_direct(config)
@@ -134,6 +134,8 @@ def run_daily_pipeline(
 
     output_path = export_json(probabilistic, config.output_json)
     zone_breakdown_path = export_zone_playtype_breakdown(probabilistic)
+    streak_path = export_game_logs_with_streaks(probabilistic)
+    logger.info("Wrote streak analysis to %s", streak_path)
     if write_to_db:
         try:
             from .storage import insert_projections
