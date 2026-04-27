@@ -519,15 +519,16 @@ def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
     }
 
     try:
-        resp = req.get(
-            GAMES_URL,
-            params={"Season": config.season, "SeasonType": "Regular Season"},
-            headers=headers,
-            timeout=30,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        games = (data.get("results") or data.get("games") or [])[-15:]
+         for season_type in ["Playoffs", "Regular Season"]:
+            resp = req.get(
+                GAMES_URL,
+                params={"Season": config.season, "SeasonType": season_type},
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            games = (data.get("results") or data.get("games") or [])[-15:]
     except Exception as exc:
         logger.warning("PBP Stats games list failed: %s", exc)
         return pd.DataFrame(columns=["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"])
@@ -600,7 +601,7 @@ def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
         .rename(columns={"PBP_POSS": "POSS_PER_GAME_EST"})
     )
 
-def get_player_game_logs_pbpstats(config: PipelineConfig, last_n_games: int = 5) -> pd.DataFrame:
+def get_player_game_logs_pbpstats(config: PipelineConfig, last_n_games: int = 10) -> pd.DataFrame:
     """
     Pull per-player game logs from PBP Stats as a fallback when nba_api times out.
     Uses the get-game-stats endpoint we already know works.
