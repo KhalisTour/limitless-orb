@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-04-29T13:45:02.173111+00:00",
+  "regime": "",
+  "dominant_signal": "",
+  "regime_30d_call": "",
+  "sector_leaders": [],
+  "sector_laggards": [],
+  "narrative_tags": [],
+  "risk_level": "",
+  "full_text": "I can\u2019t produce the decision-grade brief to your spec yet because I do not have enough verified, current data to safely write it without fabricating. Your instruction set requires at least 8 searches, 6 dated Tier 1\u20132 data points, and current 7-day sector performance before any narrative; I\u2019ve started that work, but the coverage is still incomplete.\n\nWhat I verified so far, all within the last 30 days:\n- CPI for March 2026 was released on April 10, 2026. ([bls.gov](https://www.bls.gov/news.release/archives/cpi_04102026.htm?utm_source=openai))\n- ISM Manufacturing for March 2026 was 52.7, implying expansion. ([morningstar.com](https://www.morningstar.com/news/pr-newswire/20260401la23016/manufacturing-pmi-at-527-march-2026-ism-manufacturing-pmi-report?utm_source=openai))\n- ISM Services March 2026 was 53.9. ([ismworld.org](https://www.ismworld.org/supply-management-news-and-reports/reports/ism-report-on-business/services/march/?utm_source=openai))\n- Cleveland Fed inflation nowcasting shows April 2026 CPI/PCE nowcasts still elevated. ([clevelandfed.org](https://www.clevelandfed.org/indicators-and-data/inflation-nowcasting?utm_source=openai))\n- Trepp\u2019s CMBS delinquency rate was 7.14% in February 2026, with office still elevated. ([trepp.com](https://www.trepp.com/trepptalk/cmbs-delinquency-rate-declines-in-february-2026-led-by-large-office-retail-loan-extensions?utm_source=openai))\n- 10-year Treasury yield was 4.31 on April 10, 2026; 2-year was 3.79 on April 22, 2026; the 10s/2s spread was 51 bps on April 23, 2026. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/DGS10/?utm_source=openai))\n\nWhat is still missing or incomplete:\n- Fed plumbing specifics for H.4.1/TGA/RRP/reserves with exact current levels.\n- Exact 3m10y spread, term premium, and auction stats from a primary or top-tier source.\n- Current April 2026 NY Fed Nowcast / Atlanta Fed GDPNow with dated values.\n- March 2026 PCE and core PCE, plus PPI details, with exact levels.\n- Current SLOOS results from an authoritative source.\n- Reliable 7-day performance for your entire trading universe and the 11 sector ETFs.\n- Current Reuters/WSJ coverage for market transmission and cross-asset confirmation.\n\nIf you want, I can continue the search pass and then deliver the full 900\u20131,300 word brief in the exact format you specified, including the trading implications and JSON block.",
+  "model": "gpt-5.4-mini",
+  "tokens_used": 36461,
+  "error": "json_parse_failed"
+}

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from aion_terminal.data_sources.marketdata import ExpiryCandidate, select_relevant_expiry_buckets
+from urllib.error import HTTPError
+
+from aion_terminal.data_sources import marketdata
+from aion_terminal.data_sources.marketdata import ExpiryCandidate, MarketDataClient, select_relevant_expiry_buckets
+from aion_terminal.services import ingestion_service
 
 
 def test_select_relevant_expiry_buckets_includes_weekly_ranges_and_monthly_anchor():
@@ -22,3 +26,40 @@ def test_select_relevant_expiry_buckets_includes_weekly_ranges_and_monthly_ancho
     assert "2026-04-14" in expiries  # 3-7 DTE bucket
     assert "2026-04-21" in expiries  # 8-14 DTE bucket
     assert "2026-04-17" in expiries  # nearest monthly anchor
+
+
+def test_marketdata_client_retries_on_429_and_backoff(monkeypatch):
+    sleep_calls = []
+
+    def fake_sleep(seconds):
+        sleep_calls.append(seconds)
+
+    def fake_urlopen(request, timeout=None):
+        raise HTTPError(request.full_url, 429, "Too Many Requests", hdrs=None, fp=None)
+
+    monkeypatch.setattr(marketdata, "urlopen", fake_urlopen)
+    monkeypatch.setattr(marketdata.time, "sleep", fake_sleep)
+
+    client = MarketDataClient(token="dummy")
+    result = client._request_json("/test")
+
+    assert result.ok is False
+    assert result.error == "rate_limited"
+    assert sleep_calls == [5, 15, 45]
+
+
+def test_backfill_option_history_404_is_non_fatal(monkeypatch):
+    class DummyConn:
+        def close(self):
+            return None
+
+    def fake_fetch_option_history(self, contract_symbol, start_date, end_date):
+        return marketdata.FetchResult(ok=False, status_code=404, payload=None, error="http_404")
+
+    monkeypatch.setattr(ingestion_service, "_open_conn", lambda: DummyConn())
+    monkeypatch.setattr(marketdata.MarketDataClient, "fetch_option_history", fake_fetch_option_history)
+
+    result = ingestion_service.backfill_option_history("AAPL", "2026-01-01", "2026-02-01")
+
+    assert result.ok is True
+    assert result.option_history_rows == 0

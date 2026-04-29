@@ -52,6 +52,30 @@ ORDER BY timestamp DESC
 LIMIT 2
 """
 
+SELECT_LATEST_RAW_CHAIN_SNAPSHOT_TS = """
+SELECT MAX(snapshot_ts) AS latest_snapshot_ts
+FROM raw_chain_snapshots
+WHERE symbol = ?
+"""
+
+SELECT_LATEST_RAW_CHAIN_SNAPSHOT_ROWS = """
+SELECT snapshot_ts, symbol, expiry, option_symbol, side, strike, bid, ask, last, mark,
+       iv, delta, gamma, theta, vega, rho, open_interest, volume, dte,
+       underlying_price, source, created_at, updated_at
+FROM raw_chain_snapshots
+WHERE symbol = ?
+  AND snapshot_ts = (
+      SELECT MAX(snapshot_ts)
+      FROM raw_chain_snapshots
+      WHERE symbol = ?
+  )
+ORDER BY expiry, option_symbol
+"""
+
+SELECT_UNDERLYING_BARS_COUNT = """
+SELECT COUNT(1) AS count FROM underlying_bars WHERE symbol = ?
+"""
+
 # Research-grade SQL.
 UPSERT_UNDERLYING_BAR = """
 INSERT INTO underlying_bars (
@@ -208,6 +232,21 @@ def query_previous_levels(conn: sqlite3.Connection, symbol: str) -> dict[str, An
     if len(rows) < 2:
         return None
     return dict(rows[1])
+
+
+def query_latest_raw_chain_snapshot_ts(conn: sqlite3.Connection, symbol: str) -> str | None:
+    row = conn.execute(SELECT_LATEST_RAW_CHAIN_SNAPSHOT_TS, (symbol,)).fetchone()
+    return row["latest_snapshot_ts"] if row else None
+
+
+def query_latest_raw_chain_snapshot_rows(conn: sqlite3.Connection, symbol: str) -> list[RawChainSnapshotRecord]:
+    rows = conn.execute(SELECT_LATEST_RAW_CHAIN_SNAPSHOT_ROWS, (symbol, symbol)).fetchall()
+    return [RawChainSnapshotRecord(**dict(row)) for row in rows]
+
+
+def query_underlying_bars_count(conn: sqlite3.Connection, symbol: str) -> int:
+    row = conn.execute(SELECT_UNDERLYING_BARS_COUNT, (symbol,)).fetchone()
+    return int(row["count"]) if row else 0
 
 
 def query_expiries(conn: sqlite3.Connection, symbol: str, dte_max: int = 60) -> list[str]:

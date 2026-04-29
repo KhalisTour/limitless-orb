@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.marketdata.app/v1"
 DEFAULT_TIMEOUT_SECONDS = 20
-DEFAULT_RETRIES = 1
+DEFAULT_RETRIES = 4
 
 
 @dataclass(slots=True)
@@ -72,10 +72,13 @@ class MarketDataClient:
                 if exc.code in (401, 403):
                     return FetchResult(ok=False, status_code=exc.code, payload=None, error="unauthorized")
                 if exc.code == 429:
-                    wait = 60 * attempt
-                    logger.warning("rate limited (429) on attempt %s/%s — backing off %ss", attempt, self._retries, wait)
-                    time.sleep(wait)
-                    continue
+                    backoff_schedule = [5, 15, 45]
+                    if attempt <= len(backoff_schedule):
+                        wait = backoff_schedule[attempt - 1]
+                        logger.warning("rate limited (429) on attempt %s/%s — backing off %ss", attempt, self._retries, wait)
+                        time.sleep(wait)
+                        continue
+                    return FetchResult(ok=False, status_code=exc.code, payload=None, error="rate_limited")
                 if exc.code >= 500:
                     last_error = f"server_error_{exc.code}"
                     time.sleep(0.25 * attempt)
