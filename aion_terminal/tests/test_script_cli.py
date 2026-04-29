@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from aion_terminal.scripts import bootstrap_history, run_backfill, run_daily_snapshot
+from aion_terminal.scripts import bootstrap_history, run_backfill, run_backtest, run_daily_snapshot
 
 
 def test_bootstrap_history_parse_args(monkeypatch):
@@ -37,3 +37,11 @@ def test_run_daily_snapshot_prioritize(monkeypatch):
     monkeypatch.setattr(run_daily_snapshot, "rank_universe", lambda symbols=None: [Rank("SPY"), Rank("AAPL")])
     out = run_daily_snapshot._prioritize_symbols(["AAPL", "SPY", "QQQ"], max_symbols=2)
     assert out == ["SPY", "AAPL"]
+
+
+def test_run_backtest_parse_args(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["run_backtest.py", "--symbols", "META,GOOG", "--horizon-days", "5", "--method", "synthetic_greeks"])
+    args = run_backtest.parse_args()
+    assert args.symbols == "META,GOOG"
+    assert args.horizon_days == 5
+    assert args.method == "synthetic_greeks"
