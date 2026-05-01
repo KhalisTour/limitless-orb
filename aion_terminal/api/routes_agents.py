@@ -8,10 +8,11 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, File, Form, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from aion_terminal.agents.brief_agent import generate_morning_brief, post_brief_tags, save_brief_to_file
 from aion_terminal.agents.chart_agent import analyze_chart_from_bytes
+from aion_terminal.agents.trade_plan_agent import generate_trade_plan
 from aion_terminal.app.config import settings
 from aion_terminal.services.ranking_service import rank_symbol
 from aion_terminal.storage.db import bootstrap_schema, get_connection
@@ -20,6 +21,7 @@ router = APIRouter(tags=["agents"])
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 BRIEF_DIR = Path("aion_terminal/data/briefs")
 CHART_HISTORY: deque[dict[str, Any]] = deque(maxlen=50)
+TRADE_PLAN_HISTORY: deque[dict[str, Any]] = deque(maxlen=50)
 
 
 class BriefRequest(BaseModel):
@@ -116,4 +118,60 @@ def get_chart_history(symbol: str | None = None, limit: int = 10):
     if symbol:
         sym = symbol.upper()
         rows = [r for r in rows if str(r.get("symbol", "")).upper() == sym]
+    return rows[:limit]
+
+
+class TradePlanRequest(BaseModel):
+    symbol: str
+    user_requested_bias: str | None = None
+    user_requested_style: str | None = None
+    user_thesis_text: str | None = None
+    account_buying_power: float | None = 5000
+    portfolio_value: float | None = None
+    cash_account: bool = True
+    rankings_payload: dict[str, Any] | None = None
+    contract_recommendations: dict[str, Any] | None = None
+    macro_context: dict[str, Any] | None = None
+    chart_context: dict[str, Any] | None = None
+    current_positions: list[dict[str, Any]] = Field(default_factory=list)
+    session_prior_trades: list[dict[str, Any]] = Field(default_factory=list)
+    user_historical_outcomes: dict[str, Any] = Field(default_factory=dict)
+    weekly_pattern_summary: str | None = None
+
+
+@router.post("/agents/trade-plan")
+async def create_trade_plan(payload: TradePlanRequest):
+    warnings: list[str] = []
+    rankings_payload = payload.rankings_payload
+    if rankings_payload is None:
+        try:
+            ranking = await asyncio.to_thread(rank_symbol, payload.symbol.upper())
+            rankings_payload = {"symbol": ranking.symbol, "spot": ranking.spot, "dealer_structure": {"call_wall": ranking.call_wall, "put_wall": ranking.put_wall, "king_node": ranking.king_node}}
+        except Exception as exc:
+            warnings.append(f"rankings_fetch_failed: {exc}")
+    contract_recommendations = payload.contract_recommendations
+    if contract_recommendations is None:
+        contract_recommendations = (rankings_payload or {}).get("contract_recommendations")
+    macro_context = payload.macro_context
+    if macro_context is None:
+        try:
+            files = sorted(BRIEF_DIR.glob("*_morning_brief.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+            if files:
+                macro_context = json.loads(files[0].read_text(encoding="utf-8"))
+        except Exception as exc:
+            warnings.append(f"macro_context_fetch_failed: {exc}")
+    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, payload.user_historical_outcomes, payload.weekly_pattern_summary)
+    out = asdict(result)
+    if warnings:
+        out.setdefault("json_plan", {}).setdefault("required_next_data", []).extend(warnings)
+    TRADE_PLAN_HISTORY.appendleft(out)
+    return out
+
+
+@router.get("/agents/trade-plan/history")
+def get_trade_plan_history(symbol: str | None = None, limit: int = 10):
+    limit = max(1, min(limit, 50))
+    rows = list(TRADE_PLAN_HISTORY)
+    if symbol:
+        rows = [r for r in rows if str(r.get("symbol", "")).upper() == symbol.upper()]
     return rows[:limit]
