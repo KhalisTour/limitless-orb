@@ -31,7 +31,9 @@ class RankedItem:
     confidence_bucket: str
     key_levels: dict[str, Any]
     technical_summary: dict[str, Any]
-    top_contract: dict[str, Any] | None
+    top_contract: dict[str, Any]
+    actionability: str
+    has_trade_plan: bool
     warnings: list[str]
 
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
@@ -286,7 +288,7 @@ def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedIte
     }
     
     # Format top contract if available
-    top_contract = None
+    top_contract: dict[str, Any] = {}
     if ranking.best_contract:
         tc = ranking.best_contract
         top_contract = {
@@ -299,12 +301,27 @@ def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedIte
             "theta": tc.get("theta"),
             "oi": tc.get("open_interest"),
             "spread_pct": tc.get("spread_pct"),
+            "contract_quality_score": tc.get("contract_quality_score"),
+            "volatility_alignment_score": tc.get("volatility_alignment_score"),
         }
     
     warnings = ranking.contract_warnings + ranking.errors
+    if not top_contract:
+        warnings.append("missing_top_contract")
     if degraded:
         warnings.append("degraded_ranking: low confidence; check validation")
-    
+
+    has_valid_setup = setup_class != "none" and bool(signals)
+    has_valid_contract = bool(top_contract)
+    if not has_valid_setup:
+        actionability = "low"
+    elif has_valid_contract:
+        actionability = "high"
+    else:
+        actionability = "medium"
+
+    has_trade_plan = bool(ranking.symbol and ranking.symbol.strip())
+
     return RankedItem(
         symbol=ranking.symbol,
         ranking_score=ranking_score,
@@ -315,6 +332,8 @@ def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedIte
         key_levels=key_levels,
         technical_summary=technical_summary,
         top_contract=top_contract,
+        actionability=actionability,
+        has_trade_plan=has_trade_plan,
         warnings=warnings,
     )
 
@@ -377,9 +396,14 @@ def get_rankings_unified(
         items = degraded_items
         warnings.append("Degraded rankings: insufficient strict-confidence candidates; showing best available")
     
-    # Sort: ranking_score desc, rvol desc (as tiebreaker)
+    # Sort: ranking_score desc, contract_quality_score desc, volatility_alignment_score desc, then rvol.
     items.sort(
-        key=lambda item: (-item.ranking_score, -item.technical_summary.get("rvol", 0.0))
+        key=lambda item: (
+            -item.ranking_score,
+            -as_float(item.top_contract.get("contract_quality_score", -1.0)),
+            -as_float(item.top_contract.get("volatility_alignment_score", -1.0)),
+            -as_float(item.technical_summary.get("rvol", 0.0)),
+        )
     )
     
     return items[: max(1, limit)], warnings

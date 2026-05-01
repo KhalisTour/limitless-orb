@@ -60,8 +60,11 @@ def get_system_status(conn: sqlite3.Connection) -> dict[str, Any]:
             "SELECT COUNT(*) FROM setup_candidates"
         ).fetchone()[0]
         
+        stale_minutes = _stale_minutes(last_snapshot_ts)
         return {
             "last_snapshot_ts": last_snapshot_ts,
+            "is_stale": stale_minutes is None or stale_minutes > 60,
+            "stale_minutes": stale_minutes,
             "raw_chain_snapshots": raw_chain_snapshots,
             "feature_snapshots": feature_snapshots,
             "setup_candidates": setup_candidates,
@@ -71,6 +74,8 @@ def get_system_status(conn: sqlite3.Connection) -> dict[str, Any]:
         logger.warning("Failed to gather system status: %s", exc)
         return {
             "last_snapshot_ts": None,
+            "is_stale": True,
+            "stale_minutes": None,
             "raw_chain_snapshots": 0,
             "feature_snapshots": 0,
             "setup_candidates": 0,
@@ -115,7 +120,7 @@ def get_dashboard() -> dict[str, Any]:
             "sector_leaders": brief_data.get("sector_leaders", []),
             "sector_laggards": brief_data.get("sector_laggards", []),
             "data_quality": brief_data.get("error") or "high",
-            "summary": _truncate_text(brief_data.get("full_text", ""), 500),
+            "summary": _brief_summary(brief_data),
             "tags": brief_data.get("narrative_tags", []),
         }
     
@@ -129,6 +134,8 @@ def get_dashboard() -> dict[str, Any]:
         logger.warning("Failed to get system status: %s", exc)
         system_status = {
             "last_snapshot_ts": None,
+            "is_stale": True,
+            "stale_minutes": None,
             "raw_chain_snapshots": 0,
             "feature_snapshots": 0,
             "setup_candidates": 0,
@@ -163,3 +170,28 @@ def _truncate_text(text: str, max_chars: int = 500) -> str:
         return truncated[:last_period+1]
     
     return truncated + "..."
+
+
+def _brief_summary(brief_data: dict[str, Any]) -> str:
+    exec_summary = str(brief_data.get("exec_summary") or "").strip()
+    if exec_summary:
+        return exec_summary
+    return _first_sentences(str(brief_data.get("full_text", "")), 2)
+
+
+def _first_sentences(text: str, count: int = 2) -> str:
+    import re
+    parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", (text or "").strip()) if p.strip()]
+    return " ".join(parts[:count])
+
+
+def _stale_minutes(last_snapshot_ts: str | None) -> int | None:
+    if not last_snapshot_ts:
+        return None
+    try:
+        ts = datetime.fromisoformat(last_snapshot_ts.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        diff = now - ts.astimezone(timezone.utc)
+        return max(0, int(diff.total_seconds() // 60))
+    except Exception:
+        return None
