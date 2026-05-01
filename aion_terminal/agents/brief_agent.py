@@ -217,16 +217,25 @@ def generate_morning_brief(
         payload = _extract_json_payload(full_text)
     except Exception as parse_exc:
         logger.warning("JSON parse failed; using defaults: %s", parse_exc)
-        payload = {
-            "regime": "neutral",
-            "dominant_signal": "Unable to parse full brief JSON",
-            "regime_30d_call": "Monitor for clarification",
-            "sector_leaders": [],
-            "sector_laggards": [],
-            "narrative_tags": [],
-            "risk_level": "medium",
-            "data_quality": "low",
-        }
+        payload = {}
+
+    if not payload or not payload.get("regime"):
+        exec_summary = _build_exec_summary({}, full_text)
+        return BriefResult(
+            generated_at=utc_now_iso(),
+            regime=None,
+            dominant_signal=None,
+            regime_30d_call=None,
+            sector_leaders=[],
+            sector_laggards=[],
+            narrative_tags=[],
+            risk_level=None,
+            full_text=full_text,
+            exec_summary=exec_summary,
+            model=BRIEF_MODEL,
+            tokens_used=tokens_used,
+            error="json_parse_failed",
+        )
 
     # Ensure all fields are present and non-empty
     exec_summary = _build_exec_summary(payload, full_text)

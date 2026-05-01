@@ -159,6 +159,7 @@ def test_post_brief_tags_writes_to_db(tmp_path):
         regime_30d_call="defensive",
         sector_leaders=["XLU"],
         sector_laggards=["XLY"],
+        exec_summary="Credit spreads widening signals risk-off regime.",
         narrative_tags=[
             {"symbol": "SPY", "tag_key": "macro_shock", "tag_value": "risk_off"},
             {"symbol": "XLU", "tag_key": "sector_rerating_up", "tag_value": "defensive_bid"},

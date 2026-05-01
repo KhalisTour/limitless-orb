@@ -213,7 +213,14 @@ async def create_trade_plan(payload: TradePlanRequest):
         except Exception as exc:
             warnings.append(f"macro_context_fetch_failed: {exc}")
     result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, payload.user_historical_outcomes, payload.weekly_pattern_summary)
-    out = asdict(result)
+    if isinstance(result, dict):
+        out = result
+    else:
+        try:
+            from dataclasses import asdict as _asdict
+            out = _asdict(result)
+        except TypeError:
+            out = result.__dict__ if hasattr(result, "__dict__") else {}
     if warnings:
         out.setdefault("json_plan", {}).setdefault("required_next_data", []).extend(warnings)
     TRADE_PLAN_HISTORY.appendleft(out)
