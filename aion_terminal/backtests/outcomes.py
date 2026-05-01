@@ -418,7 +418,7 @@ def run_backtest_for_universe(
 ) -> list[OutcomeResult]:
     """Run batch backtest with approximate_delta_proxy method."""
     now = datetime.now(timezone.utc)
-    from_ts = (now - timedelta(days=30)).isoformat()
+    from_ts = (now - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
     results: list[OutcomeResult] = []
     for symbol in symbols:

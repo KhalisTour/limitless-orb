@@ -13,6 +13,7 @@ class Settings:
     api_url_template: str = "https://api.marketdata.app/v1/options/chain/{ticker}/"
     db_path: str = field(default_factory=lambda: os.getenv("OPTIONS_DB_PATH", "options_terminal.db"))
     marketdata_token: str = field(default_factory=lambda: os.getenv("MARKETDATA_APP_TOKEN", ""))
+    openai_api_key: str = field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
     watchlist: list[str] = field(
         default_factory=lambda: [s.strip().upper() for s in os.getenv("WATCHLIST", "SPY,QQQ,AAPL").split(",") if s.strip()]
     )

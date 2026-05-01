@@ -239,8 +239,8 @@ def test_spot_selection_uses_bar_close_not_strike(tmp_path, monkeypatch):
     _insert_underlying(conn, "SPY", make_bars(n=10, start_price=123.0, trend="flat"))
     candidate = SetupCandidateRecord(candidate_id="c5", as_of_ts="2026-04-01T00:00:00+00:00", symbol="SPY", setup_class="x", score=1.0, direction="bullish", strike=999.0)
     conn.execute(
-        "INSERT INTO setup_candidates (candidate_id, as_of_ts, symbol, setup_class, direction, score, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        (candidate.candidate_id, candidate.as_of_ts, candidate.symbol, candidate.setup_class, candidate.direction, candidate.score, candidate.as_of_ts, candidate.as_of_ts),
+        "INSERT INTO setup_candidates (candidate_id, as_of_ts, symbol, setup_class, direction, score, strike, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (candidate.candidate_id, candidate.as_of_ts, candidate.symbol, candidate.setup_class, candidate.direction, candidate.score, candidate.strike, candidate.as_of_ts, candidate.as_of_ts),
     )
     conn.commit()
     captured = {}
