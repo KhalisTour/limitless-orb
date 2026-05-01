@@ -1353,6 +1353,8 @@ If contract data is missing:
 - do not recommend a specific contract
 - recommend contract characteristics instead
 
+You will be provided contract_recommendations. You must prioritize these when constructing trade plans and not claim missing contract data unless the field is truly empty.
+
 If dealer structure conflicts with user bias:
 - explicitly say so
 - downgrade or reject the trade

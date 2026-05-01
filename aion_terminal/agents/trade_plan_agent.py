@@ -76,7 +76,8 @@ def generate_trade_plan(symbol: str, user_requested_bias: str | None = None, use
     try:
         from openai import OpenAI
 
-        response = OpenAI(api_key=key).responses.create(model=TRADE_PLAN_MODEL, max_output_tokens=MAX_TOKENS, input=[{"role": "system", "content": TRADE_PLAN_SYSTEM_PROMPT_V3}, {"role": "user", "content": json.dumps(payload, default=str)}])
+        llm_payload = json.dumps(payload, default=str)
+        response = OpenAI(api_key=key).responses.create(model=TRADE_PLAN_MODEL, max_output_tokens=MAX_TOKENS, input=[{"role": "system", "content": TRADE_PLAN_SYSTEM_PROMPT_V3}, {"role": "user", "content": llm_payload}])
         raw = _extract_output_text(response)
         tokens = _safe_tokens(response)
         logger.info("Trade plan token usage: %s", tokens)

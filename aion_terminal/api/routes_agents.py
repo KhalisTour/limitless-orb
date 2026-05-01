@@ -14,6 +14,7 @@ from aion_terminal.agents.brief_agent import generate_morning_brief, post_brief_
 from aion_terminal.agents.chart_agent import analyze_chart_from_bytes
 from aion_terminal.agents.trade_plan_agent import generate_trade_plan
 from aion_terminal.app.config import settings
+from aion_terminal.services.contract_service import get_contract_recommendation
 from aion_terminal.services.ranking_service import rank_symbol
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 
@@ -139,19 +140,70 @@ class TradePlanRequest(BaseModel):
     weekly_pattern_summary: str | None = None
 
 
+def _normalize_contract_fields(contract: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not contract:
+        return None
+    return {
+        **contract,
+        "contract_symbol": contract.get("contract_symbol"),
+        "expiry": contract.get("expiry"),
+        "strike": contract.get("strike"),
+        "bid": contract.get("bid"),
+        "ask": contract.get("ask"),
+        "mid": contract.get("mid", contract.get("premium_mid")),
+        "delta": contract.get("delta"),
+        "gamma": contract.get("gamma"),
+        "theta": contract.get("theta"),
+        "oi": contract.get("oi", contract.get("open_interest")),
+        "volume": contract.get("volume"),
+    }
+
+
 @router.post("/agents/trade-plan")
 async def create_trade_plan(payload: TradePlanRequest):
     warnings: list[str] = []
     rankings_payload = payload.rankings_payload
+    ranking = None
     if rankings_payload is None:
         try:
             ranking = await asyncio.to_thread(rank_symbol, payload.symbol.upper())
-            rankings_payload = {"symbol": ranking.symbol, "spot": ranking.spot, "dealer_structure": {"call_wall": ranking.call_wall, "put_wall": ranking.put_wall, "king_node": ranking.king_node}}
+            top_setup = ranking.signals[0] if ranking.signals else None
+            rankings_payload = {
+                "symbol": ranking.symbol,
+                "spot": ranking.spot,
+                "dealer_structure": {
+                    "call_wall": ranking.call_wall,
+                    "put_wall": ranking.put_wall,
+                    "king_node": ranking.king_node,
+                },
+                "top_ranked_setup": top_setup,
+            }
         except Exception as exc:
             warnings.append(f"rankings_fetch_failed: {exc}")
     contract_recommendations = payload.contract_recommendations
     if contract_recommendations is None:
-        contract_recommendations = (rankings_payload or {}).get("contract_recommendations")
+        if ranking is not None:
+            contract_recommendations = {
+                "best": _normalize_contract_fields(ranking.best_contract),
+                "safer": _normalize_contract_fields(ranking.safer_contract),
+                "convex": _normalize_contract_fields(ranking.convex_contract),
+            }
+        if not contract_recommendations or not any(contract_recommendations.values()):
+            try:
+                setup_bias = ((rankings_payload or {}).get("top_ranked_setup") or {}).get("bias")
+                fallback_bias = setup_bias if setup_bias in {"bullish", "bearish"} else "bullish"
+                contract_scored = await asyncio.to_thread(
+                    get_contract_recommendation,
+                    payload.symbol.upper(),
+                    fallback_bias,
+                )
+                contract_recommendations = {
+                    "best": _normalize_contract_fields(contract_scored.get("best")),
+                    "safer": _normalize_contract_fields(contract_scored.get("safer")),
+                    "convex": _normalize_contract_fields(contract_scored.get("convex")),
+                }
+            except Exception as exc:
+                warnings.append(f"contracts_fetch_failed: {exc}")
     macro_context = payload.macro_context
     if macro_context is None:
         try:
