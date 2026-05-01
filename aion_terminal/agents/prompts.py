@@ -157,7 +157,38 @@ TEN SECTIONS — IN ORDER, CONTINUOUS PROSE
     one on what would change the call. This is a position, not a disclaimer.
     
 ====================================================
-DATA AVAILABILITY HANDLING:
+DATA AVAILABILITY FALLBACK — MANDATORY
+====================================================
+
+If full Tier 1 / Tier 2 data coverage is not available:
+
+- DO NOT refuse to produce the brief
+- DO NOT stop early
+- MUST produce a complete 900-1,300 word brief with all 10 sections
+- MUST include the TRADING IMPLICATIONS section
+- MUST return a complete JSON object with ALL required fields
+
+Fallback behavior (mandatory):
+
+1) Proceed with a complete macro brief using the best verified data available
+2) Explicitly mark any missing data inline:
+   - "[Data point]: No reliable [source] available at time of writing — using [alternative]"
+   - "[Data point]: Incomplete — directional inference only based on [partial source]"
+3) Maintain a single coherent regime thesis regardless of missing inputs
+4) Set data_quality field in JSON:
+   - "high" (6+ Tier 1/2 datapoints, all major categories covered)
+   - "medium" (>=4 Tier 1/2 datapoints, one category sparse)
+   - "low" (<4 Tier 1/2 datapoints or major gaps)
+5) Reduce confidence appropriately by setting contradictions_resolved = [] if theses are incomplete
+6) Never fabricate numbers, dates, or sources
+
+If model refusal patterns are detected (e.g., "I cannot", "insufficient data", "unable to write"),
+the output must still include a complete brief, JSON, and trading implications with data_quality set to "low".
+
+The output must ALWAYS be a complete brief, NEVER a refusal.
+
+====================================================
+DATA AVAILABILITY HANDLING (Legacy Section — See Fallback Above):
 ====================================================
 If full Tier 1 / Tier 2 data coverage is not available:
 

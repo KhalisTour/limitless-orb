@@ -19,6 +19,21 @@ from aion_terminal.utils.time_utils import utc_now_iso
 
 logger = logging.getLogger(__name__)
 
+
+@dataclass(slots=True)
+class RankedItem:
+    """Unified ranking output for frontend consumption."""
+    symbol: str
+    ranking_score: float
+    setup_class: str
+    bias: str
+    regime: str
+    confidence_bucket: str
+    key_levels: dict[str, Any]
+    technical_summary: dict[str, Any]
+    top_contract: dict[str, Any] | None
+    warnings: list[str]
+
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 DEFAULT_DTE_MIN = 9
 DEFAULT_DTE_MAX = 14
@@ -240,3 +255,132 @@ def rank_universe(
 
     rankings.sort(key=lambda r: (1 if r.signals else 0, _highest_conf(r)), reverse=True)
     return rankings
+
+
+def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedItem:
+    """Convert SymbolRanking to unified RankedItem response format."""
+    signals = ranking.signals or []
+    best_signal = signals[0] if signals else None
+    setup_class = str(best_signal.get("setup_class", "")) if best_signal else "none"
+    bias = str(best_signal.get("bias", "bullish")) if best_signal else "bullish"
+    
+    # Calculate ranking_score: average of signal confidences if available, else 0
+    confidences = [as_float(s.get("confidence_raw", 0)) for s in signals]
+    base_score = (sum(confidences) / len(confidences)) if confidences else 0.0
+    ranking_score = min(1.0, max(0.0, base_score * (0.5 if degraded else 1.0)))  # Halve degraded scores
+    
+    confidence_bucket = "high" if ranking_score >= 0.7 else "medium" if ranking_score >= 0.4 else "low"
+    
+    key_levels = {
+        "king_node": ranking.king_node,
+        "call_wall": ranking.call_wall,
+        "put_wall": ranking.put_wall,
+    }
+    
+    technical_summary = {
+        "ema_stack": ranking.ema_stack,
+        "rvol": ranking.rvol,
+        "trend": ranking.trend,
+        "compressed": ranking.compressed,
+        "bar_count": ranking.bar_count,
+    }
+    
+    # Format top contract if available
+    top_contract = None
+    if ranking.best_contract:
+        tc = ranking.best_contract
+        top_contract = {
+            "contract_symbol": tc.get("contract_symbol"),
+            "expiry": tc.get("expiry"),
+            "strike": tc.get("strike"),
+            "mid": tc.get("premium_mid"),
+            "delta": tc.get("delta"),
+            "gamma": tc.get("gamma"),
+            "theta": tc.get("theta"),
+            "oi": tc.get("open_interest"),
+            "spread_pct": tc.get("spread_pct"),
+        }
+    
+    warnings = ranking.contract_warnings + ranking.errors
+    if degraded:
+        warnings.append("degraded_ranking: low confidence; check validation")
+    
+    return RankedItem(
+        symbol=ranking.symbol,
+        ranking_score=ranking_score,
+        setup_class=setup_class,
+        bias=bias,
+        regime=ranking.regime,
+        confidence_bucket=confidence_bucket,
+        key_levels=key_levels,
+        technical_summary=technical_summary,
+        top_contract=top_contract,
+        warnings=warnings,
+    )
+
+
+def get_rankings_unified(
+    symbols: list[str] | None = None,
+    setup_class: str | None = None,
+    bias: str | None = None,
+    limit: int = 10,
+    dte_min: int = DEFAULT_DTE_MIN,
+    dte_max: int = DEFAULT_DTE_MAX,
+    budget: float | None = None,
+    min_confidence: float = DEFAULT_MIN_CONFIDENCE,
+) -> tuple[list[RankedItem], list[str]]:
+    """Get rankings in unified format with automatic degradation if needed.
+    
+    Returns: (items, warnings)
+    - If strict thresholds yield enough results (>= limit/2), return those.
+    - If fewer, provide degraded list using all symbols sorted by best available signal.
+    - All items sorted by ranking_score desc, then by rvol desc.
+    """
+    rankings = rank_universe(
+        symbols=symbols,
+        dte_min=dte_min,
+        dte_max=dte_max,
+        budget=budget,
+        min_confidence=min_confidence,
+    )
+    
+    # Convert to unified format
+    items = [_to_ranked_item(r) for r in rankings]
+    
+    # Apply filters
+    if setup_class:
+        items = [item for item in items if item.setup_class.lower() == setup_class.lower()]
+    if bias:
+        items = [item for item in items if item.bias.lower() == bias.lower()]
+    
+    warnings = []
+    
+    # Degradation: if fewer than limit/2, include all and mark degraded
+    min_threshold = max(1, limit // 2)
+    if len(items) < min_threshold:
+        # Get all symbols and rank by any signal confidence available
+        all_rankings = rank_universe(
+            symbols=symbols,
+            dte_min=dte_min,
+            dte_max=dte_max,
+            budget=budget,
+            min_confidence=0.0,  # Accept all
+        )
+        degraded_items = [_to_ranked_item(r, degraded=True) for r in all_rankings]
+        
+        # Reapply filters
+        if setup_class:
+            degraded_items = [item for item in degraded_items if item.setup_class.lower() == setup_class.lower()]
+        if bias:
+            degraded_items = [item for item in degraded_items if item.bias.lower() == bias.lower()]
+        
+        items = degraded_items
+        warnings.append("Degraded rankings: insufficient strict-confidence candidates; showing best available")
+    
+    # Sort: ranking_score desc, rvol desc (as tiebreaker)
+    items.sort(
+        key=lambda item: (-item.ranking_score, -item.technical_summary.get("rvol", 0.0))
+    )
+    
+    return items[: max(1, limit)], warnings
+

@@ -71,6 +71,8 @@ class MarketDataClient:
             except HTTPError as exc:
                 if exc.code in (401, 403):
                     return FetchResult(ok=False, status_code=exc.code, payload=None, error="unauthorized")
+                if exc.code == 404:
+                    return FetchResult(ok=False, status_code=exc.code, payload=None, error="http_404")
                 if exc.code == 429:
                     backoff_schedule = [5, 15, 45]
                     if attempt <= len(backoff_schedule):

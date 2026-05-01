@@ -10,12 +10,13 @@ from aion_terminal.features.contracts import score_and_rank_contracts
 from aion_terminal.features.dealer import compute_levels
 from aion_terminal.features.technical import build_technical_features
 from aion_terminal.models.dto import ManualNarrativeTagRecord, UnderlyingBarRecord
-from aion_terminal.services.ranking_service import rank_symbol, rank_universe
+from aion_terminal.services.ranking_service import rank_symbol, rank_universe, get_rankings_unified
 from aion_terminal.signals.setups import evaluate_symbol_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 from aion_terminal.storage.repositories import query_latest_chain, upsert_manual_narrative_tags
 from aion_terminal.app.config import settings
 from aion_terminal.utils.math_utils import as_float
+from aion_terminal.utils.time_utils import utc_now_iso
 
 router = APIRouter(tags=["rankings"])
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
@@ -41,25 +42,42 @@ def get_rankings(
     bias: str | None = None,
     dte_min: int = 9,
     dte_max: int = 14,
-    limit: int = 20,
+    limit: int = 10,
     min_confidence: float = 0.3,
+    symbol: str | None = None,
 ):
+    """Get unified ranked candidates with automatic degradation.
+    
+    Query params:
+      - setup_class: filter by setup class (e.g., 'multi_level_breakout')
+      - bias: filter by bias ('bullish' or 'bearish')
+      - dte_min, dte_max: contract expiry window
+      - limit: max items to return (default 10)
+      - min_confidence: minimum confidence threshold for strict ranking
+      - symbol: filter by single symbol (optional)
+    
+    Returns: list of RankedItem with unified schema + warnings.
+    If strict thresholds yield too few candidates, provides degraded list.
+    """
     selected_bias = _validate_bias(bias)
-    rankings = rank_universe(dte_min=dte_min, dte_max=dte_max, min_confidence=min_confidence)
-
-    filtered = rankings
-    if setup_class:
-        filtered = [
-            r
-            for r in filtered
-            if any(str(sig.get("setup_class")) == setup_class for sig in r.signals)
-        ]
-    if selected_bias:
-        filtered = [
-            r for r in filtered if any(str(sig.get("bias")) == selected_bias for sig in r.signals)
-        ]
-
-    return [asdict(r) for r in filtered[: max(1, limit)]]
+    symbols = [symbol.upper()] if symbol else None
+    
+    items, warnings = get_rankings_unified(
+        symbols=symbols,
+        setup_class=setup_class,
+        bias=selected_bias,
+        limit=limit,
+        dte_min=dte_min,
+        dte_max=dte_max,
+        min_confidence=min_confidence,
+    )
+    
+    result = {
+        "rankings": [asdict(item) for item in items],
+        "warnings": warnings,
+        "generated_at": utc_now_iso(),
+    }
+    return result
 
 
 @router.get("/rankings/{symbol}")

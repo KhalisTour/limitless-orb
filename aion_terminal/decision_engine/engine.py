@@ -114,13 +114,34 @@ def compute_decision_engine_state(
     horizon_scale = _clamp(dte / 5.0 if dte else 0.6, 0.6, 4.0)
 
     def touch_probability(level: float | None) -> float:
+        """Log-normal barrier touch probability using IV and DTE."""
         if level is None:
             warnings.append("missing_level_for_touch_probability")
             return 0.45
-        distance = abs(level - spot)
-        base_vol = max(atr, abs(spot) * iv * 0.02)
-        normalized_distance = distance / max(base_vol * horizon_scale, 1e-6)
-        return _clamp(1.0 - normalized_distance, 0.05, 0.95)
+        if spot <= 0 or level <= 0:
+            return 0.45
+        import math
+        T = max(dte, 1) / 252.0
+        sigma = max(iv, 0.10)
+        log_ratio = math.log(level / spot)
+        vol_sqrt_T = sigma * math.sqrt(T)
+        if vol_sqrt_T < 1e-9:
+            return 0.0 if log_ratio > 0 else 1.0
+        # Reflection principle approximation for barrier touch probability:
+        # P(touch barrier) = N(-|d|) + exp(2*mu*log_ratio/sigma^2) * N(-|d| + 2*mu*sqrt(T)/sigma)
+        # Simplified for zero drift (conservative):
+        # P(touch) = 2 * N(-|log_ratio| / vol_sqrt_T)
+        mu = 0.0  # zero drift — conservative, no directional assumption
+        d = abs(log_ratio) / vol_sqrt_T
+        # Standard normal CDF approximation
+        def _ncdf(x: float) -> float:
+            import math
+            t = 1.0 / (1.0 + 0.2316419 * abs(x))
+            poly = t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))))
+            p = 1.0 - (1.0 / math.sqrt(2 * math.pi)) * math.exp(-0.5 * x * x) * poly
+            return p if x >= 0 else 1.0 - p
+        p = 2.0 * _ncdf(-d)
+        return _clamp(p, 0.01, 0.99)
 
     p_touch_s1 = touch_probability(s1_level)
     p_touch_s3 = touch_probability(s3_level)
@@ -134,29 +155,29 @@ def compute_decision_engine_state(
     put_wall = _f(dealer_structure.get("put_wall"))
     king_node = _f(dealer_structure.get("king_node"))
 
-    state_score = {"S1": 2.0, "S2": 0.0, "S3": -3.0}[state]
-    profit_probability_score = (p_touch_s1 - p_touch_s3) * 1.7
-    touch_probability_score = (0.5 - p_touch_s3) + (p_touch_s1 - 0.5)
+    state_score = {"S1": 25.0, "S2": -5.0, "S3": -40.0}[state]
+    profit_probability_score = (p_touch_s1 - p_touch_s3) * 30.0
+    touch_probability_score = ((0.5 - p_touch_s3) + (p_touch_s1 - 0.5)) * 15.0
 
     option_structure_score = 0.0
     if delta is not None and delta < 0.30 and state == "S2":
-        option_structure_score -= 0.8
+        option_structure_score -= 8.0
     if delta is not None and 0.40 <= delta <= 0.60 and state == "S1":
-        option_structure_score += 0.8
+        option_structure_score += 8.0
     if delta is not None and delta > 0.65 and moneyness == "ITM":
-        option_structure_score += 0.6
+        option_structure_score += 6.0
     if gamma > 0.08 and state == "S1":
-        option_structure_score += 0.5
+        option_structure_score += 5.0
     if gamma > 0.08 and state == "S2":
-        option_structure_score -= 0.5
+        option_structure_score -= 5.0
 
     oi_structure_score = 0.0
     if call_wall is not None and spot < call_wall:
-        oi_structure_score -= 0.25
+        oi_structure_score -= 5.0
     if call_wall is not None and spot > call_wall and state == "S1":
-        oi_structure_score += 0.45
+        oi_structure_score += 10.0
     if put_wall is not None and spot > put_wall:
-        oi_structure_score += 0.2
+        oi_structure_score += 4.0
     if put_wall is not None and spot < put_wall:
         oi_structure_score -= 0.65
 

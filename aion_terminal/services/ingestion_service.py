@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -213,12 +214,14 @@ def refresh_universe(symbols: list[str]) -> dict[str, RefreshResult]:
     out: dict[str, RefreshResult] = {}
     conn = _open_conn()
     try:
-        for symbol in symbols:
+        for idx, symbol in enumerate(symbols):
             try:
                 out[symbol.upper()] = refresh_one_symbol(symbol, conn=conn)
             except Exception as exc:  # pragma: no cover
                 logger.exception("ingestion refresh_universe hard failure symbol=%s", symbol)
                 out[symbol.upper()] = RefreshResult(symbol=symbol.upper(), ok=False, errors=[f"hard_failure:{exc}"])
+            if idx < len(symbols) - 1:
+                time.sleep(2)
         return out
     finally:
         conn.close()
