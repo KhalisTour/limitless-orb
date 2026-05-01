@@ -34,6 +34,7 @@ class BriefResult:
     narrative_tags: list[dict[str, Any]]
     risk_level: str
     full_text: str
+    exec_summary: str
     model: str
     tokens_used: int
     error: str | None = None
@@ -74,12 +75,31 @@ def _extract_json_payload(text: str) -> dict[str, Any]:
     payload.setdefault("sector_laggards", [])
     payload.setdefault("narrative_tags", [])
     payload.setdefault("risk_level", "medium")
+    payload.setdefault("exec_summary", "")
     payload.setdefault("contradictions_resolved", [])
     payload.setdefault("data_quality", "medium")
     payload.setdefault("word_count", 0)
     
     return payload
 
+
+
+
+def _first_sentences(text: str, count: int = 2) -> str:
+    parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", (text or "").strip()) if p.strip()]
+    return " ".join(parts[:count])
+
+
+def _build_exec_summary(payload: dict[str, Any], full_text: str) -> str:
+    provided = str(payload.get("exec_summary", "")).strip()
+    if provided:
+        return provided
+    regime = str(payload.get("regime", "neutral")).strip() or "neutral"
+    risk = str(payload.get("risk_level", "medium")).strip() or "medium"
+    posture = str(payload.get("regime_30d_call", "")).strip()
+    if posture:
+        return f"Regime: {regime}. Risk level: {risk}. Trading posture: {posture}"
+    return _first_sentences(full_text, 2)
 
 def _is_refusal_pattern(text: str) -> bool:
     """Detect if output contains refusal patterns."""
@@ -118,6 +138,7 @@ def generate_morning_brief(
             narrative_tags=[],
             risk_level="medium",
             full_text="",
+            exec_summary="",
             model=BRIEF_MODEL,
             tokens_used=0,
             error="OPENAI_API_KEY not configured",
@@ -185,6 +206,7 @@ def generate_morning_brief(
             narrative_tags=[],
             risk_level="medium",
             full_text="",
+            exec_summary="",
             model=BRIEF_MODEL,
             tokens_used=0,
             error=f"api_error: {exc}",
@@ -207,6 +229,8 @@ def generate_morning_brief(
         }
 
     # Ensure all fields are present and non-empty
+    exec_summary = _build_exec_summary(payload, full_text)
+
     return BriefResult(
         generated_at=utc_now_iso(),
         regime=str(payload.get("regime", "neutral")) or "neutral",
@@ -217,6 +241,7 @@ def generate_morning_brief(
         narrative_tags=list(payload.get("narrative_tags") or []),
         risk_level=str(payload.get("risk_level", "medium")) or "medium",
         full_text=full_text,
+        exec_summary=exec_summary,
         model=BRIEF_MODEL,
         tokens_used=tokens_used,
         error=None,
