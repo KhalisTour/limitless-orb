@@ -173,6 +173,46 @@ def post_trigger_rs_scan(payload: dict[str, Any] = Body(default={})):
     return {"ok": True, "message": "RS scan launched in background"}
 
 
+@router.get("/rs/history")
+def get_rs_history(limit: int = 30):
+    """Return recent RS scan runs with the current top tickers as a snapshot."""
+    limit = max(1, min(limit, 100))
+    conn = get_rs_connection()
+    bootstrap_rs_schema(conn)
+    try:
+        runs = query_recent_scan_runs(conn, limit=limit)
+        top = conn.execute(
+            """
+            SELECT ticker, rs_score, rs_percentile, conditions_met,
+                   rs_new_high_before_price
+            FROM rs_candidates
+            WHERE passes_screen = 1
+            ORDER BY rs_score DESC
+            LIMIT 5
+            """
+        ).fetchall()
+        rs_before_count = conn.execute(
+            "SELECT COUNT(1) AS c FROM rs_candidates WHERE rs_new_high_before_price = 1"
+        ).fetchone()["c"]
+    finally:
+        conn.close()
+
+    top_tickers = [dict(t) for t in top]
+    result = []
+    for row in runs:
+        result.append(
+            {
+                "scan_ts": row.get("run_at"),
+                "tickers_scanned": row.get("tickers_scanned", 0),
+                "total_passing": row.get("tickers_passing", 0),
+                "duration_seconds": row.get("duration_seconds", 0.0),
+                "rs_before_price_count": int(rs_before_count or 0),
+                "top_tickers": top_tickers,
+            }
+        )
+    return result
+
+
 @router.get("/rs/events")
 def get_rs_events(min_percentile: float = 75.0):
     conn = get_rs_connection()

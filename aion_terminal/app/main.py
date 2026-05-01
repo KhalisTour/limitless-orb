@@ -5,13 +5,16 @@ import threading
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from aion_terminal.api import (
     routes_agents,
     routes_backtests,
+    routes_cone,
     routes_contracts,
     routes_dashboard,
     routes_rankings,
+    routes_rs,
     routes_snapshot,
     routes_tags,
     routes_universe,
@@ -34,6 +37,14 @@ app.include_router(routes_rankings.router)
 app.include_router(routes_contracts.router)
 app.include_router(routes_backtests.router)
 app.include_router(routes_tags.router)
+app.include_router(routes_rs.router)
+app.include_router(routes_cone.router)
+
+app.mount(
+    "/static",
+    StaticFiles(directory="aion_terminal/static", html=True),
+    name="static",
+)
 
 
 @app.on_event("startup")

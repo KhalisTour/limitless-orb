@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AION TERMINAL — Symbol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="container">
+    <!-- Ticker Header -->
+    <div class="card" style="margin-bottom:16px;padding:16px 20px">
+      <div class="flex" style="align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div class="flex gap-16" style="align-items:center">
+          <div class="gradient-text" style="font-size:30px;letter-spacing:4px" id="hdr-ticker">—</div>
+          <div class="mono" style="font-size:20px" id="hdr-spot">$—</div>
+          <div class="mono" id="hdr-change" style="font-size:14px">—</div>
+          <span class="badge badge-neutral" id="hdr-regime">—</span>
+        </div>
+        <div class="star-bar" id="hdr-stars"></div>
+      </div>
+    </div>
+
+    <div class="row row-2">
+      <!-- LEFT -->
+      <div class="flex-col gap-16">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 18px 0">
+            <h3>Chart</h3>
+          </div>
+          <div class="tradingview-widget-container" style="height:430px">
+            <div id="tradingview-chart" style="height:430px"></div>
+          </div>
+        </div>
+
+        <div class="card" id="dealer-card">
+          <h3>Dealer Structure</h3>
+          <div class="content"></div>
+        </div>
+
+        <div class="card" id="contracts-card">
+          <h3>Contract Scorer</h3>
+          <div class="flex gap-8" style="margin-bottom:10px">
+            <button class="primary" data-bias="bullish">Bullish</button>
+            <button data-bias="bearish">Bearish</button>
+          </div>
+          <div class="content"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="flex-col gap-16">
+        <div class="card" id="heatmap-card">
+          <h3>GEX Heatmap</h3>
+          <div class="heatmap-controls">
+            <span>STRIKES</span>
+            <div class="btn-group" id="strike-group">
+              <button data-v="15">±15</button>
+              <button data-v="30" class="active">±30</button>
+              <button data-v="50">±50</button>
+              <button data-v="999">ALL</button>
+            </div>
+            <span style="margin-left:8px">EXPIRIES</span>
+            <div class="btn-group" id="expiry-group">
+              <button data-v="5" class="active">5</button>
+              <button data-v="10">10</button>
+              <button data-v="15">15</button>
+              <button data-v="999">ALL</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns: 1fr 1fr;gap:10px">
+            <div>
+              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">GEX</div>
+              <canvas id="heatmap-gex" width="380" height="380"></canvas>
+            </div>
+            <div>
+              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">VEX (≈Δ·V/Spot)</div>
+              <canvas id="heatmap-vex" width="380" height="380"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="rs-card">
+          <h3>RS Card</h3>
+          <div class="content"></div>
+        </div>
+
+        <div class="card" id="macro-mini">
+          <h3>Macro Brief</h3>
+          <div class="content" style="max-height:280px;overflow-y:auto"></div>
+        </div>
+
+        <div class="card" id="trade-plan-chat" style="display:flex;flex-direction:column;min-height:440px">
+          <h3>Trade Plan Agent</h3>
+          <div class="chat" style="flex:1">
+            <div class="chat-history" id="tp-history"></div>
+            <div class="chat-input">
+              <textarea id="tp-input" placeholder="Ask about levels, stops, sizing…"></textarea>
+              <button class="primary" id="tp-send">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://s3.tradingview.com/tv.js" async></script>
+  <script src="/static/shared.js"></script>
+  <script>
+  const { api, apiPost, getQueryParam, renderNav, skeleton, errorPane,
+          fmtPct, fmtPrice, regimeClass, cmap, rgbStr, rgbLum, SS, ready, goToSymbol } = AION;
+
+  let TICKER = (getQueryParam('ticker') || sessionStorage.getItem('aion_ticker') || 'NVDA').toUpperCase();
+  SS.set('aion_ticker', TICKER);
+  let strikeRange = 30, expiryCount = 5;
+  let dealerCache = null;
+  let chatMessages = [];
+
+  function loadTradingView() {
+    if (typeof TradingView === 'undefined') {
+      setTimeout(loadTradingView, 250);
+      return;
+    }
+    new TradingView.widget({
+      container_id: 'tradingview-chart',
+      symbol: TICKER,
+      interval: '15',
+      timezone: 'America/New_York',
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      toolbar_bg: '#0a0a0f',
+      enable_publishing: false,
+      hide_top_toolbar: false,
+      hide_legend: false,
+      save_image: false,
+      backgroundColor: '#0a0a0f',
+      gridColor: 'rgba(42,42,58,0.5)',
+      width: '100%',
+      height: 430,
+      studies: ['MAExp@tv-basicstudies', 'VWAP@tv-basicstudies'],
+    });
+  }
+
+  // ---------- Dealer card ----------
+  async function renderDealer() {
+    const card = document.querySelector('#dealer-card .content');
+    card.innerHTML = skeleton(4);
+    try {
+      const r = await api(`/rankings/${TICKER}`);
+      dealerCache = r;
+      const spot = Number(r.spot || 0);
+      const cw = Number(r.call_wall || 0);
+      const pw = Number(r.put_wall || 0);
+      const king = Number(r.king_node || 0);
+      const flip = Number(r.gamma_flip || r.flip || 0);
+      const cwPct = spot ? (cw - spot) / spot * 100 : 0;
+      const pwPct = spot ? (pw - spot) / spot * 100 : 0;
+      const flipPct = spot && flip ? (flip - spot) / spot * 100 : 0;
+      const change = Number(r.change_pct || 0);
+
+      document.getElementById('hdr-ticker').textContent = TICKER;
+      document.getElementById('hdr-spot').textContent = `$${spot.toFixed(2)}`;
+      document.getElementById('hdr-change').textContent = fmtPct(change);
+      document.getElementById('hdr-change').style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+      const rb = document.getElementById('hdr-regime');
+      rb.textContent = r.regime || '—';
+      rb.className = `badge ${regimeClass(r.regime)}`;
+
+      // Star nodes from signals
+      const stars = (r.signals || []).slice(0, 4);
+      document.getElementById('hdr-stars').innerHTML = stars.map(s => `
+        <span class="pill ${(s.bias === 'bullish') ? 'green' : (s.bias === 'bearish') ? 'red' : 'amber'}">
+          ★ ${s.kind || s.signal || '—'}
+        </span>
+      `).join('');
+
+      card.innerHTML = `
+        <div class="engine-out">
+          <div class="row-line"><span class="muted">King Node</span>
+            <span class="mono" style="color:var(--amber)">$${king.toFixed(2)}</span></div>
+          <div class="row-line"><span class="muted">Call Wall</span>
+            <span class="mono" style="color:var(--purple)">$${cw.toFixed(2)} <span class="muted">(${fmtPct(cwPct)})</span></span></div>
+          <div class="row-line"><span class="muted">Put Wall</span>
+            <span class="mono" style="color:#1e3a8a">$${pw.toFixed(2)} <span class="muted">(${fmtPct(pwPct)})</span></span></div>
+          <div class="row-line"><span class="muted">Flip Zone</span>
+            <span class="mono" style="color:#ffd166">$${flip ? flip.toFixed(2) : '—'} <span class="muted">(${flip ? fmtPct(flipPct) : '—'})</span></span></div>
+          <div class="row-line"><span class="muted">Regime</span>
+            <span class="badge ${regimeClass(r.regime)}">${r.regime || '—'}</span></div>
+        </div>
+      `;
+    } catch (err) { card.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Contract scorer ----------
+  async function renderContracts(bias = 'bullish') {
+    const card = document.querySelector('#contracts-card .content');
+    card.innerHTML = skeleton(2);
+    document.querySelectorAll('#contracts-card button').forEach(b => {
+      b.classList.toggle('primary', b.dataset.bias === bias);
+    });
+    try {
+      const r = await api(`/contracts/${TICKER}?bias=${bias}`);
+      function row(label, c) {
+        if (!c) return `<div class="row-line"><span class="muted">${label}</span><span class="muted">—</span></div>`;
+        return `<div class="row-line">
+          <span class="muted">${label}</span>
+          <span class="mono">${c.contract_symbol || (c.strike + ' ' + c.option_type)} ${c.expiry || ''} · Δ${(c.delta || 0).toFixed(2)} · $${(c.mid || c.premium_mid || 0).toFixed(2)}</span>
+        </div>`;
+      }
+      card.innerHTML = `<div class="engine-out">
+        ${row('Best', r.best)}
+        ${row('Safer', r.safer)}
+        ${row('Convex', r.convex)}
+      </div>`;
+    } catch (err) { card.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Heatmap ----------
+  async function buildGexGrid() {
+    const ranking = dealerCache || await api(`/rankings/${TICKER}`);
+    const expRes = await api(`/expiries/${TICKER}`).catch(() => ({ expiries: [] }));
+    const expiries = (expRes.expiries || []).slice(0, expiryCount);
+    const spot = Number(ranking.spot || 0);
+
+    // Build per-expiry curves
+    const grid = []; // rows = strikes, cols = expiries
+    const strikeSet = new Set();
+    const curves = [];
+    await Promise.all(expiries.map(async (exp) => {
+      try {
+        const c = await api(`/curve/${TICKER}?expiry=${encodeURIComponent(exp)}`);
+        const curve = c.curve || [];
+        curves.push({ exp, curve });
+        curve.forEach(pt => strikeSet.add(Number(pt.strike)));
+      } catch (_) { curves.push({ exp, curve: [] }); }
+    }));
+
+    let strikes = Array.from(strikeSet).sort((a, b) => a - b);
+    if (strikeRange < 999) {
+      strikes = strikes.filter(s => Math.abs(s - spot) / Math.max(spot, 1) * 100 <= strikeRange);
+    }
+
+    const gex = strikes.map(() => Array(expiries.length).fill(0));
+    const vex = strikes.map(() => Array(expiries.length).fill(0));
+    curves.forEach((co, j) => {
+      const exIdx = expiries.indexOf(co.exp);
+      if (exIdx < 0) return;
+      co.curve.forEach(pt => {
+        const i = strikes.indexOf(Number(pt.strike));
+        if (i < 0) return;
+        gex[i][exIdx] = Number(pt.gex || 0);
+        vex[i][exIdx] = Number(pt.vex || pt.vanna || 0);
+      });
+    });
+
+    return { strikes, expiries, gex, vex, spot, ranking };
+  }
+
+  function drawHeatmap(canvas, strikes, expiries, grid, spot, ranking, label) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    if (!strikes.length || !expiries.length) {
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px JetBrains Mono';
+      ctx.fillText('No chain data', 12, 20);
+      return;
+    }
+
+    const padL = 60, padT = 30, padR = 8, padB = 8;
+    const cellW = (W - padL - padR) / expiries.length;
+    const cellH = (H - padT - padB) / strikes.length;
+
+    // Normalization
+    let absMax = 0;
+    grid.forEach(row => row.forEach(v => { if (Math.abs(v) > absMax) absMax = Math.abs(v); }));
+    if (absMax === 0) absMax = 1;
+
+    // Cells
+    for (let i = 0; i < strikes.length; i++) {
+      for (let j = 0; j < expiries.length; j++) {
+        const v = grid[i][j];
+        const t = 0.5 + 0.5 * (v / absMax);
+        const c = cmap(t);
+        ctx.fillStyle = rgbStr(c);
+        const y = padT + (strikes.length - 1 - i) * cellH;
+        ctx.fillRect(padL + j * cellW, y, cellW, cellH);
+      }
+    }
+
+    // Labels (strikes)
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px JetBrains Mono';
+    const skipS = Math.max(1, Math.floor(strikes.length / 14));
+    for (let i = 0; i < strikes.length; i += skipS) {
+      const y = padT + (strikes.length - 1 - i) * cellH + cellH / 2 + 3;
+      ctx.fillText(`$${Number(strikes[i]).toFixed(0)}`, 4, y);
+    }
+    ctx.save();
+    ctx.translate(0, 0);
+    for (let j = 0; j < expiries.length; j++) {
+      const x = padL + j * cellW + cellW / 2;
+      const lbl = String(expiries[j]).slice(5);
+      const w = ctx.measureText(lbl).width;
+      ctx.fillText(lbl, x - w / 2, 14);
+    }
+    ctx.restore();
+
+    // Spot line
+    if (spot > 0 && strikes.length) {
+      const lo = strikes[0], hi = strikes[strikes.length - 1];
+      if (spot >= lo && spot <= hi) {
+        const i = strikes.length * (spot - lo) / Math.max(hi - lo, 1e-6);
+        const y = padT + (strikes.length - i) * cellH;
+        ctx.fillStyle = 'rgba(0,212,255,0.10)';
+        ctx.fillRect(padL, y - cellH / 2, W - padL - padR, cellH);
+        ctx.strokeStyle = 'rgba(0,212,255,0.7)';
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      }
+    }
+
+    // Star nodes per expiry (highest |GEX|)
+    for (let j = 0; j < expiries.length; j++) {
+      let bestI = -1, bestV = 0;
+      for (let i = 0; i < strikes.length; i++) {
+        if (Math.abs(grid[i][j]) > bestV) { bestV = Math.abs(grid[i][j]); bestI = i; }
+      }
+      if (bestI < 0) continue;
+      const x = padL + j * cellW + cellW / 2;
+      const y = padT + (strikes.length - 1 - bestI) * cellH + cellH / 2;
+      ctx.fillStyle = '#ffd166';
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText('★', x - 4, y + 4);
+    }
+  }
+
+  async function renderHeatmap() {
+    const card = document.querySelector('#heatmap-card');
+    try {
+      const data = await buildGexGrid();
+      const cv1 = document.getElementById('heatmap-gex');
+      const cv2 = document.getElementById('heatmap-vex');
+      drawHeatmap(cv1, data.strikes, data.expiries, data.gex, data.spot, data.ranking, 'GEX');
+      drawHeatmap(cv2, data.strikes, data.expiries, data.vex, data.spot, data.ranking, 'VEX');
+    } catch (err) {
+      card.querySelector('h3').insertAdjacentHTML('afterend', errorPane(err));
+    }
+  }
+
+  // ---------- RS card ----------
+  async function renderRSCard() {
+    const card = document.querySelector('#rs-card .content');
+    card.innerHTML = skeleton(2);
+    try {
+      const r = await api(`/rs/candidates/${TICKER}`).catch(() => null);
+      if (!r) { card.innerHTML = `<div class="muted">No RS data for ${TICKER}.</div>`; return; }
+      const score = Number(r.rs_score || 0);
+      const conds = [
+        { label: 'RS pct ≥ 75', on: Number(r.rs_percentile || 0) >= 75 },
+        { label: 'RS new high (63d)', on: !!r.rs_new_high_63d },
+        { label: 'RS-before-price', on: !!r.rs_new_high_before_price },
+        { label: 'Px > 200d', on: !!r.price_above_200d_ma },
+        { label: 'Px > 50w', on: !!r.price_above_50w_ma },
+      ];
+      const dotsHtml = conds.map(c => `<span class="dot ${c.on ? 'on' : ''}" title="${c.label}"></span>`).join('');
+      card.innerHTML = `
+        <div class="row-line"><span class="muted">RS Score</span><span class="mono">${score.toFixed(0)}</span></div>
+        <div class="gauge" style="margin:6px 0 12px"><div class="gauge-fill" style="width:${score}%"></div></div>
+        <div class="row-line"><span class="muted">Percentile</span><span class="mono">${Number(r.rs_percentile||0).toFixed(0)}</span></div>
+        <div class="row-line"><span class="muted">RS new high</span><span class="mono">${r.rs_new_high_63d ? '✓' : '—'}</span></div>
+        <div class="row-line"><span class="muted">RS-before-price</span><span class="mono">${r.rs_new_high_before_price ? '✓' : '—'}</span></div>
+        <div class="row-line"><span class="muted">Conditions</span><span class="dots">${dotsHtml}</span></div>
+      `;
+    } catch (err) { card.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Macro mini ----------
+  async function renderMacroMini() {
+    const el = document.querySelector('#macro-mini .content');
+    el.innerHTML = skeleton(3);
+    try {
+      const b = await api('/agents/brief/latest');
+      if (!b || b.error) { el.innerHTML = `<div class="muted">No brief.</div>`; return; }
+      const briefText = b.brief || b.exec_summary || b.narrative || '';
+      const tags = (b.narrative_tags || []).slice(0, 8);
+      const tagFilter = tags.filter(t => String(t).toUpperCase().includes(TICKER));
+      const showTags = tagFilter.length ? tagFilter : tags;
+      el.innerHTML = `
+        <div class="flex gap-8" style="margin-bottom:8px;flex-wrap:wrap">
+          <span class="badge ${regimeClass(b.regime || b.dominant_regime)}">${b.regime || b.dominant_regime || '—'}</span>
+          <span class="badge ${regimeClass(b.risk_level)}">RISK: ${b.risk_level || '—'}</span>
+        </div>
+        <div class="muted" style="font-size:11.5px;line-height:1.6">${(b.dominant_signal || '').slice(0, 200)}</div>
+        <details style="margin-top:8px">
+          <summary class="muted uppercase" style="font-size:10px;cursor:pointer">Full brief</summary>
+          <div style="margin-top:8px;font-size:11.5px;white-space:pre-wrap">${String(briefText).slice(0, 2000)}</div>
+        </details>
+        <div class="flex gap-8" style="margin-top:10px;flex-wrap:wrap">${showTags.map(t => `<span class="pill">${t}</span>`).join('')}</div>
+        <div class="muted" style="font-size:10px;margin-top:8px">${b.generated_at || ''}</div>
+      `;
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Trade Plan chat ----------
+  function renderChatHistory() {
+    const wrap = document.getElementById('tp-history');
+    wrap.innerHTML = chatMessages.map(m => `
+      <div class="chat-msg ${m.role}">${m.role === 'system' ? '⚙ ' : ''}${escapeHtml(m.content)}</div>
+    `).join('');
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function dealerContext() {
+    if (!dealerCache) return null;
+    const r = dealerCache;
+    const spot = Number(r.spot || 0);
+    const cwPct = spot && r.call_wall ? ((Number(r.call_wall) - spot) / spot * 100) : 0;
+    const pwPct = spot && r.put_wall ? ((Number(r.put_wall) - spot) / spot * 100) : 0;
+    return {
+      ticker: TICKER, spot,
+      king_node: r.king_node, call_wall: r.call_wall, put_wall: r.put_wall,
+      regime: r.regime,
+      call_wall_pct: cwPct, put_wall_pct: pwPct,
+    };
+  }
+
+  async function sendChat() {
+    const inp = document.getElementById('tp-input');
+    const btn = document.getElementById('tp-send');
+    const text = inp.value.trim();
+    if (!text) return;
+    chatMessages.push({ role: 'user', content: text });
+    inp.value = '';
+    renderChatHistory();
+    btn.disabled = true;
+    try {
+      const result = await apiPost('/agents/chat', {
+        messages: chatMessages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+        context: dealerContext(),
+      });
+      const reply = result.reply || result.error || '(no reply)';
+      chatMessages.push({ role: 'assistant', content: reply });
+      renderChatHistory();
+    } catch (err) {
+      chatMessages.push({ role: 'assistant', content: 'Error: ' + (err.message || err) });
+      renderChatHistory();
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ---------- Init ----------
+  async function refresh() {
+    await renderDealer();
+    renderHeatmap();
+    renderRSCard();
+    renderMacroMini();
+    renderContracts('bullish');
+  }
+
+  ready(() => {
+    renderNav('symbol');
+    document.title = `AION · ${TICKER}`;
+    loadTradingView();
+
+    document.querySelectorAll('#contracts-card button[data-bias]').forEach(b => {
+      b.addEventListener('click', () => renderContracts(b.dataset.bias));
+    });
+
+    document.querySelectorAll('#strike-group button').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('#strike-group button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        strikeRange = Number(b.dataset.v);
+        renderHeatmap();
+      });
+    });
+    document.querySelectorAll('#expiry-group button').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('#expiry-group button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        expiryCount = Number(b.dataset.v);
+        renderHeatmap();
+      });
+    });
+
+    document.getElementById('tp-send').addEventListener('click', sendChat);
+    document.getElementById('tp-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); sendChat(); }
+    });
+
+    chatMessages.push({ role: 'system', content: `Trade Plan agent loaded for ${TICKER}. Ask about levels, sizing, stops.` });
+    renderChatHistory();
+
+    refresh();
+    setInterval(() => { renderDealer(); renderHeatmap(); }, 30000);
+  });
+  </script>
+</body>
+</html>

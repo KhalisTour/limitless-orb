@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AION TERMINAL — RS Screener</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-dim);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+    .event-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-dim);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="container">
+    <div class="section-header">
+      <h1 class="gradient-text" style="font-size:22px;letter-spacing:3px">B-Universe RS Screener</h1>
+      <div class="section-meta" id="header-meta">Last scan: — · — passing / — scanned</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="flex gap-12" style="align-items:center;flex-wrap:wrap">
+        <button class="primary" id="btn-run-scan">Run Scan</button>
+        <label class="flex gap-8" style="align-items:center;font-size:11px;color:var(--text-dim)">
+          <input type="checkbox" id="force-refresh"> Force refresh
+        </label>
+        <span style="margin-left:18px" class="muted uppercase">Filter</span>
+        <select id="cond-filter">
+          <option value="3">≥ 3/5</option>
+          <option value="4">≥ 4/5</option>
+          <option value="5">5/5 only</option>
+        </select>
+        <span class="muted mono" id="scan-status" style="margin-left:auto;font-size:10.5px"></span>
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="row row-4">
+      <div class="card"><div class="stat-label">Total Passing</div><div class="stat-value cyan" id="stat-passing">—</div></div>
+      <div class="card"><div class="stat-label">RS New High</div><div class="stat-value green" id="stat-rsnh">—</div></div>
+      <div class="card"><div class="stat-label">RS Before Price</div><div class="stat-value amber" id="stat-rsbp">—</div></div>
+      <div class="card"><div class="stat-label">Scan Age</div><div class="stat-value" id="stat-age">—</div></div>
+    </div>
+
+    <!-- LEADERS TABLE -->
+    <div class="card" style="margin-bottom:16px">
+      <h3>Leaders</h3>
+      <div style="overflow-x:auto">
+        <table class="table" id="leaders-table">
+          <thead><tr>
+            <th data-sort="ticker">Ticker</th>
+            <th data-sort="rs_score">RS Score</th>
+            <th>Conditions</th>
+            <th data-sort="rs_new_high_63d">RS NH</th>
+            <th data-sort="rs_new_high_before_price">RS-Before-Px</th>
+            <th data-sort="conditions_met">Met</th>
+            <th>Promote</th>
+          </tr></thead>
+          <tbody><tr><td colspan="7" class="muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="row row-2">
+      <div class="card">
+        <h3>Historical Snapshots</h3>
+        <div id="history-timeline">Loading…</div>
+      </div>
+      <div class="card">
+        <h3>RS Event Feed</h3>
+        <div id="event-feed">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/shared.js"></script>
+  <script>
+  const { api, apiPost, renderNav, skeleton, errorPane, fmtTime, goToSymbol, ready } = AION;
+
+  let candidates = [];
+  let sortKey = 'rs_score';
+  let sortAsc = false;
+  let condFilter = 3;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function ageString(iso) {
+    if (!iso) return '—';
+    try {
+      const dt = new Date(iso);
+      const ms = Date.now() - dt.getTime();
+      const m = Math.floor(ms / 60000);
+      if (m < 60) return `${m}m`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h`;
+      return `${Math.floor(h / 24)}d`;
+    } catch { return '—'; }
+  }
+
+  async function loadCandidates() {
+    try {
+      candidates = await api('/rs/candidates?min_percentile=0&min_conditions=0&limit=500');
+    } catch (err) {
+      candidates = [];
+      document.querySelector('#leaders-table tbody').innerHTML = `<tr><td colspan="7">${errorPane(err)}</td></tr>`;
+    }
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector('#leaders-table tbody');
+    const filtered = candidates.filter(r => Number(r.conditions_met || 0) >= condFilter);
+    const sorted = filtered.slice().sort((a, b) => {
+      const av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'number' || typeof bv === 'number') {
+        return sortAsc ? Number(av || 0) - Number(bv || 0) : Number(bv || 0) - Number(av || 0);
+      }
+      return sortAsc ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
+    });
+    if (!sorted.length) { tbody.innerHTML = `<tr><td colspan="7" class="muted">No candidates passing.</td></tr>`; return; }
+    tbody.innerHTML = sorted.map(r => {
+      const score = Number(r.rs_score || 0);
+      const conds = [
+        Number(r.rs_percentile || 0) >= 75,
+        !!r.rs_new_high_63d,
+        !!r.rs_new_high_before_price,
+        !!r.price_above_200d_ma,
+        !!r.price_above_50w_ma,
+      ];
+      const dots = conds.map(c => `<span class="dot ${c ? 'on' : ''}"></span>`).join('');
+      const promoted = !!r.promoted;
+      return `<tr>
+        <td><a class="mono" href="javascript:void(0)" data-go="${r.ticker}">${r.ticker}</a></td>
+        <td>
+          <div class="mono">${score.toFixed(1)}</div>
+          <div class="gauge" style="width:90px;margin-top:3px"><div class="gauge-fill" style="width:${score}%"></div></div>
+        </td>
+        <td><span class="dots">${dots}</span></td>
+        <td>${r.rs_new_high_63d ? '✓' : '—'}</td>
+        <td>${r.rs_new_high_before_price ? '<span style="color:var(--amber)">✓</span>' : '—'}</td>
+        <td>${r.conditions_met}</td>
+        <td><button data-promote="${r.ticker}" class="${promoted ? 'primary' : ''}">${promoted ? 'Promoted' : 'Promote'}</button></td>
+      </tr>`;
+    }).join('');
+    tbody.querySelectorAll('a[data-go]').forEach(a => a.addEventListener('click', () => goToSymbol(a.dataset.go)));
+    tbody.querySelectorAll('button[data-promote]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true;
+      try { await apiPost(`/rs/promote/${b.dataset.promote}`, {}); b.textContent = 'Promoted'; b.classList.add('primary'); }
+      catch (err) { alert('Promote failed: ' + err.message); b.disabled = false; }
+    }));
+  }
+
+  async function loadStatus() {
+    try {
+      const s = await api('/rs/scan/status');
+      document.getElementById('stat-passing').textContent = s.candidates_passing ?? '—';
+      document.getElementById('stat-age').textContent = ageString(s.last_run);
+      document.getElementById('header-meta').textContent =
+        `Last scan: ${fmtTime(s.last_run)} · ${s.candidates_passing} passing / ${s.candidates_total} scanned`;
+    } catch (err) {
+      document.getElementById('header-meta').innerHTML = errorPane(err);
+    }
+    const rsnh = candidates.filter(r => r.rs_new_high_63d).length;
+    const rsbp = candidates.filter(r => r.rs_new_high_before_price).length;
+    document.getElementById('stat-rsnh').textContent = rsnh;
+    document.getElementById('stat-rsbp').textContent = rsbp;
+  }
+
+  async function loadHistory() {
+    const el = document.getElementById('history-timeline');
+    try {
+      const rows = await api('/rs/history');
+      if (!rows || !rows.length) { el.innerHTML = `<div class="muted">No prior scans.</div>`; return; }
+      el.innerHTML = rows.map(r => `
+        <div class="timeline-item">
+          <div>
+            <div class="mono">${(r.scan_ts || '').slice(0, 16)}</div>
+            <div class="muted" style="font-size:10px">${r.total_passing} passing</div>
+          </div>
+          <div class="flex gap-8" style="flex-wrap:wrap">
+            ${(r.top_tickers || []).map(t => {
+              const cls = t.rs_new_high_before_price ? 'amber' : 'green';
+              return `<span class="pill ${cls}" data-go="${t.ticker}">${t.ticker} · ${Number(t.rs_score || 0).toFixed(0)}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+      el.querySelectorAll('.pill[data-go]').forEach(p => p.addEventListener('click', () => goToSymbol(p.dataset.go)));
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  async function loadEvents() {
+    const el = document.getElementById('event-feed');
+    try {
+      const events = await api('/rs/events');
+      if (!events || !events.length) { el.innerHTML = `<div class="muted">No leadership events.</div>`; return; }
+      el.innerHTML = events.slice(0, 30).map(e => {
+        let color = 'var(--cyan)';
+        const kind = String(e.event_type || e.kind || '').toLowerCase();
+        if (kind.includes('new_high') || kind.includes('enter')) color = 'var(--green)';
+        else if (kind.includes('before')) color = 'var(--amber)';
+        else if (kind.includes('exit') || kind.includes('drop')) color = 'var(--red)';
+        return `
+          <div class="event-row">
+            <span class="muted">${(e.detected_at || e.timestamp || '').slice(5, 16)}</span>
+            <span style="color:${color}">${escapeHtml(e.ticker || '')} — ${escapeHtml(e.event_type || e.kind || '')}
+              ${e.rs_score != null ? ' · ' + Number(e.rs_score).toFixed(1) : ''}
+              ${e.conditions_met != null ? ' · ' + e.conditions_met + '/5' : ''}
+            </span>
+          </div>`;
+      }).join('');
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  async function runScan() {
+    const btn = document.getElementById('btn-run-scan');
+    const status = document.getElementById('scan-status');
+    const force = document.getElementById('force-refresh').checked;
+    btn.disabled = true; status.textContent = 'Triggering scan…';
+    try {
+      const r = await apiPost('/rs/scan/trigger', { force });
+      status.textContent = r.message || 'Scan triggered';
+    } catch (err) { status.textContent = 'Error: ' + err.message; }
+    finally { btn.disabled = false; }
+  }
+
+  ready(() => {
+    renderNav('screener');
+
+    document.querySelectorAll('#leaders-table th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const k = th.dataset.sort;
+        if (sortKey === k) sortAsc = !sortAsc;
+        else { sortKey = k; sortAsc = false; }
+        renderTable();
+      });
+    });
+    document.getElementById('cond-filter').addEventListener('change', (e) => {
+      condFilter = Number(e.target.value); renderTable();
+    });
+    document.getElementById('btn-run-scan').addEventListener('click', runScan);
+
+    (async () => {
+      await loadCandidates();
+      await loadStatus();
+      loadHistory();
+      loadEvents();
+    })();
+  });
+  </script>
+</body>
+</html>

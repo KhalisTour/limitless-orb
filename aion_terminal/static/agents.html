@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AION TERMINAL — Agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .brief-list {
+      width: 240px;
+      flex-shrink: 0;
+      max-height: 660px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border-dim);
+      padding-right: 12px;
+    }
+    .brief-list .item {
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      margin-bottom: 4px;
+    }
+    .brief-list .item:hover { border-color: var(--border); }
+    .brief-list .item.active { background: rgba(0,212,255,0.06); border-color: rgba(0,212,255,0.3); }
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      text-align: center;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--cyan);
+      background: rgba(0,212,255,0.04);
+      color: var(--cyan);
+    }
+    .style-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+    .style-table th, .style-table td { padding: 6px 10px; border-bottom: 1px solid var(--border-dim); text-align: left; vertical-align: top; }
+    pre.code { background: var(--card); border: 1px solid var(--border-dim); padding: 12px; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); font-size: 11.5px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="container">
+    <div class="tab-bar">
+      <div class="tab active" data-tab="brief">Morning Brief</div>
+      <div class="tab" data-tab="chart">Chart Analysis</div>
+      <div class="tab" data-tab="trade">Trade Plan</div>
+      <div class="tab" data-tab="style">Macro Style</div>
+    </div>
+
+    <!-- BRIEF -->
+    <div class="tab-pane active" id="pane-brief">
+      <div class="card" style="display:flex;gap:16px;min-height:600px">
+        <div class="brief-list" id="brief-list"></div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="margin:0">Brief</h3>
+            <div class="flex gap-8">
+              <button class="primary" id="btn-run-brief">Run New Brief</button>
+            </div>
+          </div>
+          <div class="content" id="brief-display" style="flex:1;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="tab-pane" id="pane-chart">
+      <div class="row row-2">
+        <div class="card">
+          <h3>Upload Chart</h3>
+          <div class="drop-zone" id="chart-drop">
+            <div style="font-size:24px">⤴</div>
+            <div>Drop screenshot here, or click to upload</div>
+          </div>
+          <input type="file" id="chart-file" accept="image/*" style="display:none">
+          <div class="form-grid" style="margin-top:14px">
+            <label>Symbol</label><input id="chart-symbol" placeholder="NVDA">
+            <label>Bias hint</label>
+            <select id="chart-bias"><option value="">none</option><option>bullish</option><option>bearish</option><option>neutral</option></select>
+          </div>
+          <div style="margin-top:14px">
+            <button class="primary" id="btn-chart-analyze">Analyze</button>
+          </div>
+          <div class="muted mono" style="font-size:10px;margin-top:10px" id="chart-status"></div>
+        </div>
+        <div class="card">
+          <h3>Result</h3>
+          <div id="chart-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRADE -->
+    <div class="tab-pane" id="pane-trade">
+      <div class="card" style="display:flex;flex-direction:column;min-height:640px">
+        <details style="margin-bottom:14px">
+          <summary class="muted uppercase" style="font-size:10px;cursor:pointer">Context</summary>
+          <div class="form-grid" style="margin-top:12px">
+            <label>Ticker</label><input id="tp-ctx-ticker" placeholder="NVDA">
+            <label>P&L $</label><input id="tp-ctx-pnl" placeholder="0">
+            <label>Strike</label><input id="tp-ctx-strike" placeholder="150">
+            <label>Expiry</label><input id="tp-ctx-expiry" placeholder="2026-05-15">
+            <label>Contracts</label><input id="tp-ctx-contracts" placeholder="3">
+            <label>Entry $</label><input id="tp-ctx-entry" placeholder="2.50">
+            <label>Prior trades</label><textarea id="tp-ctx-prior" rows="2" placeholder="brief notes"></textarea>
+          </div>
+        </details>
+        <div class="chat" style="flex:1">
+          <div class="chat-history" id="trade-history"></div>
+          <div class="chat-input">
+            <textarea id="trade-input" placeholder="Ask the trade plan agent…"></textarea>
+            <button class="primary" id="trade-send">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STYLE -->
+    <div class="tab-pane" id="pane-style">
+      <div class="card">
+        <h3>Macro Style Guide</h3>
+        <div id="style-content" class="muted">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/shared.js"></script>
+  <script>
+  const { api, apiPost, renderNav, skeleton, errorPane, regimeClass, fmtTime, ready } = AION;
+
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + name));
+  }
+
+  // ---------- BRIEF ----------
+  let briefHistory = [];
+  let activeBriefIdx = 0;
+
+  async function loadLatestBrief() {
+    const display = document.getElementById('brief-display');
+    display.innerHTML = skeleton(5);
+    try {
+      const b = await api('/agents/brief/latest');
+      if (!b || b.error) {
+        display.innerHTML = `<div class="muted">No brief yet. Click "Run New Brief".</div>`;
+        return;
+      }
+      briefHistory = [b];
+      activeBriefIdx = 0;
+      renderBriefList();
+      renderBriefDisplay();
+    } catch (err) { display.innerHTML = errorPane(err); }
+  }
+
+  function renderBriefList() {
+    const el = document.getElementById('brief-list');
+    el.innerHTML = briefHistory.map((b, i) => `
+      <div class="item ${i === activeBriefIdx ? 'active' : ''}" data-i="${i}">
+        <div class="mono" style="font-size:11px">${(b.generated_at || '').slice(0, 16)}</div>
+        <div class="muted" style="font-size:10.5px;margin-top:2px">${(b.regime || b.dominant_regime || '—').slice(0, 32)}</div>
+      </div>
+    `).join('');
+    el.querySelectorAll('.item').forEach(it => it.addEventListener('click', () => {
+      activeBriefIdx = Number(it.dataset.i);
+      renderBriefList(); renderBriefDisplay();
+    }));
+  }
+
+  function renderBriefDisplay() {
+    const display = document.getElementById('brief-display');
+    const b = briefHistory[activeBriefIdx];
+    if (!b) { display.innerHTML = ''; return; }
+    const tags = (b.narrative_tags || []).slice(0, 12);
+    const briefText = b.brief || b.narrative || b.exec_summary || '';
+
+    display.innerHTML = `
+      <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:12px">
+        <span class="badge ${regimeClass(b.regime || b.dominant_regime)}">${b.regime || b.dominant_regime || '—'}</span>
+        <span class="badge ${regimeClass(b.risk_level)}">RISK: ${b.risk_level || '—'}</span>
+        <span class="muted mono" style="font-size:10px">${b.generated_at || ''}</span>
+      </div>
+      <div class="muted" style="font-size:12px;margin-bottom:10px">${(b.dominant_signal || '').slice(0, 280)}</div>
+      <div style="font-size:12.5px;line-height:1.7;white-space:pre-wrap;margin-bottom:14px">${escapeHtml(briefText)}</div>
+      <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px">${tags.map(t => `<span class="pill">${escapeHtml(String(t))}</span>`).join('')}</div>
+      <details>
+        <summary class="muted uppercase" style="font-size:10px;cursor:pointer">JSON</summary>
+        <pre class="code">${escapeHtml(JSON.stringify(b, null, 2))}</pre>
+      </details>
+    `;
+  }
+
+  async function runNewBrief() {
+    const btn = document.getElementById('btn-run-brief');
+    const display = document.getElementById('brief-display');
+    btn.disabled = true;
+    display.innerHTML = `<div class="muted mono" style="font-size:11px">Searching sources… synthesizing regime thesis…</div>` + skeleton(8);
+    try {
+      const b = await apiPost('/agents/brief', { post_tags: true });
+      briefHistory = [b].concat(briefHistory);
+      activeBriefIdx = 0;
+      renderBriefList(); renderBriefDisplay();
+    } catch (err) {
+      display.innerHTML = errorPane(err);
+    } finally { btn.disabled = false; }
+  }
+
+  // ---------- CHART ----------
+  let chartFile = null;
+
+  function setupChartTab() {
+    const dz = document.getElementById('chart-drop');
+    const fi = document.getElementById('chart-file');
+    dz.addEventListener('click', () => fi.click());
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault(); dz.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) { chartFile = e.dataTransfer.files[0]; updateDZ(); }
+    });
+    fi.addEventListener('change', () => { if (fi.files[0]) { chartFile = fi.files[0]; updateDZ(); } });
+    document.getElementById('chart-symbol').value = sessionStorage.getItem('aion_ticker') || '';
+    document.getElementById('btn-chart-analyze').addEventListener('click', analyzeChart);
+  }
+  function updateDZ() {
+    document.getElementById('chart-drop').innerHTML = `<div class="mono" style="color:var(--cyan)">✓ ${chartFile.name}</div>`;
+  }
+
+  async function analyzeChart() {
+    if (!chartFile) { document.getElementById('chart-status').textContent = 'Select an image first.'; return; }
+    const status = document.getElementById('chart-status');
+    const result = document.getElementById('chart-result');
+    result.innerHTML = skeleton(4);
+    status.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('file', chartFile);
+    const sym = document.getElementById('chart-symbol').value.trim();
+    if (sym) fd.append('symbol', sym);
+    const bias = document.getElementById('chart-bias').value;
+    if (bias) fd.append('bias_hint', bias);
+    try {
+      const res = await fetch(AION.API + '/agents/chart', { method: 'POST', body: fd });
+      const r = await res.json();
+      status.textContent = `Analyzed ${r.symbol || sym} · ${fmtTime(r.generated_at)}`;
+      const score = Number(r.setup_score || 0);
+      result.innerHTML = `
+        <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:10px">
+          <span class="badge ${regimeClass(r.bias)}">BIAS: ${r.bias || '—'}</span>
+          <span class="badge ${regimeClass(r.trend)}">TREND: ${r.trend || '—'}</span>
+          <span class="badge badge-neutral">EMA: ${r.ema_stack || '—'}</span>
+        </div>
+        <div class="row-line"><span class="muted">Setup Score</span><span class="mono">${score}/10</span></div>
+        <div class="gauge" style="margin:6px 0 12px"><div class="gauge-fill" style="width:${score * 10}%"></div></div>
+        <div class="row-line"><span class="muted">Setup class</span><span class="mono">${r.setup_class || '—'}</span></div>
+        <div class="row-line"><span class="muted">RVOL</span><span class="mono">${r.rvol_state || '—'}</span></div>
+        <div class="row-line"><span class="muted">RSI</span><span class="mono">${r.rsi_level ?? '—'} · ${r.rsi_divergence || ''}</span></div>
+        <div class="row-line"><span class="muted">Compressed</span><span class="mono">${r.compressed ? '✓' : '—'}</span></div>
+        <div class="row-line"><span class="muted">Invalidation</span><span class="mono">${r.invalidation_price_estimate ?? '—'}</span></div>
+        <div style="margin-top:10px;font-size:12px;line-height:1.6">${escapeHtml(r.brief || '')}</div>
+        <div class="flex gap-8" style="margin-top:10px;flex-wrap:wrap">
+          ${(r.warnings || []).map(w => `<span class="pill red">${escapeHtml(String(w))}</span>`).join('')}
+        </div>
+        <details style="margin-top:12px">
+          <summary class="muted uppercase" style="font-size:10px;cursor:pointer">JSON</summary>
+          <pre class="code">${escapeHtml(JSON.stringify(r, null, 2))}</pre>
+        </details>
+      `;
+    } catch (err) { result.innerHTML = errorPane(err); status.textContent = 'Failed.'; }
+  }
+
+  // ---------- TRADE ----------
+  let tradeMessages = [];
+
+  function tradeContext() {
+    const ticker = document.getElementById('tp-ctx-ticker').value.trim().toUpperCase();
+    return {
+      ticker: ticker || null,
+      session_pnl: Number(document.getElementById('tp-ctx-pnl').value) || 0,
+      strike: Number(document.getElementById('tp-ctx-strike').value) || null,
+      expiry: document.getElementById('tp-ctx-expiry').value || null,
+      contracts: Number(document.getElementById('tp-ctx-contracts').value) || null,
+      entry: Number(document.getElementById('tp-ctx-entry').value) || null,
+      prior_trades: document.getElementById('tp-ctx-prior').value || '',
+    };
+  }
+
+  function renderTrade() {
+    const wrap = document.getElementById('trade-history');
+    wrap.innerHTML = tradeMessages.map(m => `
+      <div class="chat-msg ${m.role}">${m.role === 'system' ? '⚙ ' : ''}${escapeHtml(m.content)}</div>
+    `).join('');
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  async function tradeSend() {
+    const inp = document.getElementById('trade-input');
+    const btn = document.getElementById('trade-send');
+    const txt = inp.value.trim();
+    if (!txt) return;
+    tradeMessages.push({ role: 'user', content: txt });
+    inp.value = '';
+    renderTrade();
+    btn.disabled = true;
+    try {
+      const r = await apiPost('/agents/chat', {
+        messages: tradeMessages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+        context: tradeContext(),
+      });
+      tradeMessages.push({ role: 'assistant', content: r.reply || r.error || '(no reply)' });
+      renderTrade();
+    } catch (err) {
+      tradeMessages.push({ role: 'assistant', content: 'Error: ' + (err.message || err) });
+      renderTrade();
+    } finally { btn.disabled = false; }
+  }
+
+  // ---------- STYLE ----------
+  async function loadStyleGuide() {
+    const el = document.getElementById('style-content');
+    try {
+      const res = await fetch('/static/macro_style_guide.md');
+      const txt = await res.text();
+      el.innerHTML = renderStyleMd(txt);
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  function renderStyleMd(md) {
+    // Lightweight: render headings, code fences, paragraphs
+    const lines = md.split('\n');
+    const out = [];
+    let inCode = false, codeBuf = [];
+    for (const line of lines) {
+      if (line.startsWith('```')) {
+        if (inCode) {
+          out.push(`<pre class="code">${escapeHtml(codeBuf.join('\n'))}</pre>`);
+          codeBuf = []; inCode = false;
+        } else { inCode = true; }
+        continue;
+      }
+      if (inCode) { codeBuf.push(line); continue; }
+      if (line.startsWith('# ')) out.push(`<h2 class="gradient-text" style="font-size:18px;margin:18px 0 8px">${escapeHtml(line.slice(2))}</h2>`);
+      else if (line.startsWith('## ')) out.push(`<h3 style="margin:14px 0 6px">${escapeHtml(line.slice(3))}</h3>`);
+      else if (line.startsWith('### ')) out.push(`<h4 style="margin:10px 0 4px;color:var(--cyan)">${escapeHtml(line.slice(4))}</h4>`);
+      else if (line.trim() === '') out.push('<div style="height:6px"></div>');
+      else out.push(`<div style="font-size:12.5px;line-height:1.6;margin:2px 0">${escapeHtml(line)}</div>`);
+    }
+    return out.join('');
+  }
+
+  // ---------- Utils ----------
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  ready(() => {
+    renderNav('agents');
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+    document.getElementById('btn-run-brief').addEventListener('click', runNewBrief);
+    setupChartTab();
+    document.getElementById('trade-send').addEventListener('click', tradeSend);
+    document.getElementById('trade-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); tradeSend(); }
+    });
+    tradeMessages.push({ role: 'system', content: 'Trade Plan agent ready. Set context above for tighter answers.' });
+    renderTrade();
+
+    document.getElementById('tp-ctx-ticker').value = sessionStorage.getItem('aion_ticker') || '';
+
+    loadLatestBrief();
+    loadStyleGuide();
+  });
+  </script>
+</body>
+</html>

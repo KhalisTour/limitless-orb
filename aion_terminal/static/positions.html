@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AION TERMINAL — Positions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+  <style>
+    .panel {
+      background: var(--grad-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .panel-header h3 { margin: 0; flex: 1; }
+    .col { min-height: 80px; }
+    .session-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .pos-row, .log-row {
+      display: grid;
+      grid-template-columns: 70px 130px 50px 70px 90px 70px;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border-dim);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      align-items: center;
+    }
+    .log-row {
+      grid-template-columns: 60px 60px 70px 110px 80px 70px 1fr;
+    }
+    .target-tree {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+    .target-tree .stop  { color: var(--red); }
+    .target-tree .t1, .target-tree .t2 { color: var(--green); }
+    .target-tree .runner { color: var(--cyan); }
+    .spark {
+      width: 100%;
+      height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="container">
+    <!-- SESSION HEADER -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="session-stats">
+        <div><div class="stat-label">Date</div><div class="stat-value mono" id="sh-date">—</div></div>
+        <div><div class="stat-label">P&L</div><div class="stat-value" id="sh-pnl">$0</div></div>
+        <div><div class="stat-label">Trades</div><div class="stat-value mono" id="sh-trades">0</div></div>
+        <div><div class="stat-label">Win Rate</div><div class="stat-value mono" id="sh-winrate">—</div></div>
+      </div>
+    </div>
+
+    <div class="row row-2">
+      <div class="col" id="col-left"></div>
+      <div class="col" id="col-right"></div>
+    </div>
+
+    <div id="col-bottom" style="margin-top:16px"></div>
+  </div>
+
+  <!-- PANEL TEMPLATES -->
+  <template id="tpl-engine">
+    <div class="panel" data-panel="engine" draggable="true">
+      <div class="panel-header">
+        <span class="drag-handle">⠿</span><h3>Options Decision Engine</h3>
+      </div>
+
+      <div class="row row-2" style="margin-bottom:14px">
+        <div>
+          <h4 class="muted uppercase" style="font-size:10px;letter-spacing:1.5px">Position</h4>
+          <div class="form-grid">
+            <label>Ticker</label><input id="de-ticker" placeholder="NVDA">
+            <label>Type</label>
+            <select id="de-type"><option value="C">Call</option><option value="P">Put</option></select>
+            <label>Strike</label><input id="de-strike" placeholder="150">
+            <label>Expiry</label><input type="date" id="de-expiry">
+            <label>DTE</label><input id="de-dte" readonly>
+            <label>Entry $</label><input id="de-entry" placeholder="2.50">
+            <label>Contracts</label><input id="de-contracts" placeholder="3">
+            <label>Mark $</label><input id="de-mark" placeholder="2.30">
+            <label>Delta</label><input id="de-delta" placeholder="0.35">
+            <label>Gamma</label><input id="de-gamma" placeholder="0.04">
+            <label>Theta</label><input id="de-theta" placeholder="-0.48">
+            <label>IV</label><input id="de-iv" placeholder="0.69">
+          </div>
+          <div class="muted mono" id="de-fetch-status" style="font-size:10px;margin-top:6px"></div>
+        </div>
+        <div>
+          <h4 class="muted uppercase" style="font-size:10px;letter-spacing:1.5px">Constraints</h4>
+          <div class="form-grid">
+            <label>Re-enter?</label>
+            <select id="de-reenter"><option>YES</option><option>NO</option></select>
+            <label>Cash matters?</label>
+            <select id="de-cash"><option>NO</option><option>YES</option></select>
+            <label>Overnight OK?</label>
+            <select id="de-overnight"><option>YES</option><option>NO</option></select>
+            <label>Size %BP</label><input id="de-size" placeholder="5">
+            <label>PDT remaining</label><input id="de-pdt" placeholder="3">
+          </div>
+          <div style="margin-top:14px"><button class="primary" id="de-analyze">Analyze</button></div>
+        </div>
+      </div>
+
+      <div class="engine-out" id="de-output">
+        <div class="muted">Enter a position above and click Analyze.</div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-positions">
+    <div class="panel" data-panel="positions" draggable="true">
+      <div class="panel-header"><span class="drag-handle">⠿</span><h3>Active Positions</h3></div>
+      <div id="positions-list">
+        <div class="muted">No positions yet.</div>
+      </div>
+      <div style="margin-top:12px;border-top:1px solid var(--border-dim);padding-top:10px">
+        <h4 class="muted uppercase" style="font-size:10px">Add Position</h4>
+        <div class="form-grid" style="margin-top:8px">
+          <label>Ticker</label><input id="ap-ticker">
+          <label>Type</label><select id="ap-type"><option value="C">Call</option><option value="P">Put</option></select>
+          <label>Strike</label><input id="ap-strike">
+          <label>Expiry</label><input type="date" id="ap-expiry">
+          <label>Contracts</label><input id="ap-contracts" placeholder="1">
+          <label>Entry $</label><input id="ap-entry">
+        </div>
+        <button class="primary" id="ap-add" style="margin-top:10px">Add</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-chat">
+    <div class="panel" data-panel="chat" draggable="true" style="display:flex;flex-direction:column;min-height:520px">
+      <div class="panel-header"><span class="drag-handle">⠿</span><h3>Trade Plan Chat</h3></div>
+      <div class="chat" style="flex:1">
+        <div class="chat-history" id="pos-chat-history"></div>
+        <div class="chat-input">
+          <textarea id="pos-chat-input" placeholder="Ask about a position…"></textarea>
+          <button class="primary" id="pos-chat-send">Send</button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-log">
+    <div class="panel" data-panel="log" draggable="true">
+      <div class="panel-header"><span class="drag-handle">⠿</span><h3>Session Log</h3></div>
+      <div id="session-log-list"></div>
+      <div style="margin-top:12px;border-top:1px solid var(--border-dim);padding-top:10px">
+        <h4 class="muted uppercase" style="font-size:10px">Log Trade</h4>
+        <div class="form-grid" style="margin-top:8px">
+          <label>Action</label><select id="lg-action"><option>BUY</option><option>SELL</option></select>
+          <label>Ticker</label><input id="lg-ticker">
+          <label>Contract</label><input id="lg-contract" placeholder="150C 5/15">
+          <label>Price $</label><input id="lg-price">
+          <label>Contracts</label><input id="lg-contracts" placeholder="1">
+          <label>Note</label><input id="lg-note">
+        </div>
+        <button class="primary" id="lg-add" style="margin-top:10px">Log</button>
+      </div>
+    </div>
+  </template>
+
+  <template id="tpl-levels">
+    <div class="panel" data-panel="levels" draggable="true">
+      <div class="panel-header"><span class="drag-handle">⠿</span><h3>Dealer Levels</h3></div>
+      <div class="form-grid" style="margin-bottom:10px">
+        <label>Ticker</label><input id="lv-ticker">
+      </div>
+      <button id="lv-load">Load</button>
+      <div id="lv-display" style="margin-top:10px"></div>
+    </div>
+  </template>
+
+  <script src="/static/shared.js"></script>
+  <script>
+  const { api, apiPost, renderNav, skeleton, errorPane, fmtTime, fmtPct, regimeClass,
+          deriveS1S3, deriveState, touchProbability, computeEVScore, mapScoreToAction,
+          isMarketHours, SS, ready, goToSymbol } = AION;
+
+  // ---------- Layout (drag & drop) ----------
+  const DEFAULT_LAYOUT = {
+    'col-left':  ['engine'],
+    'col-right': ['positions', 'chat', 'levels'],
+    'col-bottom':['log'],
+  };
+
+  function getLayout() { return SS.get('aion_panel_layout', DEFAULT_LAYOUT); }
+  function setLayout(l) { SS.set('aion_panel_layout', l); }
+
+  function mountPanel(name) {
+    const tpl = document.getElementById('tpl-' + name);
+    return tpl.content.firstElementChild.cloneNode(true);
+  }
+
+  function renderLayout() {
+    const layout = getLayout();
+    Object.entries(layout).forEach(([colId, panels]) => {
+      const col = document.getElementById(colId);
+      col.innerHTML = '';
+      panels.forEach(p => col.appendChild(mountPanel(p)));
+    });
+    wireDragEvents();
+    wirePanelHandlers();
+  }
+
+  let dragSource = null;
+  function wireDragEvents() {
+    document.querySelectorAll('.panel').forEach(p => {
+      p.addEventListener('dragstart', () => { dragSource = p; p.classList.add('dragging'); });
+      p.addEventListener('dragend', () => { p.classList.remove('dragging'); dragSource = null;
+        document.querySelectorAll('.panel.drag-over').forEach(x => x.classList.remove('drag-over')); });
+      p.addEventListener('dragover', (e) => { e.preventDefault(); if (p !== dragSource) p.classList.add('drag-over'); });
+      p.addEventListener('dragleave', () => p.classList.remove('drag-over'));
+      p.addEventListener('drop', (e) => {
+        e.preventDefault();
+        p.classList.remove('drag-over');
+        if (!dragSource || dragSource === p) return;
+        const targetCol = p.parentElement;
+        targetCol.insertBefore(dragSource, p);
+        persistLayout();
+      });
+    });
+    ['col-left','col-right','col-bottom'].forEach(id => {
+      const col = document.getElementById(id);
+      col.addEventListener('dragover', (e) => { e.preventDefault(); });
+      col.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (dragSource && !col.contains(dragSource)) {
+          col.appendChild(dragSource);
+          persistLayout();
+        }
+      });
+    });
+  }
+
+  function persistLayout() {
+    const layout = {};
+    ['col-left','col-right','col-bottom'].forEach(id => {
+      layout[id] = Array.from(document.getElementById(id).querySelectorAll('.panel'))
+        .map(p => p.dataset.panel);
+    });
+    setLayout(layout);
+  }
+
+  // ---------- Session state ----------
+  function todayDate() {
+    return new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+  }
+
+  function loadTrades() { return SS.get('aion_session_trades', []); }
+  function saveTrades(t) { SS.set('aion_session_trades', t); }
+  function loadPositions() { return SS.get('aion_session_positions', []); }
+  function savePositions(p) { SS.set('aion_session_positions', p); }
+
+  function refreshSessionHeader() {
+    document.getElementById('sh-date').textContent = todayDate();
+    const trades = loadTrades();
+    const closed = trades.filter(t => t.pnl != null);
+    const total = closed.reduce((s, t) => s + Number(t.pnl || 0), 0);
+    const wins = closed.filter(t => Number(t.pnl || 0) > 0).length;
+    const wr = closed.length ? Math.round(100 * wins / closed.length) + '%' : '—';
+    const pnlEl = document.getElementById('sh-pnl');
+    pnlEl.textContent = (total >= 0 ? '+' : '-') + '$' + Math.abs(total).toFixed(0);
+    pnlEl.className = 'stat-value ' + (total >= 0 ? 'green' : 'red');
+    document.getElementById('sh-trades').textContent = trades.length;
+    document.getElementById('sh-winrate').textContent = wr;
+  }
+
+  // ---------- Decision engine handlers ----------
+  function dteFromExpiry(exp) {
+    if (!exp) return 0;
+    const today = new Date();
+    const e = new Date(exp + 'T16:00:00');
+    return Math.max(0, Math.round((e - today) / (1000 * 60 * 60 * 24)));
+  }
+
+  async function deFetchAuto() {
+    const status = document.getElementById('de-fetch-status');
+    const ticker = document.getElementById('de-ticker').value.trim().toUpperCase();
+    if (!ticker) return;
+    status.textContent = `Fetching ${ticker}…`;
+    try {
+      const r = await api(`/rankings/${ticker}`);
+      status.textContent = `${ticker} · spot $${Number(r.spot).toFixed(2)} · ${r.regime || ''}`;
+      window.__deDealer = {
+        spot: r.spot, king_node: r.king_node, call_wall: r.call_wall, put_wall: r.put_wall,
+        regime: r.regime,
+        call_wall_pct: r.spot && r.call_wall ? ((Number(r.call_wall) - Number(r.spot)) / Number(r.spot) * 100) : 0,
+        put_wall_pct: r.spot && r.put_wall ? ((Number(r.put_wall) - Number(r.spot)) / Number(r.spot) * 100) : 0,
+      };
+    } catch (err) {
+      status.textContent = 'Fetch failed: ' + err.message;
+      window.__deDealer = null;
+    }
+  }
+
+  function getEnginePosition() {
+    const exp = document.getElementById('de-expiry').value;
+    const dte = dteFromExpiry(exp);
+    document.getElementById('de-dte').value = dte;
+    return {
+      ticker: document.getElementById('de-ticker').value.trim().toUpperCase(),
+      type: document.getElementById('de-type').value,
+      strike: Number(document.getElementById('de-strike').value || 0),
+      expiry: exp,
+      dte,
+      entry_price: Number(document.getElementById('de-entry').value || 0),
+      contracts: Number(document.getElementById('de-contracts').value || 1),
+      mark: Number(document.getElementById('de-mark').value || 0),
+      delta: Number(document.getElementById('de-delta').value || 0),
+      gamma: Number(document.getElementById('de-gamma').value || 0),
+      theta: Number(document.getElementById('de-theta').value || 0),
+      iv: Number(document.getElementById('de-iv').value || 0),
+    };
+  }
+
+  function expectedPnLAtHorizon(position, dealer, sigmaDaily, horizonDays) {
+    const probTouch = touchProbability(Number(dealer.spot), Number(position.strike), sigmaDaily * Math.sqrt(252), horizonDays);
+    const expectedOptValue = probTouch * Math.max(0, Number(dealer.spot) * 1.02 - Number(position.strike))
+      + (1 - probTouch) * Math.max(0, Number(position.mark) - Math.abs(Number(position.theta)) * horizonDays);
+    return (expectedOptValue - Number(position.entry_price)) * Number(position.contracts) * 100;
+  }
+
+  function drawSparkline(canvas, points) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = canvas.clientWidth;
+    const H = canvas.height = 60;
+    ctx.clearRect(0, 0, W, H);
+    if (!points.length) return;
+    const ys = points.map(p => p.value);
+    const lo = Math.min(...ys, 0), hi = Math.max(...ys, 0);
+    const xStep = (W - 60) / Math.max(points.length - 1, 1);
+    const yScale = (v) => 8 + (H - 24) * (1 - (v - lo) / Math.max(hi - lo, 1));
+    // zero line
+    if (lo < 0 && hi > 0) {
+      const yz = yScale(0);
+      ctx.strokeStyle = 'rgba(100,116,139,0.4)';
+      ctx.beginPath(); ctx.moveTo(40, yz); ctx.lineTo(W - 12, yz); ctx.stroke();
+    }
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      const x = 40 + i * xStep, y = yScale(p.value);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px JetBrains Mono';
+    points.forEach((p, i) => {
+      const x = 40 + i * xStep;
+      ctx.fillText(p.label, x - 10, H - 4);
+      ctx.fillStyle = p.value >= 0 ? '#00ff88' : '#ff4466';
+      ctx.fillText((p.value >= 0 ? '+' : '-') + '$' + Math.abs(p.value).toFixed(0), x - 14, yScale(p.value) - 6);
+      ctx.fillStyle = '#94a3b8';
+    });
+  }
+
+  function analyzeEngine() {
+    const dealer = window.__deDealer;
+    if (!dealer || !dealer.spot) {
+      document.getElementById('de-output').innerHTML = errorPane('Enter ticker and let auto-fetch complete first.');
+      return;
+    }
+    const position = getEnginePosition();
+    const { s1, s3 } = deriveS1S3(dealer);
+    const spot = Number(dealer.spot);
+    const state = deriveState(spot, s1, s3);
+
+    // Volatility from IV (annualized)
+    const ivAnnual = Math.max(Number(position.iv) || 0.5, 0.1);
+    const sigmaDaily = ivAnnual / Math.sqrt(252);
+
+    const probs = {
+      touch_s1: touchProbability(spot, s1, ivAnnual, Math.max(position.dte, 1)),
+      touch_s3: touchProbability(spot, s3, ivAnnual, Math.max(position.dte, 1)),
+      profit_expiry: touchProbability(spot, Number(position.strike), ivAnnual, Math.max(position.dte, 1)),
+    };
+    const score = computeEVScore(position, dealer, probs);
+    const action = mapScoreToAction(score);
+
+    const callDist = dealer.call_wall_pct || 0;
+    const putDist = dealer.put_wall_pct || 0;
+    const thetaBurden = position.mark > 0 ? Math.abs(position.theta) / position.mark : 0;
+
+    document.getElementById('de-output').innerHTML = `
+      <div class="row-line">
+        <span><span class="${state.toLowerCase()}">${state}</span> &nbsp; <span class="badge ${score >= 15 ? 'badge-acceleration' : score >= 0 ? 'badge-magnet' : 'badge-danger'}">${action}</span></span>
+        <span class="muted">Confidence: ${Math.round(50 + score / 2)}%</span>
+      </div>
+      <h4>Levels</h4>
+      <div class="row-line"><span class="muted">S1</span><span class="mono">$${s1.toFixed(2)} (call wall / king)</span></div>
+      <div class="row-line"><span class="muted">S2</span><span class="mono">$${s3.toFixed(2)}–$${s1.toFixed(2)}</span></div>
+      <div class="row-line"><span class="muted">S3</span><span class="mono">$${s3.toFixed(2)} (put wall)</span></div>
+
+      <h4>Probability Engine</h4>
+      <div class="row-line"><span class="muted">P(touch S1)</span><span class="mono">${(probs.touch_s1 * 100).toFixed(0)}%</span></div>
+      <div class="gauge"><div class="gauge-fill" style="width:${probs.touch_s1 * 100}%"></div></div>
+      <div class="row-line" style="margin-top:6px"><span class="muted">P(touch S3)</span><span class="mono">${(probs.touch_s3 * 100).toFixed(0)}%</span></div>
+      <div class="gauge"><div class="gauge-fill neg" style="width:${probs.touch_s3 * 100}%;background:linear-gradient(90deg,var(--red),#aa1d33)"></div></div>
+      <div class="row-line" style="margin-top:6px"><span class="muted">P(profit expiry)</span><span class="mono">${(probs.profit_expiry * 100).toFixed(0)}%</span></div>
+      <div class="gauge"><div class="gauge-fill" style="width:${probs.profit_expiry * 100}%"></div></div>
+
+      <h4>Option Structure</h4>
+      <div class="row-line"><span class="muted">Delta</span><span class="mono">${position.delta.toFixed(2)}</span></div>
+      <div class="row-line"><span class="muted">Gamma</span><span class="mono">${position.gamma.toFixed(3)}</span></div>
+      <div class="row-line"><span class="muted">Theta</span><span class="mono">$${position.theta.toFixed(2)}/d</span></div>
+      <div class="row-line"><span class="muted">Theta burden</span><span class="mono">${(thetaBurden * 100).toFixed(0)}% / d</span></div>
+      <div class="row-line"><span class="muted">IV</span><span class="mono">${(ivAnnual * 100).toFixed(1)}%</span></div>
+
+      <h4>OI Structure</h4>
+      <div class="row-line"><span class="muted">Call wall</span><span class="mono">${fmtPct(callDist)} ${callDist > 0 && callDist < 2 ? '· PIN RISK' : ''}</span></div>
+      <div class="row-line"><span class="muted">Put wall</span><span class="mono">${fmtPct(putDist)}</span></div>
+
+      <h4>Trade Plan</h4>
+      <div class="target-tree">
+        <div>├─ <span class="t1">Target 1: $${(spot * 1.02).toFixed(2)} (king node) → TRIM 1/3</span></div>
+        <div>├─ <span class="t2">Target 2: $${s1.toFixed(2)} (call wall) → TRIM 1/3</span></div>
+        <div>├─ <span class="runner">Runner: hold 1/3 → $${(s1 * 1.03).toFixed(2)}</span></div>
+        <div>└─ <span class="stop">Stop: $${s3.toFixed(2)} (put wall breach)</span></div>
+      </div>
+
+      <h4>Invalidation</h4>
+      <div class="muted">Underlying loses $${s3.toFixed(2)} on 15m close. Option mark below $${(position.mark * 0.5).toFixed(2)} → exit.</div>
+
+      <h4>Do Not Override</h4>
+      <div class="muted">If 3pm ET and 0–2 DTE: hard exit regardless.</div>
+
+      <h4>EV Score</h4>
+      <div class="ev-bar-wrap">
+        <div class="ev-bar-zero"></div>
+        <div class="ev-bar-fill ${score < 0 ? 'neg' : ''}" style="${score >= 0 ? `left:50%;width:${score / 2}%` : `right:50%;width:${Math.abs(score) / 2}%`}"></div>
+        <div class="ev-bar-label">${score >= 0 ? '+' : ''}${score}</div>
+      </div>
+
+      <h4>Expected P&L Timeline</h4>
+      <canvas class="spark" id="ev-spark" height="60"></canvas>
+    `;
+
+    const horizons = [
+      { label: 'now', days: 0 },
+      { label: '+1h', days: 1 / 6 },
+      { label: '+4h', days: 4 / 24 },
+      { label: 'tmr', days: 1 },
+      { label: 'exp', days: Math.max(position.dte, 1) },
+    ];
+    const points = horizons.map(h => ({ label: h.label, value: expectedPnLAtHorizon(position, dealer, sigmaDaily, h.days) }));
+    drawSparkline(document.getElementById('ev-spark'), points);
+  }
+
+  // ---------- Active Positions ----------
+  async function addPosition() {
+    const ticker = document.getElementById('ap-ticker').value.trim().toUpperCase();
+    if (!ticker) return;
+    const type = document.getElementById('ap-type').value;
+    const strike = Number(document.getElementById('ap-strike').value);
+    const expiry = document.getElementById('ap-expiry').value;
+    const contracts = Number(document.getElementById('ap-contracts').value || 1);
+    const entry = Number(document.getElementById('ap-entry').value || 0);
+
+    let dealer = null;
+    try { dealer = await api(`/rankings/${ticker}`); } catch (_) {}
+
+    const positions = loadPositions();
+    positions.push({ id: Date.now(), ticker, type, strike, expiry, contracts, entry, dealer });
+    savePositions(positions);
+    renderPositions();
+  }
+
+  function renderPositions() {
+    const el = document.getElementById('positions-list');
+    if (!el) return;
+    const positions = loadPositions();
+    if (!positions.length) { el.innerHTML = `<div class="muted">No positions yet.</div>`; return; }
+    el.innerHTML = `
+      <div class="pos-row" style="color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:1.5px">
+        <span>Ticker</span><span>Contract</span><span>DTE</span><span>State</span><span>EV</span><span>Action</span>
+      </div>
+      ${positions.map(p => {
+        const dte = dteFromExpiry(p.expiry);
+        const dealer = p.dealer || {};
+        const spot = Number(dealer.spot || 0);
+        const { s1, s3 } = deriveS1S3({
+          spot, king_node: dealer.king_node, call_wall: dealer.call_wall, put_wall: dealer.put_wall,
+        });
+        const state = deriveState(spot, s1, s3);
+        const probs = {
+          touch_s1: touchProbability(spot, s1, 0.5, Math.max(dte, 1)),
+          touch_s3: touchProbability(spot, s3, 0.5, Math.max(dte, 1)),
+          profit_expiry: 0.5,
+        };
+        const score = computeEVScore(
+          { delta: 0.4, gamma: 0.05, theta: -0.4, mark: p.entry, iv: 0.6, dte, strike: p.strike },
+          { ...dealer, spot, call_wall_pct: 0, put_wall_pct: 0 },
+          probs,
+        );
+        return `<div class="pos-row" data-id="${p.id}">
+          <span class="mono" style="color:var(--cyan)">${p.ticker}</span>
+          <span class="mono">${p.strike}${p.type} ${(p.expiry || '').slice(5)}</span>
+          <span class="mono">${dte}</span>
+          <span><span class="${state.toLowerCase()}">${state}</span></span>
+          <span class="mono">$${(p.entry * p.contracts * 100).toFixed(0)}</span>
+          <span class="mono ${score >= 0 ? '' : ''}" style="color:${score >= 0 ? 'var(--green)' : 'var(--red)'}">${score >= 0 ? '+' : ''}${score}</span>
+        </div>
+        <div class="target-tree" style="margin:4px 0 12px 4px">
+          <div>├─ Entry: $${p.entry}</div>
+          <div>├─ <span class="stop">Stop: $${s3.toFixed(2)}</span></div>
+          <div>├─ <span class="t1">T1: $${((spot || p.strike) * 1.01).toFixed(2)}</span></div>
+          <div>├─ <span class="t2">T2: $${s1.toFixed(2)}</span></div>
+          <div>└─ <span class="runner">Runner</span></div>
+        </div>`;
+      }).join('')}
+    `;
+  }
+
+  // ---------- Session log ----------
+  function renderSessionLog() {
+    const el = document.getElementById('session-log-list');
+    if (!el) return;
+    const trades = loadTrades();
+    if (!trades.length) { el.innerHTML = `<div class="muted">No trades logged.</div>`; return; }
+    el.innerHTML = `
+      <div class="log-row" style="color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:1.5px">
+        <span>Time</span><span>Action</span><span>Ticker</span><span>Contract</span><span>Price</span><span>P&L</span><span>Note</span>
+      </div>
+      ${trades.map(t => {
+        const pnlText = t.pnl != null ? (t.pnl >= 0 ? `+$${Number(t.pnl).toFixed(0)}` : `-$${Math.abs(t.pnl).toFixed(0)}`) : '—';
+        const pnlColor = t.pnl == null ? 'var(--text-dim)' : t.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+        return `<div class="log-row">
+          <span class="muted">${t.time}</span>
+          <span class="mono" style="color:${t.action === 'BUY' ? 'var(--green)' : 'var(--red)'}">${t.action}</span>
+          <span class="mono">${t.ticker}</span>
+          <span class="mono">${t.contract}</span>
+          <span class="mono">$${Number(t.price).toFixed(2)}</span>
+          <span class="mono" style="color:${pnlColor}">${pnlText}</span>
+          <span class="muted">${t.note || ''}</span>
+        </div>`;
+      }).join('')}
+    `;
+  }
+
+  async function logTrade() {
+    const action = document.getElementById('lg-action').value;
+    const ticker = document.getElementById('lg-ticker').value.trim().toUpperCase();
+    const contract = document.getElementById('lg-contract').value.trim();
+    const price = Number(document.getElementById('lg-price').value || 0);
+    const contracts = Number(document.getElementById('lg-contracts').value || 1);
+    const note = document.getElementById('lg-note').value.trim();
+    if (!ticker || !contract) return;
+
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }).slice(0, 5);
+
+    const trades = loadTrades();
+    let pnl = null;
+    if (action === 'SELL') {
+      const open = trades.find(t => t.action === 'BUY' && t.ticker === ticker && t.contract === contract && t.pnl == null);
+      if (open) {
+        pnl = (price - Number(open.price)) * Number(open.contracts || contracts) * 100;
+        open.pnl = 0;
+        open._closed = true;
+      }
+    }
+    const entry = { time, action, ticker, contract, price, contracts, note, pnl };
+    trades.push(entry);
+    saveTrades(trades);
+    renderSessionLog();
+    refreshSessionHeader();
+
+    // Persist to backend
+    try {
+      await apiPost('/tags/manual', {
+        symbol: ticker,
+        tag_key: 'session_trade',
+        tag_value: `${action.toLowerCase()}_${contract}_${price}_${contracts}contracts`,
+        tag_date: new Date().toISOString().slice(0, 10),
+      });
+    } catch (err) {
+      console.warn('tag write failed', err);
+    }
+  }
+
+  // ---------- Levels panel ----------
+  async function loadLevels() {
+    const ticker = document.getElementById('lv-ticker').value.trim().toUpperCase();
+    const el = document.getElementById('lv-display');
+    if (!ticker) return;
+    el.innerHTML = skeleton(3);
+    try {
+      const r = await api(`/rankings/${ticker}`);
+      el.innerHTML = `
+        <div class="row-line"><span class="muted">${ticker} Spot</span><span class="mono">$${Number(r.spot || 0).toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">King Node</span><span class="mono" style="color:var(--amber)">$${Number(r.king_node || 0).toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">Call Wall</span><span class="mono" style="color:var(--purple)">$${Number(r.call_wall || 0).toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">Put Wall</span><span class="mono" style="color:#1e3a8a">$${Number(r.put_wall || 0).toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">Regime</span><span class="badge ${regimeClass(r.regime)}">${r.regime || '—'}</span></div>
+      `;
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Chat panel ----------
+  let posChat = [];
+  function renderPosChat() {
+    const el = document.getElementById('pos-chat-history');
+    if (!el) return;
+    el.innerHTML = posChat.map(m => `
+      <div class="chat-msg ${m.role}">${m.role === 'system' ? '⚙ ' : ''}${escapeHtml(m.content)}</div>
+    `).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+  async function posChatSend() {
+    const inp = document.getElementById('pos-chat-input');
+    const btn = document.getElementById('pos-chat-send');
+    const txt = inp.value.trim();
+    if (!txt) return;
+    posChat.push({ role: 'user', content: txt });
+    inp.value = '';
+    renderPosChat();
+    btn.disabled = true;
+    try {
+      const ctx = window.__deDealer || null;
+      const r = await apiPost('/agents/chat', {
+        messages: posChat.filter(m => m.role !== 'system'),
+        context: ctx,
+      });
+      posChat.push({ role: 'assistant', content: r.reply || r.error || '(no reply)' });
+      renderPosChat();
+    } catch (err) {
+      posChat.push({ role: 'assistant', content: 'Error: ' + (err.message || err) });
+      renderPosChat();
+    } finally { btn.disabled = false; }
+  }
+
+  // ---------- Wiring ----------
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  function wirePanelHandlers() {
+    const de = document.getElementById('de-ticker');
+    if (de) {
+      de.addEventListener('change', deFetchAuto);
+      document.getElementById('de-expiry').addEventListener('change', () => {
+        document.getElementById('de-dte').value = dteFromExpiry(document.getElementById('de-expiry').value);
+      });
+      document.getElementById('de-analyze').addEventListener('click', analyzeEngine);
+      const last = sessionStorage.getItem('aion_ticker');
+      if (last && !de.value) { de.value = last; deFetchAuto(); }
+    }
+    if (document.getElementById('ap-add')) {
+      document.getElementById('ap-add').addEventListener('click', addPosition);
+      renderPositions();
+    }
+    if (document.getElementById('lg-add')) {
+      document.getElementById('lg-add').addEventListener('click', logTrade);
+      renderSessionLog();
+    }
+    if (document.getElementById('lv-load')) {
+      document.getElementById('lv-load').addEventListener('click', loadLevels);
+      const last = sessionStorage.getItem('aion_ticker');
+      if (last) { document.getElementById('lv-ticker').value = last; loadLevels(); }
+    }
+    if (document.getElementById('pos-chat-send')) {
+      document.getElementById('pos-chat-send').addEventListener('click', posChatSend);
+      document.getElementById('pos-chat-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); posChatSend(); }
+      });
+      if (!posChat.length) {
+        posChat.push({ role: 'system', content: 'Trade Plan agent ready for position questions.' });
+        renderPosChat();
+      }
+    }
+  }
+
+  ready(() => {
+    renderNav('positions');
+    renderLayout();
+    refreshSessionHeader();
+
+    setInterval(() => {
+      if (isMarketHours()) {
+        renderPositions();
+      }
+    }, 15000);
+  });
+  </script>
+</body>
+</html>

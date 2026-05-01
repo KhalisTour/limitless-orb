@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AION TERMINAL — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/shared.css">
+</head>
+<body>
+  <div id="nav-mount"></div>
+
+  <div class="container">
+    <div class="section-header">
+      <div class="sector-bar">
+        <button class="sector-arrow" id="sector-prev">‹</button>
+        <select id="sector-select"></select>
+        <button class="sector-arrow" id="sector-next">›</button>
+      </div>
+      <div class="section-meta" id="last-updated">Last updated: —</div>
+    </div>
+
+    <!-- ROW 1: Predictive cone -->
+    <div class="row row-1">
+      <div class="card" id="cone-card">
+        <h3>Predictive Outlook Cone</h3>
+        <div class="cone-controls">
+          <span>HISTORY</span>
+          <select id="cone-history">
+            <option value="60">60d</option>
+            <option value="90" selected>90d</option>
+            <option value="120">120d</option>
+            <option value="180">180d</option>
+          </select>
+          <span style="margin-left:12px">FORECAST</span>
+          <select id="cone-forecast">
+            <option value="10">10d</option>
+            <option value="20" selected>20d</option>
+            <option value="30">30d</option>
+          </select>
+        </div>
+        <div class="cone-stats" id="cone-stats">
+          <div class="stat"><span class="stat-label">3D DRIFT</span><span class="stat-value mono" id="cs-3d">—</span></div>
+          <div class="stat"><span class="stat-label">10D DRIFT</span><span class="stat-value mono" id="cs-10d">—</span></div>
+          <div class="stat"><span class="stat-label">VOLATILITY</span><span class="stat-value mono" id="cs-vol">—</span></div>
+          <div class="stat"><span class="stat-label">REGIME BIAS</span><span class="stat-value mono" id="cs-rb">—</span></div>
+          <div class="stat"><span class="stat-label">AVG RS</span><span class="stat-value mono" id="cs-rs">—</span></div>
+          <div class="stat"><span class="stat-label">SECTOR ETF</span><span class="stat-value mono" id="cs-etf">—</span></div>
+        </div>
+        <div class="cone-wrap"><canvas id="cone-canvas"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ROW 2: 4 cards -->
+    <div class="row row-4">
+      <div class="card" id="card-macro"><h3>Macro Regime</h3><div class="content"></div></div>
+      <div class="card" id="card-rs"><h3>RS Leaders / Laggards</h3><div class="content"></div></div>
+      <div class="card" id="card-internals"><h3>Market Internals</h3><div class="content"></div></div>
+      <div class="card" id="card-sector-regime"><h3>Sector Regime</h3><div class="content"></div></div>
+    </div>
+
+    <!-- ROW 3: Ticker grid -->
+    <div class="section-header">
+      <h1 class="gradient-text" style="font-size:14px;letter-spacing:2.5px;">Sector Tickers</h1>
+    </div>
+    <div class="row" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));" id="ticker-grid"></div>
+  </div>
+
+  <script src="/static/shared.js"></script>
+  <script>
+  const { api, apiPost, SECTORS, loadBUniverseTickers, goToSymbol, runCone, percentile,
+          renderNav, skeleton, errorPane, fmtPrice, fmtPct, fmtDollar, regimeClass,
+          cmap, rgbStr, AION_STOPS, randn, invNorm, clamp, SS, ready } = AION;
+
+  let currentSector = SS.get('aion_sector', 'semis');
+  let coneCfg = { history: 90, forecast: 20 };
+
+  const SECTOR_KEYS = Object.keys(SECTORS);
+
+  function sectorIndex() { return Math.max(0, SECTOR_KEYS.indexOf(currentSector)); }
+
+  function renderSectorSelect() {
+    const sel = document.getElementById('sector-select');
+    sel.innerHTML = SECTOR_KEYS.map(k => `<option value="${k}" ${k===currentSector?'selected':''}>${SECTORS[k].name}</option>`).join('');
+    sel.addEventListener('change', () => { currentSector = sel.value; SS.set('aion_sector', currentSector); refreshAll(); });
+    document.getElementById('sector-prev').addEventListener('click', () => {
+      const i = sectorIndex();
+      currentSector = SECTOR_KEYS[(i - 1 + SECTOR_KEYS.length) % SECTOR_KEYS.length];
+      SS.set('aion_sector', currentSector); renderSectorSelect(); refreshAll();
+    });
+    document.getElementById('sector-next').addEventListener('click', () => {
+      const i = sectorIndex();
+      currentSector = SECTOR_KEYS[(i + 1) % SECTOR_KEYS.length];
+      SS.set('aion_sector', currentSector); renderSectorSelect(); refreshAll();
+    });
+  }
+
+  // ---------- Cone ----------
+  async function fetchEtfBars(symbol, days) {
+    return api(`/cone/etf-bars?symbol=${symbol}&days=${days}`);
+  }
+
+  async function loadMacroRegimeBias() {
+    try {
+      const brief = await api('/agents/brief/latest');
+      if (!brief || brief.error) return { value: 0, label: '—' };
+      const reg = String(brief.regime || brief.dominant_regime || '').toLowerCase();
+      let v = 0;
+      if (reg.includes('risk-on') || reg.includes('reflation'))      v = 0.3;
+      else if (reg.includes('disinflation'))                          v = 0.1;
+      else if (reg.includes('stagflation') || reg.includes('risk-off')) v = -0.2;
+      return { value: v, label: brief.regime || brief.dominant_regime || '—' };
+    } catch (e) { return { value: 0, label: '—' }; }
+  }
+
+  async function loadSectorRankings(tickers) {
+    const out = [];
+    await Promise.all(tickers.map(async t => {
+      try {
+        const r = await api(`/rankings/${t}`);
+        out.push({ ticker: t, ...r });
+      } catch (e) { /* skip */ }
+    }));
+    return out;
+  }
+
+  async function loadSectorRS(tickers) {
+    try {
+      const all = await api('/rs/candidates?min_percentile=0&min_conditions=0&limit=500');
+      const set = new Set(tickers.map(t => t.toUpperCase()));
+      return (all || []).filter(r => set.has(String(r.ticker).toUpperCase()));
+    } catch (e) { return []; }
+  }
+
+  function calibrateDrift(bars, rankings, rsRows, regimeBias) {
+    if (!bars || bars.length < 5) return { drift: 0, vol: 0.02, parts: { ai: 0, legacy: 0, rb: regimeBias.value } };
+    const closes = bars.map(b => b.close);
+    const rets = [];
+    for (let i = 1; i < closes.length; i++) rets.push(Math.log(closes[i] / closes[i-1]));
+    const mean = rets.reduce((a,b) => a + b, 0) / rets.length;
+    const variance = rets.reduce((s, r) => s + (r - mean) ** 2, 0) / Math.max(rets.length - 1, 1);
+    const sigmaDaily = Math.sqrt(variance);
+
+    // RS bias
+    const rsAvg = rsRows.length
+      ? rsRows.reduce((s, r) => s + Number(r.rs_score || 0), 0) / rsRows.length
+      : 50;
+    const probUp = clamp(0.30 + (rsAvg / 100) * 0.45, 0.30, 0.75);
+    const drift_ai = invNorm(probUp) * sigmaDaily;
+
+    // Legacy: regime + king distance
+    const regimeMap = { ACCELERATION: 1.0, TREND: 0.5, RANGE: 0.0 };
+    let legacyAccum = 0, legacyN = 0;
+    rankings.forEach(r => {
+      const reg = String(r.regime || '').toUpperCase();
+      const rscore = regimeMap[reg] != null ? regimeMap[reg] : 0;
+      const kdPct = Math.abs(Number(r.king_node_distance_pct || 0));
+      const kdNorm = 1 - clamp(kdPct / 10, 0, 1);
+      legacyAccum += rscore * kdNorm;
+      legacyN += 1;
+    });
+    const legacyScore = legacyN ? legacyAccum / legacyN : 0;
+    const drift_legacy = legacyScore * sigmaDaily * 0.6;
+
+    const drift_rb = regimeBias.value * sigmaDaily;
+
+    const drift = 0.35 * drift_ai + 0.40 * drift_legacy + 0.25 * drift_rb;
+
+    // Vol scalar
+    const exposures = rankings.map(r => clamp(Math.abs(Number(r.king_node_distance_pct || 0)) / 15, 0, 1));
+    const avgExposure = exposures.length ? exposures.reduce((a,b) => a+b, 0) / exposures.length : 0;
+    const volScalar = 1.0 + (1 - avgExposure) * 0.3;
+
+    return {
+      drift,
+      vol: sigmaDaily * volScalar,
+      sigmaDaily,
+      rsAvg,
+      parts: { ai: drift_ai, legacy: drift_legacy, rb: drift_rb },
+    };
+  }
+
+  function drawCone(canvas, bars, paths, days, drift) {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.parentElement.clientWidth;
+    const H = 340;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const padL = 50, padR = 60, padT = 16, padB = 28;
+    const histN = bars.length;
+    const totalCols = histN + days;
+    const xStep = (W - padL - padR) / Math.max(totalCols - 1, 1);
+
+    // y range: from history + paths
+    let lo = Infinity, hi = -Infinity;
+    bars.forEach(b => { if (b.close < lo) lo = b.close; if (b.close > hi) hi = b.close; });
+    paths.forEach(p => p.forEach(v => { if (v < lo) lo = v; if (v > hi) hi = v; }));
+    const range = hi - lo;
+    lo -= range * 0.05; hi += range * 0.05;
+    const yScale = (v) => padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo));
+    const xScale = (i) => padL + i * xStep;
+
+    // Grid
+    ctx.strokeStyle = 'rgba(42,42,58,0.45)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = '#64748b';
+    for (let g = 0; g <= 5; g++) {
+      const v = lo + (hi - lo) * (g / 5);
+      const y = yScale(v);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillText(`$${v.toFixed(1)}`, 4, y + 3);
+    }
+
+    // Forecast bands
+    const bandsBull = drift >= 0;
+    const fillTop  = bandsBull ? 'rgba(0,255,136,0.05)' : 'rgba(255,68,102,0.05)';
+    const fillMid  = bandsBull ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,102,0.12)';
+
+    // Sample percentiles per forecast step
+    const fcCols = days + 1;
+    const p2 = [], p16 = [], p50 = [], p84 = [], p97 = [];
+    for (let d = 0; d < fcCols; d++) {
+      const col = paths.map(pp => pp[d]).sort((a, b) => a - b);
+      p2.push(percentile(col, 0.025));
+      p16.push(percentile(col, 0.16));
+      p50.push(percentile(col, 0.5));
+      p84.push(percentile(col, 0.84));
+      p97.push(percentile(col, 0.975));
+    }
+
+    const baseI = histN - 1;
+
+    function fillBand(lower, upper, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(xScale(baseI), yScale(bars[bars.length - 1].close));
+      for (let d = 0; d < fcCols; d++) ctx.lineTo(xScale(baseI + d), yScale(upper[d]));
+      for (let d = fcCols - 1; d >= 0; d--) ctx.lineTo(xScale(baseI + d), yScale(lower[d]));
+      ctx.closePath();
+      ctx.fill();
+    }
+    fillBand(p2, p97, fillTop);
+    fillBand(p16, p84, fillMid);
+
+    // Historical line
+    ctx.strokeStyle = '#00d4ff';
+    ctx.shadowColor = 'rgba(0,212,255,0.4)';
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    bars.forEach((b, i) => {
+      const x = xScale(i), y = yScale(b.close);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Today vertical
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(xScale(baseI), padT);
+    ctx.lineTo(xScale(baseI), H - padB);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Expected median
+    ctx.strokeStyle = bandsBull ? '#00ff88' : '#ff4466';
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    p50.forEach((v, d) => {
+      const x = xScale(baseI + d), y = yScale(v);
+      if (d === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // X axis labels
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px JetBrains Mono';
+    const labelEvery = Math.max(1, Math.floor(totalCols / 8));
+    for (let i = 0; i < bars.length; i += labelEvery) {
+      ctx.fillText(bars[i].date.slice(5), xScale(i) - 12, H - 8);
+    }
+    for (let d = 5; d < days; d += 5) {
+      ctx.fillText(`+${d}d`, xScale(baseI + d) - 8, H - 8);
+    }
+  }
+
+  // ---------- Macro card ----------
+  async function renderMacroCard() {
+    const el = document.querySelector('#card-macro .content');
+    el.innerHTML = skeleton(4);
+    try {
+      const b = await api('/agents/brief/latest');
+      if (!b || b.error) { el.innerHTML = `<div class="muted">No brief available.</div>`; return; }
+      const regime = b.regime || b.dominant_regime || '—';
+      const signal = b.dominant_signal || b.dominant_thesis || '';
+      const axes = b.regime_axes || {};
+      const tags = (b.narrative_tags || []).slice(0, 4);
+      const risk = b.risk_level || '—';
+      const call = b.regime_30d_call || '';
+
+      const axesHtml = Object.entries(axes).map(([k, v]) => `
+        <div class="row-line"><span class="muted uppercase" style="font-size:10px">${k}</span>
+        <span class="dots"><span class="dot ${String(v).toLowerCase().includes('on') ? 'on' : ''}"></span></span></div>
+      `).join('');
+
+      el.innerHTML = `
+        <div class="flex gap-12" style="align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <span class="badge ${regimeClass(regime)}">${regime}</span>
+          <span class="badge ${regimeClass(risk)}">RISK: ${risk}</span>
+        </div>
+        <div class="muted" style="font-size:11.5px;margin-bottom:10px">${signal.slice(0, 220)}</div>
+        ${axesHtml ? `<div class="engine-out" style="margin-bottom:10px">${axesHtml}</div>` : ''}
+        ${call ? `<div class="muted mono" style="font-size:11px;margin-bottom:8px">30D: ${call.slice(0, 180)}</div>` : ''}
+        <div class="flex gap-8" style="flex-wrap:wrap">${tags.map(t => `<span class="pill">${t}</span>`).join('')}</div>
+      `;
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  // ---------- RS card ----------
+  async function renderRSCard(tickers) {
+    const el = document.querySelector('#card-rs .content');
+    el.innerHTML = skeleton(3);
+    try {
+      const rows = await loadSectorRS(tickers);
+      const sorted = rows.slice().sort((a, b) => Number(b.rs_score || 0) - Number(a.rs_score || 0));
+      const leaders = sorted.slice(0, 5);
+      const laggards = sorted.slice(-3).reverse();
+
+      function pill(r) {
+        const dots = `<span class="dots">
+          <span class="dot ${r.price_above_200d_ma ? 'on' : ''}"></span>
+          <span class="dot ${r.price_above_50w_ma ? 'on' : ''}"></span>
+          <span class="dot ${r.rs_new_high_63d ? 'on' : ''}"></span>
+        </span>`;
+        return `<span class="pill" data-t="${r.ticker}">${r.ticker} · ${Number(r.rs_score||0).toFixed(0)} ${dots}</span>`;
+      }
+
+      el.innerHTML = `
+        <div style="margin-bottom:10px">
+          <div class="muted uppercase" style="font-size:10px;margin-bottom:6px">Leaders</div>
+          <div class="flex gap-8" style="flex-wrap:wrap">${leaders.map(pill).join('')}</div>
+        </div>
+        <div>
+          <div class="muted uppercase" style="font-size:10px;margin-bottom:6px">Laggards</div>
+          <div class="flex gap-8" style="flex-wrap:wrap">${laggards.map(pill).join('')}</div>
+        </div>
+        <div class="muted" style="font-size:10px;margin-top:10px">Top ${leaders.length}/${rows.length} · ${new Date().toLocaleTimeString()}</div>
+      `;
+      el.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => goToSymbol(p.dataset.t)));
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Internals card ----------
+  function pctClass(v) { return v > 70 ? 'green' : v > 40 ? 'cyan' : 'red'; }
+
+  async function renderInternalsCard(tickers) {
+    const el = document.querySelector('#card-internals .content');
+    el.innerHTML = skeleton(3);
+    try {
+      const tickerBars = [];
+      await Promise.all(tickers.slice(0, 12).map(async t => {
+        try {
+          const r = await api(`/cone/etf-bars?symbol=${t}&days=260`);
+          if (r && r.bars && r.bars.length) tickerBars.push({ ticker: t, bars: r.bars });
+        } catch (_) {}
+      }));
+      if (!tickerBars.length) { el.innerHTML = `<div class="muted">No bars available.</div>`; return; }
+
+      function pctAboveMA(period) {
+        let total = 0, hits = 0;
+        tickerBars.forEach(({ bars }) => {
+          if (bars.length < period) return;
+          const last = bars[bars.length - 1].close;
+          const slice = bars.slice(-period);
+          const ma = slice.reduce((s, b) => s + b.close, 0) / slice.length;
+          total++;
+          if (last > ma) hits++;
+        });
+        return total ? Math.round(100 * hits / total) : 0;
+      }
+      function pctNewHigh(period) {
+        let total = 0, hits = 0;
+        tickerBars.forEach(({ bars }) => {
+          if (bars.length < period) return;
+          const slice = bars.slice(-period);
+          const max = Math.max(...slice.map(b => b.close));
+          total++;
+          if (slice[slice.length - 1].close >= max) hits++;
+        });
+        return total ? Math.round(100 * hits / total) : 0;
+      }
+      function pctNewLow(period) {
+        let total = 0, hits = 0;
+        tickerBars.forEach(({ bars }) => {
+          if (bars.length < period) return;
+          const slice = bars.slice(-period);
+          const min = Math.min(...slice.map(b => b.close));
+          total++;
+          if (slice[slice.length - 1].close <= min) hits++;
+        });
+        return total ? Math.round(100 * hits / total) : 0;
+      }
+
+      const ma = { 10: pctAboveMA(10), 20: pctAboveMA(20), 50: pctAboveMA(50), 100: pctAboveMA(100), 200: pctAboveMA(200) };
+      const hi = { 4: pctNewHigh(20), 8: pctNewHigh(40), 52: pctNewHigh(252) };
+      const lo = { 4: pctNewLow(20), 52: pctNewLow(252) };
+
+      function row(label, periods, vals) {
+        return `<tr><td class="muted">${label}</td>${periods.map(p => `<td class="${pctClass(vals[p])}" style="color:var(--${pctClass(vals[p])})">${vals[p]}%</td>`).join('')}</tr>`;
+      }
+
+      el.innerHTML = `
+        <table class="table" style="margin-bottom:10px">
+          <thead><tr><th>% Above MA</th><th>10</th><th>20</th><th>50</th><th>100</th><th>200</th></tr></thead>
+          <tbody>${row('Above', [10,20,50,100,200], ma)}</tbody>
+        </table>
+        <table class="table" style="margin-bottom:10px">
+          <thead><tr><th>New Highs</th><th>4w</th><th>8w</th><th>52w</th></tr></thead>
+          <tbody>${row('Hi', [4,8,52], hi)}</tbody>
+        </table>
+        <table class="table">
+          <thead><tr><th>New Lows</th><th>4w</th><th>52w</th></tr></thead>
+          <tbody>${row('Lo', [4,52], lo)}</tbody>
+        </table>
+      `;
+    } catch (err) { el.innerHTML = errorPane(err); }
+  }
+
+  // ---------- Sector regime card ----------
+  async function renderSectorRegimeCard(rankings) {
+    const el = document.querySelector('#card-sector-regime .content');
+    if (!rankings.length) { el.innerHTML = `<div class="muted">No data.</div>`; return; }
+    const dist = { ACCELERATION: 0, TREND: 0, RANGE: 0, OTHER: 0 };
+    let callPct = 0, putPct = 0, n = 0;
+    let s1 = 0, s2 = 0, s3 = 0;
+    rankings.forEach(r => {
+      const reg = String(r.regime || '').toUpperCase();
+      if (dist[reg] != null) dist[reg]++; else dist.OTHER++;
+      const cd = Number(((r.dealer_distances || {}).call_wall_pct) || r.call_wall_pct || 0);
+      const pd = Number(((r.dealer_distances || {}).put_wall_pct)  || r.put_wall_pct || 0);
+      callPct += Math.abs(cd); putPct += Math.abs(pd); n++;
+      const sigCount = (r.signals || []).length;
+      if (sigCount > 0) s1++;
+      else if (reg === 'RANGE') s2++;
+      else s3++;
+    });
+    const dom = Object.entries(dist).sort((a, b) => b[1] - a[1])[0][0];
+    const distHtml = Object.entries(dist).filter(([k]) => k !== 'OTHER').map(([k, v]) => `
+      <div class="row-line"><span class="muted">${k}</span><span class="mono">${v}</span></div>
+    `).join('');
+
+    el.innerHTML = `
+      <div style="margin-bottom:10px"><span class="badge ${regimeClass(dom)}">DOMINANT: ${dom}</span></div>
+      <div class="engine-out" style="margin-bottom:10px">${distHtml}</div>
+      <div class="row-line"><span class="muted">Avg call wall</span><span class="mono">${(callPct/n).toFixed(2)}%</span></div>
+      <div class="row-line"><span class="muted">Avg put wall</span><span class="mono">${(putPct/n).toFixed(2)}%</span></div>
+      <div class="flex gap-8" style="margin-top:10px">
+        <span class="s1">S1: ${s1}</span><span class="s2">S2: ${s2}</span><span class="s3">S3: ${s3}</span>
+      </div>
+    `;
+  }
+
+  // ---------- Ticker grid ----------
+  function tickerCard(r) {
+    const reg = String(r.regime || '').toUpperCase();
+    const spot = Number(r.spot || 0);
+    const cw = Number(r.call_wall || 0), pw = Number(r.put_wall || 0), king = Number(r.king_node || 0);
+    const cwPct = spot ? (cw - spot) / spot * 100 : 0;
+    const pwPct = spot ? (pw - spot) / spot * 100 : 0;
+    const sig = (r.signals || [])[0];
+    const sigHtml = sig ? `<div class="badge ${regimeClass(sig.kind || sig.bias)}" style="margin-top:4px">${sig.kind || sig.signal || ''}</div>` : '';
+    const change = Number(r.change_pct || 0);
+    const changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
+    return `
+      <div class="card ticker-card" data-t="${r.ticker}">
+        <div class="row1">
+          <span class="symbol">${r.ticker}</span>
+          <span class="badge ${regimeClass(reg)}">${reg || '—'}</span>
+        </div>
+        <div class="row1">
+          <span class="price">$${spot.toFixed(2)}</span>
+          <span class="mono" style="color:${changeColor}">${fmtPct(change)}</span>
+        </div>
+        <div class="meta">
+          King: $${king.toFixed(2)} · Call: $${cw.toFixed(2)} (${fmtPct(cwPct)}) · Put: $${pw.toFixed(2)} (${fmtPct(pwPct)})
+        </div>
+        ${sigHtml}
+      </div>
+    `;
+  }
+
+  function renderTickerGrid(rankings) {
+    const grid = document.getElementById('ticker-grid');
+    if (!rankings.length) { grid.innerHTML = `<div class="muted">No tickers loaded.</div>`; return; }
+    grid.innerHTML = rankings.map(tickerCard).join('');
+    grid.querySelectorAll('.ticker-card').forEach(el => {
+      el.addEventListener('click', () => goToSymbol(el.dataset.t));
+    });
+  }
+
+  // ---------- Master refresh ----------
+  async function refreshAll() {
+    document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+    document.getElementById('cs-etf').textContent = SECTORS[currentSector].etf;
+    if (currentSector === 'b_universe' && !SECTORS.b_universe.tickers.length) await loadBUniverseTickers();
+    const tickers = SECTORS[currentSector].tickers;
+    const etf = SECTORS[currentSector].etf;
+    coneCfg.history = Number(document.getElementById('cone-history').value);
+    coneCfg.forecast = Number(document.getElementById('cone-forecast').value);
+
+    // Cone
+    try {
+      const [bars, rankings, rs, regimeBias] = await Promise.all([
+        fetchEtfBars(etf, coneCfg.history),
+        loadSectorRankings(tickers),
+        loadSectorRS(tickers),
+        loadMacroRegimeBias(),
+      ]);
+      const cal = calibrateDrift(bars.bars || [], rankings, rs, regimeBias);
+      const lastClose = (bars.bars || []).length ? bars.bars[bars.bars.length - 1].close : 100;
+      const paths = runCone(lastClose, cal.drift, cal.vol, coneCfg.forecast, 1000);
+      drawCone(document.getElementById('cone-canvas'), bars.bars || [], paths, coneCfg.forecast, cal.drift);
+
+      document.getElementById('cs-3d').textContent  = `${(Math.exp(cal.drift * 3) - 1 >= 0 ? '+' : '')}${((Math.exp(cal.drift * 3) - 1) * 100).toFixed(2)}%`;
+      document.getElementById('cs-10d').textContent = `${(Math.exp(cal.drift * 10) - 1 >= 0 ? '+' : '')}${((Math.exp(cal.drift * 10) - 1) * 100).toFixed(2)}%`;
+      document.getElementById('cs-vol').textContent = `${(cal.vol * Math.sqrt(252) * 100).toFixed(1)}%`;
+      document.getElementById('cs-rb').textContent  = regimeBias.label || '—';
+      document.getElementById('cs-rs').textContent  = (cal.rsAvg || 0).toFixed(0);
+
+      renderRSCard(tickers);
+      renderInternalsCard(tickers);
+      renderSectorRegimeCard(rankings);
+      renderTickerGrid(rankings);
+    } catch (err) {
+      const cone = document.getElementById('cone-card').querySelector('.cone-wrap');
+      cone.innerHTML = errorPane(err, 'Cone error');
+    }
+
+    renderMacroCard();
+  }
+
+  ready(async () => {
+    renderNav('dashboard');
+    renderSectorSelect();
+    document.getElementById('cone-history').addEventListener('change', refreshAll);
+    document.getElementById('cone-forecast').addEventListener('change', refreshAll);
+    refreshAll();
+    setInterval(refreshAll, 60000);
+  });
+  </script>
+</body>
+</html>

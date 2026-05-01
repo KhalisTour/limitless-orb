@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from aion_terminal.agents.brief_agent import generate_morning_brief, post_brief_tags, save_brief_to_file
 from aion_terminal.agents.chart_agent import analyze_chart_from_bytes
+from aion_terminal.agents.prompts import TRADE_PLAN_SYSTEM_PROMPT_V3
 from aion_terminal.agents.trade_plan_agent import generate_trade_plan
 from aion_terminal.app.config import settings
 from aion_terminal.services.contract_service import get_contract_recommendation
@@ -234,3 +235,81 @@ def get_trade_plan_history(symbol: str | None = None, limit: int = 10):
     if symbol:
         rows = [r for r in rows if str(r.get("symbol", "")).upper() == symbol.upper()]
     return rows[:limit]
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(default_factory=list)
+    context: dict[str, Any] | None = None
+    max_tokens: int = 1500
+
+
+def _run_trade_plan_chat(
+    messages: list[dict[str, Any]],
+    context: dict[str, Any] | None,
+    max_tokens: int,
+) -> dict[str, Any]:
+    api_key = getattr(settings, "anthropic_api_key", "") or ""
+    if not api_key:
+        return {"reply": "", "error": "ANTHROPIC_API_KEY not configured"}
+
+    try:
+        from anthropic import Anthropic
+    except Exception as exc:
+        return {"reply": "", "error": f"anthropic_import_failed: {exc}"}
+
+    system_prompt = TRADE_PLAN_SYSTEM_PROMPT_V3
+    if context:
+        try:
+            ctx_str = json.dumps(context, indent=2, default=str)
+            system_prompt = (
+                f"{system_prompt}\n\nCurrent dealer context:\n{ctx_str}"
+            )
+        except Exception:
+            pass
+
+    client = Anthropic(api_key=api_key)
+    try:
+        response = client.messages.create(
+            model="claude-sonnet-4-5",
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=messages,
+        )
+    except Exception as exc:
+        return {"reply": "", "error": f"anthropic_call_failed: {exc}"}
+
+    text_blocks: list[str] = []
+    for block in getattr(response, "content", []) or []:
+        text = getattr(block, "text", None)
+        if text:
+            text_blocks.append(str(text))
+    reply = "\n".join(text_blocks).strip()
+    usage = getattr(response, "usage", None)
+    tokens_in = int(getattr(usage, "input_tokens", 0) or 0)
+    tokens_out = int(getattr(usage, "output_tokens", 0) or 0)
+    return {
+        "reply": reply,
+        "model": getattr(response, "model", "claude-sonnet-4-5"),
+        "tokens_in": tokens_in,
+        "tokens_out": tokens_out,
+    }
+
+
+@router.post("/agents/chat")
+async def agent_chat(payload: ChatRequest):
+    """Lightweight conversational wrapper for the Trade Plan agent."""
+    messages = [{"role": m.role, "content": m.content} for m in payload.messages]
+    if not messages:
+        return {"reply": "", "error": "messages required"}
+    result = await asyncio.to_thread(
+        _run_trade_plan_chat,
+        messages,
+        payload.context,
+        payload.max_tokens,
+    )
+    return result
