@@ -111,8 +111,7 @@
   <script src="https://s3.tradingview.com/tv.js" async></script>
   <script src="/static/shared.js"></script>
   <script>
-  const { api, apiPost, getQueryParam, renderNav, skeleton, errorPane,
-          fmtPct, fmtPrice, regimeClass, cmap, rgbStr, rgbLum, SS, ready, goToSymbol } = AION;
+  // shared.js globals available directly
 
   let TICKER = (getQueryParam('ticker') || sessionStorage.getItem('aion_ticker') || 'NVDA').toUpperCase();
   SS.set('aion_ticker', TICKER);

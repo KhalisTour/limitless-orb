@@ -69,9 +69,7 @@
 
   <script src="/static/shared.js"></script>
   <script>
-  const { api, apiPost, SECTORS, loadBUniverseTickers, goToSymbol, runCone, percentile,
-          renderNav, skeleton, errorPane, fmtPrice, fmtPct, fmtDollar, regimeClass,
-          cmap, rgbStr, AION_STOPS, randn, invNorm, clamp, SS, ready } = AION;
+  // shared.js globals available directly: api, apiPost, SECTORS, goToSymbol, etc.
 
   let currentSector = SS.get('aion_sector', 'semis');
   let coneCfg = { history: 90, forecast: 20 };
