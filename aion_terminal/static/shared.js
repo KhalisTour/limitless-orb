@@ -105,13 +105,11 @@ function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 // ---------- Color map ----------
 const AION_STOPS = [
-  [0.00, [0, 61, 92]],
-  [0.20, [0, 88, 140]],
-  [0.40, [14, 100, 140]],
-  [0.50, [20, 20, 35]],
-  [0.60, [100, 20, 100]],
-  [0.80, [180, 0, 180]],
-  [1.00, [255, 0, 220]],
+  [0.00, [255, 105, 180]],
+  [0.25, [255, 105, 180]],
+  [0.50, [123, 47, 255]],
+  [0.75, [123, 47, 255]],
+  [1.00, [123, 47, 255]],
 ];
 
 function cmap(t) {
@@ -203,8 +201,8 @@ function renderNav(activePage) {
   const navHtml = `
     <div class="nav">
       <div class="nav-logo">
-        <span class="infinity">∞</span>
-        <span class="gradient-text">AION TERMINAL</span>
+        <span class="infinity">✦</span>
+        <span class="gradient-text">ETRNL TERMINAL</span>
       </div>
       <div class="nav-links">
         <a class="nav-link ${activePage === 'dashboard' ? 'active' : ''}" href="/static/index.html">Dashboard</a>
