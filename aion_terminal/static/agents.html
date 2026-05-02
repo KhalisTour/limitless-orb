@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AION TERMINAL — Agents</title>
+  <title>ETRNL Analytics — Agents</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hedvig+Letters+Serif:opsz@12..24&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/shared.css">
   <style>
     .tab-pane { display: none; }
@@ -26,7 +26,7 @@
       margin-bottom: 4px;
     }
     .brief-list .item:hover { border-color: var(--border); }
-    .brief-list .item.active { background: rgba(0,212,255,0.06); border-color: rgba(0,212,255,0.3); }
+    .brief-list .item.active { background: rgba(255,107,0,0.06); border-color: rgba(255,107,0,0.3); }
     .drop-zone {
       border: 2px dashed var(--border);
       border-radius: 12px;
@@ -38,9 +38,9 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .drop-zone:hover, .drop-zone.dragover {
-      border-color: var(--cyan);
-      background: rgba(0,212,255,0.04);
-      color: var(--cyan);
+      border-color: var(--orange);
+      background: rgba(255,107,0,0.04);
+      color: var(--orange);
     }
     .style-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
     .style-table th, .style-table td { padding: 6px 10px; border-bottom: 1px solid var(--border-dim); text-align: left; vertical-align: top; }
@@ -234,7 +234,7 @@
     document.getElementById('btn-chart-analyze').addEventListener('click', analyzeChart);
   }
   function updateDZ() {
-    document.getElementById('chart-drop').innerHTML = `<div class="mono" style="color:var(--cyan)">✓ ${chartFile.name}</div>`;
+    document.getElementById('chart-drop').innerHTML = `<div class="mono" style="color:var(--orange)">✓ ${chartFile.name}</div>`;
   }
 
   async function analyzeChart() {
@@ -351,7 +351,7 @@
       if (inCode) { codeBuf.push(line); continue; }
       if (line.startsWith('# ')) out.push(`<h2 class="gradient-text" style="font-size:18px;margin:18px 0 8px">${escapeHtml(line.slice(2))}</h2>`);
       else if (line.startsWith('## ')) out.push(`<h3 style="margin:14px 0 6px">${escapeHtml(line.slice(3))}</h3>`);
-      else if (line.startsWith('### ')) out.push(`<h4 style="margin:10px 0 4px;color:var(--cyan)">${escapeHtml(line.slice(4))}</h4>`);
+      else if (line.startsWith('### ')) out.push(`<h4 style="margin:10px 0 4px;color:var(--orange)">${escapeHtml(line.slice(4))}</h4>`);
       else if (line.trim() === '') out.push('<div style="height:6px"></div>');
       else out.push(`<div style="font-size:12.5px;line-height:1.6;margin:2px 0">${escapeHtml(line)}</div>`);
     }

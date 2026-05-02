@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AION TERMINAL — Dashboard</title>
+  <title>ETRNL Analytics — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hedvig+Letters+Serif:opsz@12..24&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/shared.css">
 </head>
 <body>
@@ -21,43 +21,45 @@
       <div class="section-meta" id="last-updated">Last updated: —</div>
     </div>
 
-    <!-- ROW 1: Predictive cone -->
-    <div class="row row-1">
-      <div class="card" id="cone-card">
-        <h3>Predictive Outlook Cone</h3>
-        <div class="cone-controls">
-          <span>HISTORY</span>
-          <select id="cone-history">
-            <option value="60">60d</option>
-            <option value="90" selected>90d</option>
-            <option value="120">120d</option>
-            <option value="180">180d</option>
-          </select>
-          <span style="margin-left:12px">FORECAST</span>
-          <select id="cone-forecast">
-            <option value="10">10d</option>
-            <option value="20" selected>20d</option>
-            <option value="30">30d</option>
-          </select>
-        </div>
-        <div class="cone-stats" id="cone-stats">
-          <div class="stat"><span class="stat-label">3D DRIFT</span><span class="stat-value mono" id="cs-3d">—</span></div>
-          <div class="stat"><span class="stat-label">10D DRIFT</span><span class="stat-value mono" id="cs-10d">—</span></div>
-          <div class="stat"><span class="stat-label">VOLATILITY</span><span class="stat-value mono" id="cs-vol">—</span></div>
-          <div class="stat"><span class="stat-label">REGIME BIAS</span><span class="stat-value mono" id="cs-rb">—</span></div>
-          <div class="stat"><span class="stat-label">AVG RS</span><span class="stat-value mono" id="cs-rs">—</span></div>
-          <div class="stat"><span class="stat-label">SECTOR ETF</span><span class="stat-value mono" id="cs-etf">—</span></div>
-        </div>
-        <div class="cone-wrap"><canvas id="cone-canvas"></canvas></div>
-      </div>
-    </div>
-
-    <!-- ROW 2: 4 cards -->
+    <!-- ROW 1: 4 data cards -->
     <div class="row row-4">
       <div class="card" id="card-macro"><h3>Macro Regime</h3><div class="content"></div></div>
       <div class="card" id="card-rs"><h3>RS Leaders / Laggards</h3><div class="content"></div></div>
       <div class="card" id="card-internals"><h3>Market Internals</h3><div class="content"></div></div>
       <div class="card" id="card-sector-regime"><h3>Sector Regime</h3><div class="content"></div></div>
+    </div>
+
+    <!-- ROW 2: Predictive cone (collapsed by default) -->
+    <div class="row row-1">
+      <div class="card" id="cone-card">
+        <button class="cone-toggle" id="cone-toggle"><span id="cone-caret">▶</span> PREDICTIVE OUTLOOK</button>
+        <div class="cone-collapsible" id="cone-body">
+          <div class="cone-controls" style="margin-top:12px">
+            <span>HISTORY</span>
+            <select id="cone-history">
+              <option value="60">60d</option>
+              <option value="90" selected>90d</option>
+              <option value="120">120d</option>
+              <option value="180">180d</option>
+            </select>
+            <span style="margin-left:12px">FORECAST</span>
+            <select id="cone-forecast">
+              <option value="10">10d</option>
+              <option value="20" selected>20d</option>
+              <option value="30">30d</option>
+            </select>
+          </div>
+          <div class="cone-stats" id="cone-stats">
+            <div class="stat"><span class="stat-label">3D DRIFT</span><span class="stat-value mono" id="cs-3d">—</span></div>
+            <div class="stat"><span class="stat-label">10D DRIFT</span><span class="stat-value mono" id="cs-10d">—</span></div>
+            <div class="stat"><span class="stat-label">VOLATILITY</span><span class="stat-value mono" id="cs-vol">—</span></div>
+            <div class="stat"><span class="stat-label">REGIME BIAS</span><span class="stat-value mono" id="cs-rb">—</span></div>
+            <div class="stat"><span class="stat-label">AVG RS</span><span class="stat-value mono" id="cs-rs">—</span></div>
+            <div class="stat"><span class="stat-label">SECTOR ETF</span><span class="stat-value mono" id="cs-etf">—</span></div>
+          </div>
+          <div class="cone-wrap"><canvas id="cone-canvas"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- ROW 3: Ticker grid -->
@@ -208,10 +210,10 @@
     const xScale = (i) => padL + i * xStep;
 
     // Grid
-    ctx.strokeStyle = 'rgba(42,42,58,0.45)';
+    ctx.strokeStyle = 'rgba(31,31,31,0.7)';
     ctx.lineWidth = 1;
-    ctx.font = '10px JetBrains Mono';
-    ctx.fillStyle = '#64748b';
+    ctx.font = '10px "Hedvig Letters Serif", Georgia, serif';
+    ctx.fillStyle = '#888888';
     for (let g = 0; g <= 5; g++) {
       const v = lo + (hi - lo) * (g / 5);
       const y = yScale(v);
@@ -219,10 +221,10 @@
       ctx.fillText(`$${v.toFixed(1)}`, 4, y + 3);
     }
 
-    // Forecast bands
+    // Forecast bands (blue = positive drift, red = negative)
     const bandsBull = drift >= 0;
-    const fillTop  = bandsBull ? 'rgba(0,255,136,0.05)' : 'rgba(255,68,102,0.05)';
-    const fillMid  = bandsBull ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,102,0.12)';
+    const fillTop  = bandsBull ? 'rgba(68,136,255,0.06)' : 'rgba(255,51,85,0.06)';
+    const fillMid  = bandsBull ? 'rgba(68,136,255,0.14)' : 'rgba(255,51,85,0.14)';
 
     // Sample percentiles per forecast step
     const fcCols = days + 1;
@@ -250,9 +252,9 @@
     fillBand(p2, p97, fillTop);
     fillBand(p16, p84, fillMid);
 
-    // Historical line
-    ctx.strokeStyle = '#00d4ff';
-    ctx.shadowColor = 'rgba(0,212,255,0.4)';
+    // Historical line (brand orange)
+    ctx.strokeStyle = '#ff6b00';
+    ctx.shadowColor = 'rgba(255,107,0,0.4)';
     ctx.shadowBlur = 6;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -272,8 +274,8 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Expected median
-    ctx.strokeStyle = bandsBull ? '#00ff88' : '#ff4466';
+    // Expected median (blue if up-drift, red if down-drift)
+    ctx.strokeStyle = bandsBull ? '#4488ff' : '#ff3355';
     ctx.lineWidth = 1.6;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -285,8 +287,8 @@
     ctx.setLineDash([]);
 
     // X axis labels
-    ctx.fillStyle = '#64748b';
-    ctx.font = '10px JetBrains Mono';
+    ctx.fillStyle = '#888888';
+    ctx.font = '10px "Hedvig Letters Serif", Georgia, serif';
     const labelEvery = Math.max(1, Math.floor(totalCols / 8));
     for (let i = 0; i < bars.length; i += labelEvery) {
       ctx.fillText(bars[i].date.slice(5), xScale(i) - 12, H - 8);
@@ -482,16 +484,17 @@
     const sig = (r.signals || [])[0];
     const sigHtml = sig ? `<div class="badge ${regimeClass(sig.kind || sig.bias)}" style="margin-top:4px">${sig.kind || sig.signal || ''}</div>` : '';
     const change = Number(r.change_pct || 0);
-    const changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
+    const changeCls = change > 0 ? 'change-up' : change < 0 ? 'change-down' : 'change-flat';
+    const signalCls = sig ? 'has-signal' : '';
     return `
-      <div class="card ticker-card" data-t="${r.ticker}">
+      <div class="card ticker-card ${signalCls}" data-t="${r.ticker}">
         <div class="row1">
           <span class="symbol">${r.ticker}</span>
           <span class="badge ${regimeClass(reg)}">${reg || '—'}</span>
         </div>
         <div class="row1">
           <span class="price">$${spot.toFixed(2)}</span>
-          <span class="mono" style="color:${changeColor}">${fmtPct(change)}</span>
+          <span class="mono ${changeCls}">${fmtPct(change)}</span>
         </div>
         <div class="meta">
           King: $${king.toFixed(2)} · Call: $${cw.toFixed(2)} (${fmtPct(cwPct)}) · Put: $${pw.toFixed(2)} (${fmtPct(pwPct)})
@@ -556,6 +559,12 @@
     renderSectorSelect();
     document.getElementById('cone-history').addEventListener('change', refreshAll);
     document.getElementById('cone-forecast').addEventListener('change', refreshAll);
+    document.getElementById('cone-toggle').addEventListener('click', () => {
+      const body = document.getElementById('cone-body');
+      const caret = document.getElementById('cone-caret');
+      const open = body.classList.toggle('open');
+      caret.textContent = open ? '▼' : '▶';
+    });
     refreshAll();
     setInterval(refreshAll, 60000);
   });

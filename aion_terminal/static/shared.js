@@ -103,15 +103,13 @@ function invNorm(p) {
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// ---------- Color map ----------
+// ---------- Color map (pink → neutral → purple) ----------
 const AION_STOPS = [
-  [0.00, [0, 61, 92]],
-  [0.20, [0, 88, 140]],
-  [0.40, [14, 100, 140]],
-  [0.50, [20, 20, 35]],
-  [0.60, [100, 20, 100]],
-  [0.80, [180, 0, 180]],
-  [1.00, [255, 0, 220]],
+  [0.00, [255, 105, 180]],   // pink (negative)
+  [0.25, [180,  60, 130]],
+  [0.50, [ 30,  30,  35]],   // neutral center
+  [0.75, [120,  50, 200]],
+  [1.00, [123,  47, 255]],   // purple (positive)
 ];
 
 function cmap(t) {
@@ -203,8 +201,8 @@ function renderNav(activePage) {
   const navHtml = `
     <div class="nav">
       <div class="nav-logo">
-        <span class="infinity">∞</span>
-        <span class="gradient-text">AION TERMINAL</span>
+        <span class="infinity">✦</span>
+        <span class="gradient-text">ETRNL TERMINAL</span>
       </div>
       <div class="nav-links">
         <a class="nav-link ${activePage === 'dashboard' ? 'active' : ''}" href="/static/index.html">Dashboard</a>
