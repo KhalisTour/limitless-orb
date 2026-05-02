@@ -219,6 +219,10 @@
   }
 
   // ---------- Heatmap ----------
+  function toFiniteExposureNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
   async function buildGexGrid() {
     const ranking = dealerCache || await api(`/rankings/${TICKER}`);
     const expRes = await api(`/expiries/${TICKER}`).catch(() => ({ expiries: [] }));
@@ -229,12 +233,17 @@
     const grid = []; // rows = strikes, cols = expiries
     const strikeSet = new Set();
     const curves = [];
+    let invalidPoints = 0;
     await Promise.all(expiries.map(async (exp) => {
       try {
         const c = await api(`/curve/${TICKER}?expiry=${encodeURIComponent(exp)}`);
         const curve = c.curve || [];
         curves.push({ exp, curve });
-        curve.forEach(pt => strikeSet.add(Number(pt.strike)));
+        curve.forEach(pt => {
+          const strikeNum = toFiniteExposureNumber(pt?.strike);
+          if (strikeNum != null) strikeSet.add(strikeNum);
+          else invalidPoints++;
+        });
       } catch (_) { curves.push({ exp, curve: [] }); }
     }));
 
@@ -243,18 +252,24 @@
       strikes = strikes.filter(s => Math.abs(s - spot) / Math.max(spot, 1) * 100 <= strikeRange);
     }
 
+    const strikeIndex = new Map(strikes.map((s, i) => [Number(s.toFixed(6)), i]));
     const gex = strikes.map(() => Array(expiries.length).fill(0));
     const vex = strikes.map(() => Array(expiries.length).fill(0));
     curves.forEach((co, j) => {
       const exIdx = expiries.indexOf(co.exp);
       if (exIdx < 0) return;
       co.curve.forEach(pt => {
-        const i = strikes.indexOf(Number(pt.strike));
-        if (i < 0) return;
-        gex[i][exIdx] = Number(pt.gex || 0);
-        vex[i][exIdx] = Number(pt.vex || pt.vanna || 0);
+        const strikeNum = toFiniteExposureNumber(pt?.strike);
+        if (strikeNum == null) return;
+        const i = strikeIndex.get(Number(strikeNum.toFixed(6)));
+        if (i === undefined) return;
+        const gexVal = toFiniteExposureNumber(pt?.gex);
+        const vexVal = toFiniteExposureNumber(pt?.vex ?? pt?.vanna);
+        gex[i][exIdx] = gexVal == null ? 0 : gexVal;
+        vex[i][exIdx] = vexVal == null ? 0 : vexVal;
       });
     });
+    if (invalidPoints > 0) console.warn(`[symbol-heatmap] ignored ${invalidPoints} curve points with non-numeric strike`);
 
     return { strikes, expiries, gex, vex, spot, ranking };
   }

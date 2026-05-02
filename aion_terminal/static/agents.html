@@ -52,7 +52,6 @@
       <div class="tab active" data-tab="brief">Morning Brief</div>
       <div class="tab" data-tab="chart">Chart Analysis</div>
       <div class="tab" data-tab="trade">Trade Plan</div>
-      <div class="tab" data-tab="style">Macro Style</div>
     </div>
 
     <!-- BRIEF -->
@@ -123,13 +122,6 @@
       </div>
     </div>
 
-    <!-- STYLE -->
-    <div class="tab-pane" id="pane-style">
-      <div class="card">
-        <h3>Macro Style Guide</h3>
-        <div id="style-content" class="muted">Loading…</div>
-      </div>
-    </div>
   </div>
 
   <script src="/static/shared.js"></script>
@@ -322,39 +314,6 @@
     } finally { btn.disabled = false; }
   }
 
-  // ---------- STYLE ----------
-  async function loadStyleGuide() {
-    const el = document.getElementById('style-content');
-    try {
-      const res = await fetch('/static/macro_style_guide.md');
-      const txt = await res.text();
-      el.innerHTML = renderStyleMd(txt);
-    } catch (err) { el.innerHTML = errorPane(err); }
-  }
-
-  function renderStyleMd(md) {
-    // Lightweight: render headings, code fences, paragraphs
-    const lines = md.split('\n');
-    const out = [];
-    let inCode = false, codeBuf = [];
-    for (const line of lines) {
-      if (line.startsWith('```')) {
-        if (inCode) {
-          out.push(`<pre class="code">${escapeHtml(codeBuf.join('\n'))}</pre>`);
-          codeBuf = []; inCode = false;
-        } else { inCode = true; }
-        continue;
-      }
-      if (inCode) { codeBuf.push(line); continue; }
-      if (line.startsWith('# ')) out.push(`<h2 class="gradient-text" style="font-size:18px;margin:18px 0 8px">${escapeHtml(line.slice(2))}</h2>`);
-      else if (line.startsWith('## ')) out.push(`<h3 style="margin:14px 0 6px">${escapeHtml(line.slice(3))}</h3>`);
-      else if (line.startsWith('### ')) out.push(`<h4 style="margin:10px 0 4px;color:var(--cyan)">${escapeHtml(line.slice(4))}</h4>`);
-      else if (line.trim() === '') out.push('<div style="height:6px"></div>');
-      else out.push(`<div style="font-size:12.5px;line-height:1.6;margin:2px 0">${escapeHtml(line)}</div>`);
-    }
-    return out.join('');
-  }
-
   // ---------- Utils ----------
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -375,7 +334,6 @@
     document.getElementById('tp-ctx-ticker').value = sessionStorage.getItem('aion_ticker') || '';
 
     loadLatestBrief();
-    loadStyleGuide();
   });
   </script>
 </body>
