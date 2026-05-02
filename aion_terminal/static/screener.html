@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AION TERMINAL — RS Screener</title>
+  <title>ETRNL Analytics — RS Screener</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hedvig+Letters+Serif:opsz@12..24&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/shared.css">
   <style>
     .timeline-item {
@@ -159,7 +159,7 @@
         </td>
         <td><span class="dots">${dots}</span></td>
         <td>${r.rs_new_high_63d ? '✓' : '—'}</td>
-        <td>${r.rs_new_high_before_price ? '<span style="color:var(--amber)">✓</span>' : '—'}</td>
+        <td>${r.rs_new_high_before_price ? '<span style="color:var(--orange)">✓</span>' : '—'}</td>
         <td>${r.conditions_met}</td>
         <td><button data-promote="${r.ticker}" class="${promoted ? 'primary' : ''}">${promoted ? 'Promoted' : 'Promote'}</button></td>
       </tr>`;
@@ -201,8 +201,9 @@
           </div>
           <div class="flex gap-8" style="flex-wrap:wrap">
             ${(r.top_tickers || []).map(t => {
-              const cls = t.rs_new_high_before_price ? 'amber' : 'green';
-              return `<span class="pill ${cls}" data-go="${t.ticker}">${t.ticker} · ${Number(t.rs_score || 0).toFixed(0)}</span>`;
+              const cls = t.rs_new_high_before_price ? 'red' : 'green';
+              const color = t.rs_new_high_before_price ? '#ff6b00' : '#4488ff';
+              return `<span class="pill" style="color:${color};border-color:${color}66" data-go="${t.ticker}">${t.ticker} · ${Number(t.rs_score || 0).toFixed(0)}</span>`;
             }).join('')}
           </div>
         </div>
@@ -217,10 +218,10 @@
       const events = await api('/rs/events');
       if (!events || !events.length) { el.innerHTML = `<div class="muted">No leadership events.</div>`; return; }
       el.innerHTML = events.slice(0, 30).map(e => {
-        let color = 'var(--cyan)';
+        let color = 'var(--silver)';
         const kind = String(e.event_type || e.kind || '').toLowerCase();
-        if (kind.includes('new_high') || kind.includes('enter')) color = 'var(--green)';
-        else if (kind.includes('before')) color = 'var(--amber)';
+        if (kind.includes('new_high') || kind.includes('enter')) color = 'var(--blue)';
+        else if (kind.includes('before')) color = 'var(--orange)';
         else if (kind.includes('exit') || kind.includes('drop')) color = 'var(--red)';
         return `
           <div class="event-row">
