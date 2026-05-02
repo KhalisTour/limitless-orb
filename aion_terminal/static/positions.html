@@ -131,6 +131,7 @@
       <div id="positions-list">
         <div class="muted">No positions yet.</div>
       </div>
+      <div id="decision-cards" style="margin-top:14px"></div>
       <div style="margin-top:12px;border-top:1px solid var(--border-dim);padding-top:10px">
         <h4 class="muted uppercase" style="font-size:10px">Add Position</h4>
         <div class="form-grid" style="margin-top:8px">
@@ -487,7 +488,9 @@
     const el = document.getElementById('positions-list');
     if (!el) return;
     const positions = loadPositions();
-    if (!positions.length) { el.innerHTML = `<div class="muted">No positions yet.</div>`; return; }
+    if (!positions.length) { el.innerHTML = `<div class="muted">No positions yet.</div>`; renderDecisionChartCards([]); return; }
+    const normalized = positions.map(normPosition);
+    renderDecisionChartCards(normalized);
     el.innerHTML = `
       <div class="pos-row" style="color:var(--text-dim);font-size:10px;text-transform:uppercase;letter-spacing:1.5px">
         <span>Ticker</span><span>Contract</span><span>DTE</span><span>State</span><span>EV</span><span>Action</span>
@@ -527,6 +530,89 @@
         </div>`;
       }).join('')}
     `;
+  }
+
+
+
+  function normPosition(p){
+    return {
+      ticker: p.ticker || '', spot: Number(p.dealer?.spot || 0), expiry: p.expiry || '',
+      strike: Number(p.strike || 0), premium: Number(p.entry || p.entry_price || 0),
+      mark: Number(p.mark || p.entry || 0), contracts: Number(p.contracts || p.quantity || 1),
+      iv: Number(p.iv || 0.6), dte: dteFromExpiry(p.expiry)
+    };
+  }
+
+  function gaussian(){ let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+  function payoutAtExpiry(positions, S){
+    return positions.reduce((acc,p)=>{
+      const mult = 100 * Number(p.contracts || 1);
+      const type = String(p.type || 'C').toUpperCase();
+      const intrinsic = type === 'P' ? Math.max(Number(p.strike)-S,0) : Math.max(S-Number(p.strike),0);
+      return acc + (intrinsic - Number(p.premium || 0)) * mult;
+    },0);
+  }
+
+  function drawAxes(ctx,w,h,pad,xMin,xMax,yMin,yMax){
+    const plotW=w-pad.l-pad.r, plotH=h-pad.t-pad.b;
+    const x=v=>pad.l + ((v-xMin)/Math.max(xMax-xMin,1e-9))*plotW;
+    const y=v=>pad.t + ((yMax-v)/Math.max(yMax-yMin,1e-9))*plotH;
+    ctx.strokeStyle='rgba(80,95,120,.45)'; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){ const yy=pad.t+(plotH*i/4); ctx.beginPath(); ctx.moveTo(pad.l,yy); ctx.lineTo(w-pad.r,yy); ctx.stroke(); }
+    return {x,y,plotW,plotH};
+  }
+
+  function renderDecisionChartCards(positionData){
+    const mount=document.getElementById('decision-cards'); if(!mount) return;
+    if(!positionData.length){ mount.innerHTML='<div class="card"><div class="muted">No active positions for decision-engine charts.</div></div>'; return; }
+    mount.innerHTML=`<div class="decision-grid">
+      ${['payoff','fan','bars','state'].map((id,i)=>`<div class="card decision-card"><h3>${['Net Profit Curve at Expiry','Monte Carlo Fan','Time-Series Expected P&L','State Map at Final Expiry'][i]}</h3><div class="muted decision-subtitle">${['Combined positions','Auto-derived S1 / S2 / S3 overlaid','Expected mark-to-model by day','Terminal distribution vs S1/S2/S3'][i]}</div><canvas id="de-${id}" class="decision-canvas" height="220"></canvas></div>`).join('')}
+    </div>`;
+
+    const first = positionData[0] || {};
+    const spot = Number(first.spot || 0);
+    const dte = Math.max(1, ...positionData.map(p=>Number(p.dte||0)));
+    const iv = Math.max(0.1, positionData.reduce((a,p)=>a+Number(p.iv||0),0)/Math.max(positionData.length,1));
+    const strikeMean = positionData.reduce((a,p)=>a+Number(p.strike||0),0)/Math.max(positionData.length,1);
+    if(!spot || !Number.isFinite(spot)){ mount.insertAdjacentHTML('afterbegin','<div class="card"><div class="muted">Missing required field: spot price.</div></div>'); return; }
+
+    const s1 = Math.max(spot * 1.02, strikeMean * 1.01);
+    const s3 = Math.min(spot * 0.98, strikeMean * 0.99);
+
+    const sims = 200, steps=Math.max(10,Math.min(60,dte));
+    const paths = Array.from({length:sims},()=>{
+      const arr=[spot];
+      for(let t=1;t<=steps;t++){ const prev=arr[t-1]; const r=(-0.5*(iv*iv)/252)+(iv/Math.sqrt(252))*gaussian(); arr.push(prev*Math.exp(r)); }
+      return arr;
+    });
+
+    function prepCanvas(id){ const c=document.getElementById(id); const dpr=window.devicePixelRatio||1; const w=c.clientWidth||420,h=220; c.width=w*dpr; c.height=h*dpr; const ctx=c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h); return {c,ctx,w,h}; }
+
+    // payoff
+    { const {ctx,w,h}=prepCanvas('de-payoff'); const pad={l:56,r:14,t:18,b:28};
+      const xMin=spot*0.7, xMax=spot*1.3; const pts=[]; let yMin=1e9,yMax=-1e9;
+      for(let i=0;i<=120;i++){ const S=xMin+(xMax-xMin)*(i/120); const v=payoutAtExpiry(positionData,S); pts.push([S,v]); yMin=Math.min(yMin,v); yMax=Math.max(yMax,v);}
+      const m=drawAxes(ctx,w,h,pad,xMin,xMax,yMin,yMax); ctx.strokeStyle='#67e8f9'; ctx.lineWidth=2; ctx.beginPath(); pts.forEach((p,i)=>{const X=m.x(p[0]),Y=m.y(p[1]); if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y);}); ctx.stroke(); }
+
+    // fan
+    { const {ctx,w,h}=prepCanvas('de-fan'); const pad={l:56,r:14,t:18,b:28};
+      const p50=[],p10=[],p90=[]; for(let t=0;t<=steps;t++){ const col=paths.map(p=>p[t]).sort((a,b)=>a-b); const q=(u)=>col[Math.floor((col.length-1)*u)]; p10.push(q(.1)); p50.push(q(.5)); p90.push(q(.9)); }
+      const yMin=Math.min(...p10,s3)*0.99,yMax=Math.max(...p90,s1)*1.01; const m=drawAxes(ctx,w,h,pad,0,steps,yMin,yMax);
+      ctx.fillStyle='rgba(96,165,250,.20)'; ctx.beginPath(); p10.forEach((v,i)=>{const X=m.x(i),Y=m.y(v); if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y)}); for(let i=steps;i>=0;i--) ctx.lineTo(m.x(i),m.y(p90[i])); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.beginPath(); p50.forEach((v,i)=>{const X=m.x(i),Y=m.y(v); if(i===0)ctx.moveTo(X,Y); else ctx.lineTo(X,Y)}); ctx.stroke(); }
+
+    // bars
+    { const {ctx,w,h}=prepCanvas('de-bars'); const pad={l:56,r:14,t:18,b:28};
+      const vals=[]; for(let t=0;t<=steps;t++){ const avg=paths.reduce((a,p)=>a+p[t],0)/paths.length; vals.push(payoutAtExpiry(positionData,avg)); }
+      const yMin=Math.min(...vals,0),yMax=Math.max(...vals,0); const m=drawAxes(ctx,w,h,pad,0,steps,yMin,yMax); const bw=m.plotW/(steps+1)*0.72;
+      vals.forEach((v,i)=>{const x=m.x(i)-bw/2, y=m.y(Math.max(v,0)), base=m.y(Math.min(v,0)); ctx.fillStyle=v>=0?'rgba(34,197,94,.75)':'rgba(239,68,68,.78)'; ctx.fillRect(x,y,bw,base-y);}); }
+
+    // state map
+    { const {ctx,w,h}=prepCanvas('de-state'); const pad={l:56,r:14,t:18,b:28}; const terminal=paths.map(p=>p[steps]);
+      const xMin=Math.min(...terminal)*0.99,xMax=Math.max(...terminal)*1.01,bins=24,bw=(xMax-xMin)/bins,counts=Array(bins).fill(0); terminal.forEach(v=>{let i=Math.floor((v-xMin)/bw); i=Math.max(0,Math.min(bins-1,i)); counts[i]++;});
+      const m=drawAxes(ctx,w,h,pad,xMin,xMax,0,Math.max(...counts)*1.15); ctx.fillStyle='rgba(34,197,94,.12)'; ctx.fillRect(m.x(s1),pad.t,w-pad.r-m.x(s1),h-pad.b-pad.t); ctx.fillStyle='rgba(245,158,11,.1)'; ctx.fillRect(m.x(s3),pad.t,m.x(s1)-m.x(s3),h-pad.b-pad.t); ctx.fillStyle='rgba(239,68,68,.1)'; ctx.fillRect(pad.l,pad.t,m.x(s3)-pad.l,h-pad.b-pad.t);
+      counts.forEach((ct,i)=>{const st=xMin+i*bw, x=m.x(st), ww=Math.max(1,m.x(st+bw)-x-1), y=m.y(ct); ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fillRect(x,y,ww,m.y(0)-y);}); }
   }
 
   // ---------- Session log ----------
@@ -694,10 +780,9 @@
     refreshSessionHeader();
 
     setInterval(() => {
-      if (isMarketHours()) {
-        renderPositions();
-      }
+      if (isMarketHours()) { renderPositions(); }
     }, 15000);
+    window.addEventListener('resize', () => { if (document.getElementById('decision-cards')) renderPositions(); });
   });
   </script>
 </body>
