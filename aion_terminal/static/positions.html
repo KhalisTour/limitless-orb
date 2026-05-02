@@ -366,7 +366,7 @@
     points.forEach((p, i) => {
       const x = 40 + i * xStep;
       ctx.fillText(p.label, x - 10, H - 4);
-      ctx.fillStyle = p.value >= 0 ? '#00ff88' : '#ff4466';
+      ctx.fillStyle = p.value >= 0 ? '#4488ff' : '#ff3355';
       ctx.fillText((p.value >= 0 ? '+' : '-') + '$' + Math.abs(p.value).toFixed(0), x - 14, yScale(p.value) - 6);
       ctx.fillStyle = '#94a3b8';
     });
@@ -516,7 +516,7 @@
           <span class="mono">${dte}</span>
           <span><span class="${state.toLowerCase()}">${state}</span></span>
           <span class="mono">$${(p.entry * p.contracts * 100).toFixed(0)}</span>
-          <span class="mono ${score >= 0 ? '' : ''}" style="color:${score >= 0 ? 'var(--green)' : 'var(--red)'}">${score >= 0 ? '+' : ''}${score}</span>
+          <span class="mono ${score >= 0 ? '' : ''}" style="color:${score >= 0 ? 'var(--blue)' : 'var(--red)'}">${score >= 0 ? '+' : ''}${score}</span>
         </div>
         <div class="target-tree" style="margin:4px 0 12px 4px">
           <div>├─ Entry: $${p.entry}</div>
@@ -541,10 +541,10 @@
       </div>
       ${trades.map(t => {
         const pnlText = t.pnl != null ? (t.pnl >= 0 ? `+$${Number(t.pnl).toFixed(0)}` : `-$${Math.abs(t.pnl).toFixed(0)}`) : '—';
-        const pnlColor = t.pnl == null ? 'var(--text-dim)' : t.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+        const pnlColor = t.pnl == null ? 'var(--text-dim)' : t.pnl >= 0 ? 'var(--blue)' : 'var(--red)';
         return `<div class="log-row">
           <span class="muted">${t.time}</span>
-          <span class="mono" style="color:${t.action === 'BUY' ? 'var(--green)' : 'var(--red)'}">${t.action}</span>
+          <span class="mono" style="color:${t.action === 'BUY' ? 'var(--blue)' : 'var(--red)'}">${t.action}</span>
           <span class="mono">${t.ticker}</span>
           <span class="mono">${t.contract}</span>
           <span class="mono">$${Number(t.price).toFixed(2)}</span>
@@ -606,7 +606,7 @@
       const r = await api(`/rankings/${ticker}`);
       el.innerHTML = `
         <div class="row-line"><span class="muted">${ticker} Spot</span><span class="mono">$${Number(r.spot || 0).toFixed(2)}</span></div>
-        <div class="row-line"><span class="muted">King Node</span><span class="mono" style="color:var(--amber)">$${Number(r.king_node || 0).toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">King Node</span><span class="mono" style="color:var(--orange)">$${Number(r.king_node || 0).toFixed(2)}</span></div>
         <div class="row-line"><span class="muted">Call Wall</span><span class="mono" style="color:var(--purple)">$${Number(r.call_wall || 0).toFixed(2)}</span></div>
         <div class="row-line"><span class="muted">Put Wall</span><span class="mono" style="color:#1e3a8a">$${Number(r.put_wall || 0).toFixed(2)}</span></div>
         <div class="row-line"><span class="muted">Regime</span><span class="badge ${regimeClass(r.regime)}">${r.regime || '—'}</span></div>

@@ -64,7 +64,7 @@ button {
 button:hover { border-color: var(--orange); color: var(--orange); }
 button.primary {
   background: var(--grad-active);
-  color: #0a0a0f;
+  color: #000000;
   border: none;
   font-weight: 700;
 }
