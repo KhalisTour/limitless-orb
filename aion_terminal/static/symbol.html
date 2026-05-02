@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AION TERMINAL — Symbol</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>ETRNL Analytics — Symbol</title>
   <link rel="stylesheet" href="/static/shared.css">
 </head>
 <body>
@@ -132,13 +129,13 @@
       theme: 'dark',
       style: '1',
       locale: 'en',
-      toolbar_bg: '#0a0a0f',
+      toolbar_bg: '#000000',
       enable_publishing: false,
       hide_top_toolbar: false,
       hide_legend: false,
       save_image: false,
-      backgroundColor: '#0a0a0f',
-      gridColor: 'rgba(42,42,58,0.5)',
+      backgroundColor: '#000000',
+      gridColor: 'rgba(26,26,26,0.5)',
       width: '100%',
       height: 430,
       studies: ['MAExp@tv-basicstudies', 'VWAP@tv-basicstudies'],
@@ -165,7 +162,7 @@
       document.getElementById('hdr-ticker').textContent = TICKER;
       document.getElementById('hdr-spot').textContent = `$${spot.toFixed(2)}`;
       document.getElementById('hdr-change').textContent = fmtPct(change);
-      document.getElementById('hdr-change').style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('hdr-change').style.color = change >= 0 ? 'var(--blue)' : 'var(--red)';
       const rb = document.getElementById('hdr-regime');
       rb.textContent = r.regime || '—';
       rb.className = `badge ${regimeClass(r.regime)}`;
@@ -181,13 +178,13 @@
       card.innerHTML = `
         <div class="engine-out">
           <div class="row-line"><span class="muted">King Node</span>
-            <span class="mono" style="color:var(--amber)">$${king.toFixed(2)}</span></div>
+            <span class="mono" style="color:var(--orange)">$${king.toFixed(2)}</span></div>
           <div class="row-line"><span class="muted">Call Wall</span>
             <span class="mono" style="color:var(--purple)">$${cw.toFixed(2)} <span class="muted">(${fmtPct(cwPct)})</span></span></div>
           <div class="row-line"><span class="muted">Put Wall</span>
-            <span class="mono" style="color:#1e3a8a">$${pw.toFixed(2)} <span class="muted">(${fmtPct(pwPct)})</span></span></div>
+            <span class="mono" style="color:var(--blue)">$${pw.toFixed(2)} <span class="muted">(${fmtPct(pwPct)})</span></span></div>
           <div class="row-line"><span class="muted">Flip Zone</span>
-            <span class="mono" style="color:#ffd166">$${flip ? flip.toFixed(2) : '—'} <span class="muted">(${flip ? fmtPct(flipPct) : '—'})</span></span></div>
+            <span class="mono" style="color:var(--orange)">$${flip ? flip.toFixed(2) : '—'} <span class="muted">(${flip ? fmtPct(flipPct) : '—'})</span></span></div>
           <div class="row-line"><span class="muted">Regime</span>
             <span class="badge ${regimeClass(r.regime)}">${r.regime || '—'}</span></div>
         </div>
@@ -317,9 +314,9 @@
       if (spot >= lo && spot <= hi) {
         const i = strikes.length * (spot - lo) / Math.max(hi - lo, 1e-6);
         const y = padT + (strikes.length - i) * cellH;
-        ctx.fillStyle = 'rgba(0,212,255,0.10)';
+        ctx.fillStyle = 'rgba(160,160,160,0.08)';
         ctx.fillRect(padL, y - cellH / 2, W - padL - padR, cellH);
-        ctx.strokeStyle = 'rgba(0,212,255,0.7)';
+        ctx.strokeStyle = 'rgba(160,160,160,0.5)';
         ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
       }
     }
@@ -333,7 +330,7 @@
       if (bestI < 0) continue;
       const x = padL + j * cellW + cellW / 2;
       const y = padT + (strikes.length - 1 - bestI) * cellH + cellH / 2;
-      ctx.fillStyle = '#ffd166';
+      ctx.fillStyle = '#ff6b00';
       ctx.font = '11px JetBrains Mono';
       ctx.fillText('★', x - 4, y + 4);
     }
@@ -468,7 +465,7 @@
 
   ready(() => {
     renderNav('symbol');
-    document.title = `AION · ${TICKER}`;
+    document.title = `ETRNL · ${TICKER}`;
     loadTradingView();
 
     document.querySelectorAll('#contracts-card button[data-bias]').forEach(b => {

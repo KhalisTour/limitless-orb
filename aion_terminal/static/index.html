@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AION TERMINAL — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>ETRNL Analytics — Dashboard</title>
   <link rel="stylesheet" href="/static/shared.css">
 </head>
 <body>
@@ -21,10 +18,18 @@
       <div class="section-meta" id="last-updated">Last updated: —</div>
     </div>
 
-    <!-- ROW 1: Predictive cone -->
+    <!-- ROW 1: 4 cards -->
+    <div class="row row-4">
+      <div class="card" id="card-macro"><h3>Macro Regime</h3><div class="content"></div></div>
+      <div class="card" id="card-rs"><h3>RS Leaders / Laggards</h3><div class="content"></div></div>
+      <div class="card" id="card-internals"><h3>Market Internals</h3><div class="content"></div></div>
+      <div class="card" id="card-sector-regime"><h3>Sector Regime</h3><div class="content"></div></div>
+    </div>
+
+    <!-- ROW 2: Predictive cone -->
     <div class="row row-1">
       <div class="card" id="cone-card">
-        <h3>Predictive Outlook Cone</h3>
+        <h3>▶ PREDICTIVE OUTLOOK</h3>
         <div class="cone-controls">
           <span>HISTORY</span>
           <select id="cone-history">
@@ -50,14 +55,6 @@
         </div>
         <div class="cone-wrap"><canvas id="cone-canvas"></canvas></div>
       </div>
-    </div>
-
-    <!-- ROW 2: 4 cards -->
-    <div class="row row-4">
-      <div class="card" id="card-macro"><h3>Macro Regime</h3><div class="content"></div></div>
-      <div class="card" id="card-rs"><h3>RS Leaders / Laggards</h3><div class="content"></div></div>
-      <div class="card" id="card-internals"><h3>Market Internals</h3><div class="content"></div></div>
-      <div class="card" id="card-sector-regime"><h3>Sector Regime</h3><div class="content"></div></div>
     </div>
 
     <!-- ROW 3: Ticker grid -->
@@ -219,8 +216,8 @@
 
     // Forecast bands
     const bandsBull = drift >= 0;
-    const fillTop  = bandsBull ? 'rgba(0,255,136,0.05)' : 'rgba(255,68,102,0.05)';
-    const fillMid  = bandsBull ? 'rgba(0,255,136,0.12)' : 'rgba(255,68,102,0.12)';
+    const fillTop  = bandsBull ? 'rgba(68,136,255,0.05)' : 'rgba(255,51,85,0.05)';
+    const fillMid  = bandsBull ? 'rgba(68,136,255,0.12)' : 'rgba(255,51,85,0.12)';
 
     // Sample percentiles per forecast step
     const fcCols = days + 1;
@@ -271,7 +268,7 @@
     ctx.setLineDash([]);
 
     // Expected median
-    ctx.strokeStyle = bandsBull ? '#00ff88' : '#ff4466';
+    ctx.strokeStyle = bandsBull ? '#4488ff' : '#ff3355';
     ctx.lineWidth = 1.6;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -361,7 +358,7 @@
   }
 
   // ---------- Internals card ----------
-  function pctClass(v) { return v > 70 ? 'green' : v > 40 ? 'cyan' : 'red'; }
+  function pctClass(v) { return v > 70 ? 'blue' : v > 40 ? 'blue' : 'red'; }
 
   async function renderInternalsCard(tickers) {
     const el = document.querySelector('#card-internals .content');
@@ -480,7 +477,7 @@
     const sig = (r.signals || [])[0];
     const sigHtml = sig ? `<div class="badge ${regimeClass(sig.kind || sig.bias)}" style="margin-top:4px">${sig.kind || sig.signal || ''}</div>` : '';
     const change = Number(r.change_pct || 0);
-    const changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
+    const changeColor = change >= 0 ? 'var(--blue)' : 'var(--red)';
     return `
       <div class="card ticker-card" data-t="${r.ticker}">
         <div class="row1">
