@@ -47,6 +47,8 @@
           <option value="5">5/5 only</option>
         </select>
         <span class="muted mono" id="scan-status" style="margin-left:auto;font-size:10.5px"></span>
+        <div id="dot-legend" class="muted mono" style="width:100%;font-size:10px;margin-top:8px"></div>
+        <div id="rs-scale" class="muted mono" style="width:100%;font-size:10px"></div>
       </div>
     </div>
 
@@ -146,13 +148,14 @@
         !!r.price_above_200d_ma,
         !!r.price_above_50w_ma,
       ];
-      const dots = conds.map(c => `<span class="dot ${c ? 'on' : ''}"></span>`).join('');
+      const condNames=['RS pct ≥ 75','Px > 200d','Px > 50w','RS NH 63d','RS-before-Px'];
+      const dots = conds.map((c,i) => `<span class="dot ${c ? 'on' : ''}" title="${condNames[i]}: ${c ? 'pass' : 'fail'}"></span>`).join('');
       const promoted = !!r.promoted;
       return `<tr>
         <td><a class="mono" href="javascript:void(0)" data-go="${r.ticker}">${r.ticker}</a></td>
         <td>
           <div class="mono">${score.toFixed(1)}</div>
-          <div class="gauge" style="width:90px;margin-top:3px"><div class="gauge-fill" style="width:${score}%"></div></div>
+          <div class="gauge" style="width:90px;margin-top:3px;border-radius:8px;border:1px solid var(--border-dim);background:#15131f"><div class="gauge-fill" title="RS score ${score.toFixed(1)}; ${r._rsPct.toFixed(0)}% of current universe range" style="width:${r._rsPct}%;background:linear-gradient(90deg,#fbbf24,#ff6b00)"></div></div>
         </td>
         <td><span class="dots">${dots}</span></td>
         <td>${r.rs_new_high_63d ? '✓' : '—'}</td>

@@ -69,16 +69,18 @@
               <button data-v="999">ALL</button>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns: 1fr 1fr;gap:10px">
-            <div>
-              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">GEX</div>
-              <canvas id="heatmap-gex" width="380" height="380"></canvas>
-            </div>
-            <div>
-              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">VEX (≈Δ·V/Spot)</div>
-              <canvas id="heatmap-vex" width="380" height="380"></canvas>
-            </div>
+          <div>
+            <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">GEX</div>
+            <canvas id="heatmap-gex" width="760" height="380"></canvas>
           </div>
+        </div>
+
+
+
+        <div class="card" id="vex-card">
+          <h3>VEX Heatmap</h3>
+          <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">VEX — Vanna Exposure</div>
+          <canvas id="heatmap-vex" width="760" height="380"></canvas>
         </div>
 
         <div class="card" id="rs-card">
@@ -257,82 +259,42 @@
     return { strikes, expiries, gex, vex, spot, ranking };
   }
 
-  function drawHeatmap(canvas, strikes, expiries, grid, spot, ranking, label) {
+  function formatExposureDollar(v) {
+    if (v == null || Number.isNaN(v)) return '—';
+    const a = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    if (a < 1e3) return `${sign}$${a.toFixed(0)}`;
+    if (a < 1e6) return `${sign}$${(a / 1e3).toFixed(1)}K`;
+    if (a < 1e9) return `${sign}$${(a / 1e6).toFixed(2)}M`;
+    return `${sign}$${(a / 1e9).toFixed(2)}B`;
+  }
+
+  function getExposureColor(value, maxAbs) {
+    if (value == null) return 'rgba(45,31,63,0.22)';
+    const t = Math.min(1, Math.abs(value) / Math.max(maxAbs, 1));
+    const lerp = (a,b,u)=>Math.round(a+(b-a)*u);
+    const mid=[42,24,69], neg=[255,77,148], pos=[138,63,209];
+    const c = value < 0 ? [lerp(mid[0],neg[0],t),lerp(mid[1],neg[1],t),lerp(mid[2],neg[2],t)] : [lerp(mid[0],pos[0],t),lerp(mid[1],pos[1],t),lerp(mid[2],pos[2],t)];
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+
+  function drawHeatmap(canvas, strikes, expiries, grid, spot) {
     const ctx = canvas.getContext('2d');
     const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    if (!strikes.length || !expiries.length) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '12px JetBrains Mono';
-      ctx.fillText('No chain data', 12, 20);
-      return;
-    }
-
-    const padL = 60, padT = 30, padR = 8, padB = 8;
-    const cellW = (W - padL - padR) / expiries.length;
-    const cellH = (H - padT - padB) / strikes.length;
-
-    // Normalization
-    let absMax = 0;
-    grid.forEach(row => row.forEach(v => { if (Math.abs(v) > absMax) absMax = Math.abs(v); }));
-    if (absMax === 0) absMax = 1;
-
-    // Cells
-    for (let i = 0; i < strikes.length; i++) {
-      for (let j = 0; j < expiries.length; j++) {
-        const v = grid[i][j];
-        const t = 0.5 + 0.5 * (v / absMax);
-        const c = cmap(t);
-        ctx.fillStyle = rgbStr(c);
-        const y = padT + (strikes.length - 1 - i) * cellH;
-        ctx.fillRect(padL + j * cellW, y, cellW, cellH);
+    ctx.clearRect(0,0,W,H);
+    if (!strikes.length || !expiries.length) { ctx.fillStyle='#64748b'; ctx.fillText('No chain data',12,20); return; }
+    const padL=72,padT=42,padR=8,padB=10;
+    const cellW=(W-padL-padR)/expiries.length, cellH=(H-padT-padB)/strikes.length;
+    let maxAbs=0; grid.forEach(r=>r.forEach(v=>{ if(v!=null) maxAbs=Math.max(maxAbs,Math.abs(v)); })); if(!maxAbs) maxAbs=1;
+    for(let i=0;i<strikes.length;i++){
+      for(let j=0;j<expiries.length;j++){
+        const raw=grid[i][j]; const v=(raw==null?null:Number(raw));
+        const y=padT+(strikes.length-1-i)*cellH, x=padL+j*cellW;
+        ctx.fillStyle = (v==null) ? 'rgba(52,38,72,0.18)' : getExposureColor(v,maxAbs);
+        ctx.fillRect(x,y,cellW,cellH);
+        ctx.strokeStyle='rgba(14,16,24,0.85)'; ctx.strokeRect(x+0.5,y+0.5,cellW-1,cellH-1);
+        if(v!=null && cellH>14){ ctx.fillStyle='#e6edf3'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center'; ctx.fillText(formatExposureDollar(v), x+cellW/2,y+cellH/2+3); }
       }
-    }
-
-    // Labels (strikes)
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px JetBrains Mono';
-    const skipS = Math.max(1, Math.floor(strikes.length / 14));
-    for (let i = 0; i < strikes.length; i += skipS) {
-      const y = padT + (strikes.length - 1 - i) * cellH + cellH / 2 + 3;
-      ctx.fillText(`$${Number(strikes[i]).toFixed(0)}`, 4, y);
-    }
-    ctx.save();
-    ctx.translate(0, 0);
-    for (let j = 0; j < expiries.length; j++) {
-      const x = padL + j * cellW + cellW / 2;
-      const lbl = String(expiries[j]).slice(5);
-      const w = ctx.measureText(lbl).width;
-      ctx.fillText(lbl, x - w / 2, 14);
-    }
-    ctx.restore();
-
-    // Spot line
-    if (spot > 0 && strikes.length) {
-      const lo = strikes[0], hi = strikes[strikes.length - 1];
-      if (spot >= lo && spot <= hi) {
-        const i = strikes.length * (spot - lo) / Math.max(hi - lo, 1e-6);
-        const y = padT + (strikes.length - i) * cellH;
-        ctx.fillStyle = 'rgba(160,160,160,0.08)';
-        ctx.fillRect(padL, y - cellH / 2, W - padL - padR, cellH);
-        ctx.strokeStyle = 'rgba(160,160,160,0.5)';
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      }
-    }
-
-    // Star nodes per expiry (highest |GEX|)
-    for (let j = 0; j < expiries.length; j++) {
-      let bestI = -1, bestV = 0;
-      for (let i = 0; i < strikes.length; i++) {
-        if (Math.abs(grid[i][j]) > bestV) { bestV = Math.abs(grid[i][j]); bestI = i; }
-      }
-      if (bestI < 0) continue;
-      const x = padL + j * cellW + cellW / 2;
-      const y = padT + (strikes.length - 1 - bestI) * cellH + cellH / 2;
-      ctx.fillStyle = '#ff6b00';
-      ctx.font = '11px JetBrains Mono';
-      ctx.fillText('★', x - 4, y + 4);
     }
   }
 
@@ -342,8 +304,8 @@
       const data = await buildGexGrid();
       const cv1 = document.getElementById('heatmap-gex');
       const cv2 = document.getElementById('heatmap-vex');
-      drawHeatmap(cv1, data.strikes, data.expiries, data.gex, data.spot, data.ranking, 'GEX');
-      drawHeatmap(cv2, data.strikes, data.expiries, data.vex, data.spot, data.ranking, 'VEX');
+      drawHeatmap(cv1, data.strikes, data.expiries, data.gex, data.spot);
+      drawHeatmap(cv2, data.strikes, data.expiries, data.vex, data.spot);
     } catch (err) {
       card.querySelector('h3').insertAdjacentHTML('afterend', errorPane(err));
     }

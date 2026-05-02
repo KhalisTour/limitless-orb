@@ -185,7 +185,7 @@
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
     const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
     const padL = 50, padR = 60, padT = 16, padB = 28;
@@ -197,7 +197,7 @@
     let lo = Infinity, hi = -Infinity;
     bars.forEach(b => { if (b.close < lo) lo = b.close; if (b.close > hi) hi = b.close; });
     paths.forEach(p => p.forEach(v => { if (v < lo) lo = v; if (v > hi) hi = v; }));
-    const range = hi - lo;
+    const range = Math.max(hi - lo, 1e-6);
     lo -= range * 0.05; hi += range * 0.05;
     const yScale = (v) => padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo));
     const xScale = (i) => padL + i * xStep;
