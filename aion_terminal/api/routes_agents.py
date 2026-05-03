@@ -16,7 +16,7 @@ from aion_terminal.agents.prompts import TRADE_PLAN_SYSTEM_PROMPT_V3
 from aion_terminal.agents.trade_plan_agent import generate_trade_plan
 from aion_terminal.app.config import settings
 from aion_terminal.services.contract_service import get_contract_recommendation
-from aion_terminal.services.ranking_service import rank_symbol
+from aion_terminal.services.ranking_service import infer_bias, rank_symbol
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 
 router = APIRouter(tags=["agents"])
@@ -192,16 +192,24 @@ async def create_trade_plan(payload: TradePlanRequest):
         if not contract_recommendations or not any(contract_recommendations.values()):
             try:
                 setup_bias = ((rankings_payload or {}).get("top_ranked_setup") or {}).get("bias")
-                fallback_bias = setup_bias if setup_bias in {"bullish", "bearish"} else "bullish"
+                inferred_bias, inferred_warnings = infer_bias(
+                    explicit_bias=payload.user_requested_bias,
+                    setup_bias=setup_bias,
+                    ranking_bias=((rankings_payload or {}).get("bias")),
+                )
                 contract_scored = await asyncio.to_thread(
                     get_contract_recommendation,
                     payload.symbol.upper(),
-                    fallback_bias,
+                    inferred_bias,
+                    0,
+                    21,
                 )
                 contract_recommendations = {
                     "best": _normalize_contract_fields(contract_scored.get("best")),
                     "safer": _normalize_contract_fields(contract_scored.get("safer")),
                     "convex": _normalize_contract_fields(contract_scored.get("convex")),
+                    "all_scored": contract_scored.get("all_scored", [])[:10],
+                    "warnings": [*contract_scored.get("warnings", []), *inferred_warnings],
                 }
             except Exception as exc:
                 warnings.append(f"contracts_fetch_failed: {exc}")

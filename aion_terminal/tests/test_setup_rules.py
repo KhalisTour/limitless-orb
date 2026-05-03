@@ -145,6 +145,17 @@ def test_no_signals_when_conditions_not_met():
     assert signals == []
 
 
+def test_degraded_watch_setup_bullish_when_near_call_wall():
+    dealer = make_dealer(spot=352.68, king_node=355.0, call_wall=355.0, put_wall=337.5, regime="range")
+    features, state = make_technical(ema_stack="bullish_stack", trend="strong_uptrend", high_rvol=True, near_resistance=True)
+    signals = evaluate_symbol_snapshot("AMD", dealer, features, state, make_tags(), min_confidence=0.0)
+    assert signals
+    assert signals[0].setup_class == "technical_dealer_watch"
+    assert signals[0].bias == "bullish"
+    assert 0.2 <= signals[0].confidence_raw <= 0.35
+    assert "degraded_setup_candidate" in signals[0].warnings
+
+
 def test_min_confidence_filters_weak_signals():
     dealer = make_dealer(spot=96.0, king_node=95.5, put_wall=95.0, call_wall=110.0, regime="range")
     features, state = make_technical(

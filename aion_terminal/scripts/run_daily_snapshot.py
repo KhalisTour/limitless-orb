@@ -23,6 +23,7 @@ from aion_terminal.storage.repositories import (
 )
 from aion_terminal.models.dto import FeatureSnapshotRecord, SetupCandidateRecord
 from aion_terminal.utils.time_utils import utc_now_iso
+from aion_terminal.utils.math_utils import as_float
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +109,16 @@ def _open_conn():
     return conn
 
 
+def _load_daily_bars(conn, symbol: str):
+    rows = conn.execute(
+        "SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap FROM underlying_bars WHERE symbol = ? ORDER BY bar_ts DESC LIMIT 60",
+        (symbol,),
+    ).fetchall()
+    from aion_terminal.models.dto import UnderlyingBarRecord
+
+    return [UnderlyingBarRecord(symbol=r["symbol"], timeframe=r["timeframe"], bar_ts=r["bar_ts"], open=as_float(r["open"]), high=as_float(r["high"]), low=as_float(r["low"]), close=as_float(r["close"]), volume=r["volume"], vwap=as_float(r["vwap"])) for r in reversed(rows)]
+
+
 def main() -> int:
     args = parse_args()
     load_dotenv()
@@ -163,7 +174,7 @@ def main() -> int:
                     logger.info("no expiries available; skipping feature snapshot")
 
                 if not args.no_setups and refresh.levels:
-                    technical_features, technical_state = build_technical_features([], "D")
+                    technical_features, technical_state = build_technical_features(_load_daily_bars(conn, symbol), "D")
                     setups = evaluate_symbol_snapshot(
                         symbol=symbol,
                         dealer_features=refresh.levels.get("combined_levels") or refresh.levels,
@@ -191,7 +202,11 @@ def main() -> int:
                                 status="new",
                             )
                         )
-                    setup_count = insert_setup_candidates(conn, setup_records)
+                    try:
+                        setup_count = insert_setup_candidates(conn, setup_records)
+                        logger.info("setup candidates inserted symbol=%s count=%s", symbol, setup_count)
+                    except Exception as exc:
+                        logger.exception("setup candidate insertion failed symbol=%s err=%s", symbol, exc)
 
                 if not args.no_contracts and refresh.quote_price is not None:
                     rec = score_and_rank_contracts(conn, symbol=symbol, bias="bullish", spot=refresh.quote_price)

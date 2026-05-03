@@ -10,7 +10,7 @@ from aion_terminal.features.contracts import score_and_rank_contracts
 from aion_terminal.features.dealer import compute_levels
 from aion_terminal.features.technical import build_technical_features
 from aion_terminal.models.dto import ManualNarrativeTagRecord, UnderlyingBarRecord
-from aion_terminal.services.ranking_service import rank_symbol, rank_universe, get_rankings_unified
+from aion_terminal.services.ranking_service import get_rankings_unified, infer_bias, rank_symbol, rank_universe
 from aion_terminal.signals.setups import evaluate_symbol_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 from aion_terminal.storage.repositories import query_latest_chain, upsert_manual_narrative_tags
@@ -53,8 +53,8 @@ def _validate_bias(bias: str | None) -> str | None:
 def get_rankings(
     setup_class: str | None = None,
     bias: str | None = None,
-    dte_min: int = 9,
-    dte_max: int = 14,
+    dte_min: int = 0,
+    dte_max: int = 21,
     limit: int = 10,
     min_confidence: float = 0.3,
     symbol: str | None = None,
@@ -98,8 +98,8 @@ def get_rankings(
 def get_ranking_symbol(
     symbol: str,
     bias: str | None = None,
-    dte_min: int = 9,
-    dte_max: int = 14,
+    dte_min: int = 0,
+    dte_max: int = 21,
     budget: float | None = None,
     min_confidence: float = 0.3,
 ):
@@ -184,13 +184,13 @@ def get_setups_for_symbol(symbol: str):
 @router.get("/contracts/{symbol}")
 def get_contracts_for_symbol(
     symbol: str,
-    bias: str = "bearish",
-    dte_min: int = 9,
-    dte_max: int = 14,
+    bias: str | None = None,
+    dte_min: int = 0,
+    dte_max: int = 21,
     budget: float | None = None,
     refresh: bool = False,
 ):
-    selected_bias = _validate_bias(bias) or "bearish"
+    selected_bias = _validate_bias(bias)
     if refresh and not _route_refresh_allowed(refresh):
         return {
             "symbol": symbol.upper(),
@@ -223,10 +223,18 @@ def get_contracts_for_symbol(
                 }
             raise HTTPException(status_code=404, detail=f"No chain data for {symbol.upper()}")
         spot = as_float(chain[0].get("underlying_price"))
+        dealer = compute_levels(chain, spot=spot, symbol=symbol.upper())
+        rows = conn.execute(
+            """SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap FROM underlying_bars WHERE symbol = ? ORDER BY bar_ts DESC LIMIT 60""",
+            (symbol.upper(),),
+        ).fetchall()
+        bars = [UnderlyingBarRecord(symbol=r["symbol"], timeframe=r["timeframe"], bar_ts=r["bar_ts"], open=as_float(r["open"]), high=as_float(r["high"]), low=as_float(r["low"]), close=as_float(r["close"]), volume=r["volume"], vwap=as_float(r["vwap"])) for r in reversed(rows)]
+        _, technical_state = build_technical_features(bars, "D")
+        inferred_bias, bias_warnings = infer_bias(explicit_bias=selected_bias, technical_state=technical_state, dealer_features=dealer)
         rec = score_and_rank_contracts(
             conn,
             symbol.upper(),
-            selected_bias,
+            inferred_bias,
             spot,
             dte_min=dte_min,
             dte_max=dte_max,
@@ -235,13 +243,13 @@ def get_contracts_for_symbol(
         return {
             "cache_only": settings.cache_only,
             "symbol": symbol.upper(),
-            "bias": selected_bias,
+            "bias": inferred_bias,
             "spot": spot,
             "best": asdict(rec.best) if rec.best else None,
             "safer": asdict(rec.safer) if rec.safer else None,
             "convex": asdict(rec.convex) if rec.convex else None,
             "all_scored": [asdict(c) for c in rec.all_scored[:20]],
-            "warnings": rec.warnings,
+            "warnings": [*rec.warnings, *bias_warnings],
         }
     finally:
         conn.close()

@@ -143,3 +143,14 @@ def test_trade_plan_route_wires_rankings_and_contracts(monkeypatch):
     assert best["mid"] == 8.2
     assert best["oi"] == 1000
     assert best["volume"] == 220
+
+
+def test_trade_plan_route_fetches_contracts_with_new_defaults(monkeypatch):
+    ranking = SimpleNamespace(symbol="AMD", spot=350.0, call_wall=355.0, put_wall=340.0, king_node=355.0, signals=[{"bias": "bullish"}], best_contract=None, safer_contract=None, convex_contract=None)
+    captured = {}
+    monkeypatch.setattr(routes_agents, "rank_symbol", lambda *_args, **_kwargs: ranking)
+    monkeypatch.setattr(routes_agents, "get_contract_recommendation", lambda symbol, bias, dte_min, dte_max: captured.update({"symbol": symbol, "bias": bias, "dte_min": dte_min, "dte_max": dte_max}) or {"best": {"contract_symbol": "AMD260508C00400000"}, "safer": None, "convex": None, "all_scored": [], "warnings": []})
+    monkeypatch.setattr(routes_agents, "generate_trade_plan", lambda *args, **kwargs: SimpleNamespace(symbol="AMD", json_plan={"required_next_data": []}))
+    asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
+    assert captured["bias"] == "bullish"
+    assert captured["dte_min"] == 0 and captured["dte_max"] == 21
