@@ -499,5 +499,34 @@ def evaluate_symbol_snapshot(
         except Exception as exc:  # pragma: no cover
             logger.warning("setup evaluation failed for %s: %s", symbol, exc)
 
+    if not signals:
+        trend = technical_state.trend
+        ema = technical_state.ema_stack
+        bullish = ema == "bullish_stack" or trend in {"uptrend", "strong_uptrend"}
+        bearish = ema == "bearish_stack" or trend in {"downtrend", "strong_downtrend"}
+        if bullish or bearish:
+            bias = "bullish" if bullish and not bearish else "bearish"
+            king_node = as_float(dealer_features.get("king_node"))
+            call_wall = dealer_features.get("call_wall")
+            near_wall = technical_state.near_resistance or (call_wall is not None and _pct_diff(call_wall, as_float(dealer_features.get("spot"))) <= NEAR_WALL_PCT)
+            reasons = [ema, trend]
+            if technical_state.high_rvol:
+                reasons.append("high_rvol")
+            if near_wall:
+                reasons.append("near_call_wall_or_resistance")
+            if bias == "bullish" and king_node > 0:
+                reasons.append(f"acceptance_required_above:{king_node}")
+            fallback_signal = _finalize_signal(
+                    setup_class="technical_dealer_watch",
+                    bias=bias,
+                    preconditions_met=True,
+                    components={"dealer_alignment": 0.1, "technical_alignment": 0.15, "narrative_alignment": 0.0, "rvol_confirmation": 0.05 if technical_state.high_rvol else 0.0, "compression_bonus": 0.0},
+                    reasons=reasons,
+                    invalidation_price=king_node if king_node > 0 else None,
+                    invalidation_rule="acceptance_required",
+                    warnings=["degraded_setup_candidate"],
+                )
+            if fallback_signal.confidence_raw >= min_confidence:
+                signals.append(fallback_signal)
     signals.sort(key=lambda s: s.confidence_raw, reverse=True)
     return signals

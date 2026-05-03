@@ -17,8 +17,8 @@ SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 def get_contract_recommendation(
     symbol: str,
     bias: str,
-    dte_min: int = 9,
-    dte_max: int = 14,
+    dte_min: int = 0,
+    dte_max: int = 21,
     budget: float | None = None,
 ) -> dict:
     symbol = symbol.upper()

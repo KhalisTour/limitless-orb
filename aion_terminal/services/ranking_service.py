@@ -37,8 +37,8 @@ class RankedItem:
     warnings: list[str]
 
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
-DEFAULT_DTE_MIN = 9
-DEFAULT_DTE_MAX = 14
+DEFAULT_DTE_MIN = 0
+DEFAULT_DTE_MAX = 21
 DEFAULT_MIN_CONFIDENCE = 0.30
 BARS_LOOKBACK = 60
 
@@ -87,6 +87,28 @@ def serialize_contract(contract: ContractScore | None) -> dict[str, Any] | None:
     if contract is None:
         return None
     return asdict(contract)
+
+
+def infer_bias(
+    *,
+    explicit_bias: str | None = None,
+    setup_bias: str | None = None,
+    ranking_bias: str | None = None,
+    technical_state: TechnicalState | None = None,
+    dealer_features: dict[str, Any] | None = None,
+) -> tuple[str, list[str]]:
+    for candidate in (explicit_bias, setup_bias, ranking_bias):
+        if candidate in {"bullish", "bearish"}:
+            return str(candidate), []
+    if technical_state is not None:
+        if technical_state.ema_stack == "bullish_stack" or technical_state.trend in {"uptrend", "strong_uptrend"}:
+            return "bullish", []
+        if technical_state.ema_stack == "bearish_stack" or technical_state.trend in {"downtrend", "strong_downtrend"}:
+            return "bearish", []
+    dealer = dealer_features or {}
+    if str(dealer.get("regime", "")).lower() in {"trend", "acceleration"} and as_float(dealer.get("put_wall")) <= as_float(dealer.get("spot")):
+        return "bullish", []
+    return "bullish", ["bias_defaulted"]
 
 
 def _load_underlying_bars(conn: sqlite3.Connection, symbol: str) -> list[UnderlyingBarRecord]:
@@ -179,7 +201,11 @@ def rank_symbol(
         )
         serialized_signals = [serialize_signal(s) for s in signals]
 
-        primary_bias = signals[0].bias if signals else "bearish"
+        primary_bias = infer_bias(
+            setup_bias=signals[0].bias if signals else None,
+            technical_state=technical_state,
+            dealer_features=dealer,
+        )[0]
         contract_rec = score_and_rank_contracts(
             conn,
             symbol=symbol,
@@ -310,11 +336,11 @@ def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedIte
             "contract_symbol": tc.get("contract_symbol"),
             "expiry": tc.get("expiry"),
             "strike": tc.get("strike"),
-            "mid": tc.get("premium_mid"),
+            "premium_mid": tc.get("premium_mid"),
             "delta": tc.get("delta"),
             "gamma": tc.get("gamma"),
             "theta": tc.get("theta"),
-            "oi": tc.get("open_interest"),
+            "open_interest": tc.get("open_interest"),
             "spread_pct": tc.get("spread_pct"),
             "contract_quality_score": tc.get("contract_quality_score"),
             "volatility_alignment_score": tc.get("volatility_alignment_score"),
