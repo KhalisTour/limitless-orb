@@ -131,6 +131,14 @@ async def broadcast_payload(runtime_state, payload: dict[str, Any]) -> None:
 
 
 def pipeline_loop(runtime_state) -> None:
+    if settings.cache_only or not settings.marketdata_enabled:
+        logger.info(
+            "background ingestion pipeline disabled cache_only=%s marketdata_enabled=%s",
+            settings.cache_only,
+            settings.marketdata_enabled,
+        )
+        return
+
     while True:
         for ticker in settings.watchlist:
             conn = _get_conn()

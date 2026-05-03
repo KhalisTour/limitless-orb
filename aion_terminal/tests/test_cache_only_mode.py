@@ -1,5 +1,6 @@
-from aion_terminal.api import routes_rankings, routes_snapshot
+from aion_terminal.api import routes_dashboard, routes_rankings, routes_snapshot
 from aion_terminal.services import engine_service
+from aion_terminal.services import ranking_service
 from aion_terminal.services.ingestion_service import RefreshResult
 from aion_terminal.scripts import run_daily_snapshot
 
@@ -50,3 +51,24 @@ def test_scripts_still_call_ingestion(monkeypatch):
     monkeypatch.setattr("sys.argv", ["run_daily_snapshot.py", "--symbols", "SPY", "--max-symbols", "1", "--no-contracts", "--no-setups"])
     run_daily_snapshot.main()
     assert called["refresh"] is True
+
+
+def test_cache_only_endpoints_do_not_refresh(monkeypatch):
+    monkeypatch.setattr(ranking_service.settings, "cache_only", True)
+    monkeypatch.setattr(routes_rankings.settings, "cache_only", True)
+
+    def _raise(*args, **kwargs):
+        raise Exception("should_not_refresh")
+
+    for module in (ranking_service, routes_rankings, engine_service):
+        monkeypatch.setattr(module, "ingest_symbol", _raise, raising=False)
+        monkeypatch.setattr(module, "refresh_one_symbol", _raise, raising=False)
+        monkeypatch.setattr(module, "refresh_symbol", _raise, raising=False)
+
+    dashboard = routes_dashboard.get_dashboard_endpoint()
+    rankings = routes_rankings.get_rankings()
+    symbol = routes_rankings.get_ranking_symbol("SPY")
+
+    assert isinstance(dashboard, dict)
+    assert isinstance(rankings, dict)
+    assert isinstance(symbol, dict)

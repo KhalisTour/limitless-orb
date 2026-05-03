@@ -158,8 +158,10 @@ def rank_symbol(
         conn = _open_connection()
         chain_rows = query_latest_chain(conn, symbol)
         if not chain_rows:
-            result.errors.append(f"no_chain_data:{symbol}")
+            result.errors.extend(["cache_miss", "refresh_required"])
+            logger.info("ranking cache-only symbol=%s cache_hit=%s", symbol, False)
             return result
+        logger.info("ranking cache-only symbol=%s cache_hit=%s", symbol, True)
 
         spot = as_float(chain_rows[0].get("underlying_price"))
         dealer = compute_levels(chain_rows, spot=spot, symbol=symbol)
@@ -238,7 +240,20 @@ def rank_universe(
     watchlist = [s.upper() for s in (symbols or settings.watchlist)]
     tags_lookup = narrative_tags_by_symbol or {}
 
-    rankings = [
+    if settings.cache_only:
+        rankings = [
+            rank_symbol(
+                symbol=s,
+                narrative_tags=tags_lookup.get(s),
+                dte_min=dte_min,
+                dte_max=dte_max,
+                budget=budget,
+                min_confidence=min_confidence,
+            )
+            for s in watchlist
+        ]
+    else:
+        rankings = [
         rank_symbol(
             symbol=s,
             narrative_tags=tags_lookup.get(s),
@@ -248,7 +263,7 @@ def rank_universe(
             min_confidence=min_confidence,
         )
         for s in watchlist
-    ]
+        ]
 
     def _highest_conf(r: SymbolRanking) -> float:
         if not r.signals:
@@ -376,7 +391,7 @@ def get_rankings_unified(
     
     # Degradation: if fewer than limit/2, include all and mark degraded
     min_threshold = max(1, limit // 2)
-    if len(items) < min_threshold:
+    if len(items) < min_threshold and not settings.cache_only:
         # Get all symbols and rank by any signal confidence available
         all_rankings = rank_universe(
             symbols=symbols,
@@ -407,4 +422,3 @@ def get_rankings_unified(
     )
     
     return items[: max(1, limit)], warnings
-

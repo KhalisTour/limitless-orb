@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import threading
 
 import uvicorn
@@ -25,6 +26,7 @@ from aion_terminal.services.engine_service import pipeline_loop
 from aion_terminal.utils.logging_utils import configure_logging
 
 configure_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title=settings.app_name)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -49,8 +51,13 @@ app.mount(
 
 @app.on_event("startup")
 def startup_event() -> None:
+    if settings.cache_only or not settings.marketdata_enabled:
+        logger.info("cache-only mode enabled; background ingestion pipeline disabled")
+        return
+
     thread = threading.Thread(target=pipeline_loop, args=(runtime_state,), daemon=True)
     thread.start()
+    logger.info("background ingestion pipeline started")
 
 
 if __name__ == "__main__":
