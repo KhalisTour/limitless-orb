@@ -58,6 +58,19 @@
       <div class="card"><div class="stat-label">Scan Age</div><div class="stat-value" id="stat-age">—</div></div>
     </div>
 
+    <!-- CONDITIONS LEGEND -->
+    <div class="card" style="margin-bottom:12px;padding:10px 16px">
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-family:var(--font-mono);font-size:11px">
+        <span style="color:var(--text-dim);letter-spacing:1.5px;text-transform:uppercase;font-size:10px">Conditions:</span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot on" style="background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)"></span><span>① RS Pct ≥ 75</span></span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot on" style="background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)"></span><span>② RS New High (63d)</span></span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot on" style="background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)"></span><span>③ RS Before Price</span></span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot on" style="background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)"></span><span>④ Price > 200d MA</span></span>
+        <span style="display:flex;align-items:center;gap:6px"><span class="dot on" style="background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)"></span><span>⑤ Price > 50w MA</span></span>
+        <span style="margin-left:auto;color:var(--text-dim);font-size:10px">Filled = passed · Empty = not passed</span>
+      </div>
+    </div>
+
     <!-- LEADERS TABLE -->
     <div class="card" style="margin-bottom:16px">
       <h3>Leaders</h3>
@@ -66,7 +79,7 @@
           <thead><tr>
             <th data-sort="ticker">Ticker</th>
             <th data-sort="rs_score">RS Score</th>
-            <th>Conditions</th>
+            <th>Conditions ①②③④⑤</th>
             <th data-sort="rs_new_high_63d">RS NH</th>
             <th data-sort="rs_new_high_before_price">RS-Before-Px</th>
             <th data-sort="conditions_met">Met</th>
@@ -146,13 +159,19 @@
         !!r.price_above_200d_ma,
         !!r.price_above_50w_ma,
       ];
-      const dots = conds.map(c => `<span class="dot ${c ? 'on' : ''}"></span>`).join('');
+      const dots = conds.map(c =>
+        `<span class="dot ${c ? 'on' : ''}" style="${c ? 'background:var(--rs-blue);box-shadow:0 0 6px rgba(68,136,255,0.6)' : ''}"></span>`
+      ).join('');
+      const percentile = Number(r.rs_percentile || 0);
       const promoted = !!r.promoted;
       return `<tr>
         <td><a class="mono" href="javascript:void(0)" data-go="${r.ticker}">${r.ticker}</a></td>
         <td>
           <div class="mono">${score.toFixed(1)}</div>
-          <div class="gauge" style="width:90px;margin-top:3px"><div class="gauge-fill" style="width:${score}%"></div></div>
+          <div class="gauge" style="width:90px;margin-top:3px;height:8px" title="Percentile: ${percentile.toFixed(0)}th">
+            <div class="gauge-fill" style="width:${AION.clamp(percentile,0,100)}%;background:var(--rs-blue)"></div>
+          </div>
+          <div style="font-size:8px;color:var(--text-dim);margin-top:1px">${percentile.toFixed(0)}th pct</div>
         </td>
         <td><span class="dots">${dots}</span></td>
         <td>${r.rs_new_high_63d ? '✓' : '—'}</td>

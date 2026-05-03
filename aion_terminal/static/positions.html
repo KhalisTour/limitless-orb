@@ -337,6 +337,398 @@
     return (expectedOptValue - Number(position.entry_price)) * Number(position.contracts) * 100;
   }
 
+  function sizeDeCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.parentElement.clientWidth || 380;
+    const H = 300;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    return { ctx, W, H };
+  }
+
+  function deGrid(ctx, pad, W, H, n = 5) {
+    ctx.strokeStyle = 'rgba(30,30,40,0.9)';
+    ctx.lineWidth = 0.5;
+    for (let g = 0; g <= n; g++) {
+      const y = pad.t + (H - pad.t - pad.b) * g / n;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    }
+  }
+
+  function drawDePayoff(canvas, position, dealer, s1, s3) {
+    const { ctx, W, H } = sizeDeCanvas(canvas);
+    const pad = { l: 64, r: 12, t: 14, b: 28 };
+    const spot = Number(dealer.spot || 0);
+    const strike = Number(position.strike || 0);
+    const contracts = Number(position.contracts || 1);
+    const type = position.type === 'call' ? 1 : -1;
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+    deGrid(ctx, pad, W, H, 5);
+
+    const priceRange = spot * 0.13;
+    const minPrice = Math.max(0, spot - priceRange);
+    const maxPrice = spot + priceRange * 1.1;
+    const prices = [];
+    const pnls = [];
+    for (let i = 0; i <= 300; i++) {
+      const p = minPrice + (maxPrice - minPrice) * i / 300;
+      prices.push(p);
+      const intrinsic = type > 0 ? Math.max(0, p - strike) : Math.max(0, strike - p);
+      const pnl = (intrinsic - Number(position.entry_price || 0)) * contracts * 100;
+      pnls.push(pnl);
+    }
+
+    let minPnl = Math.min(...pnls);
+    let maxPnl = Math.max(...pnls);
+    minPnl -= 80; maxPnl += 80;
+
+    const xScale = (p) => pad.l + (W - pad.l - pad.r) * (p - minPrice) / (maxPrice - minPrice);
+    const yScale = (pnl) => pad.t + (H - pad.t - pad.b) * (1 - (pnl - minPnl) / (maxPnl - minPnl));
+
+    // Zero line
+    const zeroY = yScale(0);
+    ctx.strokeStyle = 'rgba(160,160,160,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, zeroY); ctx.lineTo(W - pad.r, zeroY); ctx.stroke();
+
+    // Fill above/below zero
+    ctx.beginPath();
+    ctx.moveTo(xScale(minPrice), zeroY);
+    for (let i = 0; i <= 300; i++) {
+      ctx.lineTo(xScale(prices[i]), yScale(Math.max(0, pnls[i])));
+    }
+    ctx.lineTo(xScale(maxPrice), zeroY);
+    ctx.fillStyle = 'rgba(0,200,212,0.12)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(xScale(minPrice), zeroY);
+    for (let i = 0; i <= 300; i++) {
+      ctx.lineTo(xScale(prices[i]), yScale(Math.min(0, pnls[i])));
+    }
+    ctx.lineTo(xScale(maxPrice), zeroY);
+    ctx.fillStyle = 'rgba(255,51,85,0.12)';
+    ctx.fill();
+
+    // Payoff line
+    ctx.strokeStyle = '#00c8d4';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i <= 300; i++) {
+      const x = xScale(prices[i]);
+      const y = yScale(pnls[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Reference lines (S1, S3, Spot)
+    const lines = [
+      { price: s1, color: '#00c8d4', label: 'S1' },
+      { price: s3, color: '#ff3355', label: 'S3' },
+      { price: spot, color: '#a0a0a0', label: 'Spot' }
+    ];
+    lines.forEach(line => {
+      ctx.strokeStyle = line.color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      const x = xScale(line.price);
+      ctx.moveTo(x, pad.t); ctx.lineTo(x, H - pad.b);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = line.color;
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(line.label, x, pad.t - 3);
+    });
+
+    // Y axis labels
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#64748b';
+    for (let g = 0; g <= 5; g++) {
+      const pnl = minPnl + (maxPnl - minPnl) * g / 5;
+      const y = yScale(pnl);
+      ctx.fillText(`${pnl >= 0 ? '+' : ''}$${pnl.toFixed(0)}`, pad.l - 5, y + 3);
+    }
+
+    // X axis labels
+    ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#a0a0a0';
+    [minPrice, s3, spot, s1, maxPrice].forEach(p => {
+      ctx.fillText(`$${p.toFixed(0)}`, xScale(p), H - 8);
+    });
+  }
+
+  function drawDeFan(canvas, position, dealer, s1, s3, sigmaDaily) {
+    if (position.dte < 1) return;
+    const { ctx, W, H } = sizeDeCanvas(canvas);
+    const pad = { l: 64, r: 12, t: 14, b: 28 };
+    const spot = Number(dealer.spot || 0);
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+    deGrid(ctx, pad, W, H, 5);
+
+    // Run Monte Carlo paths
+    const paths = AION.runCone(spot, 0, sigmaDaily, position.dte, 500);
+    const yMin = spot * 0.87;
+    const yMax = spot * 1.13;
+    const yScale = (p) => pad.t + (H - pad.t - pad.b) * (1 - (p - yMin) / (yMax - yMin));
+    const xScale = (d) => pad.l + (W - pad.l - pad.r) * d / Math.max(position.dte, 1);
+
+    // Background zones
+    ctx.fillStyle = 'rgba(0,90,40,0.40)';
+    ctx.fillRect(pad.l, 0, W - pad.l - pad.r, yScale(s1));
+    ctx.fillStyle = 'rgba(90,55,0,0.30)';
+    ctx.fillRect(pad.l, yScale(s1), W - pad.l - pad.r, yScale(spot) - yScale(s1));
+    ctx.fillStyle = 'rgba(100,0,20,0.40)';
+    ctx.fillRect(pad.l, yScale(spot), W - pad.l - pad.r, H - pad.b - yScale(spot));
+
+    // Paths
+    ctx.strokeStyle = 'rgba(180,190,200,0.018)';
+    ctx.lineWidth = 0.7;
+    paths.forEach(path => {
+      ctx.beginPath();
+      path.forEach((v, d) => {
+        const x = xScale(d / 6), y = yScale(v);
+        if (d === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    });
+
+    // Percentile bands
+    const p5 = [], p16 = [], p50 = [], p84 = [], p95 = [];
+    for (let d = 0; d < position.dte + 1; d++) {
+      const col = paths.map(p => p[d * 6] || p[p.length - 1]).sort((a, b) => a - b);
+      p5.push(AION.percentile(col, 0.05));
+      p16.push(AION.percentile(col, 0.16));
+      p50.push(AION.percentile(col, 0.5));
+      p84.push(AION.percentile(col, 0.84));
+      p95.push(AION.percentile(col, 0.95));
+    }
+
+    // Band fill
+    ctx.fillStyle = 'rgba(0,200,212,0.07)';
+    ctx.beginPath();
+    p5.forEach((v, d) => ctx.lineTo(xScale(d), yScale(v)));
+    p95.reverse().forEach((v, d) => ctx.lineTo(xScale(position.dte - d), yScale(v)));
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(0,200,212,0.13)';
+    ctx.beginPath();
+    p16.forEach((v, d) => ctx.lineTo(xScale(d), yScale(v)));
+    p84.reverse().forEach((v, d) => ctx.lineTo(xScale(position.dte - d), yScale(v)));
+    ctx.fill();
+
+    // Median
+    ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    p50.forEach((v, d) => {
+      const x = xScale(d), y = yScale(v);
+      if (d === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Reference lines
+    const lines = [
+      { price: s1, color: '#00c8d4', label: 'S1' },
+      { price: s3, color: '#ff3355', label: 'S3' },
+      { price: spot, color: '#a0a0a0', label: 'Spot' }
+    ];
+    lines.forEach(line => {
+      ctx.strokeStyle = line.color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      const y = yScale(line.price);
+      ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = line.color;
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'left';
+      ctx.fillText(line.label + ' $' + line.price.toFixed(0), W - pad.r + 4, y - 3);
+    });
+
+    // Y axis labels
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#64748b';
+    for (let g = 0; g <= 5; g++) {
+      const p = yMin + (yMax - yMin) * g / 5;
+      ctx.fillText(`$${p.toFixed(1)}`, pad.l - 5, yScale(p) + 3);
+    }
+
+    // X axis labels
+    ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#a0a0a0';
+    for (let d = 0; d <= position.dte; d++) {
+      ctx.fillText(`${d}d`, xScale(d), H - 8);
+    }
+  }
+
+  function drawDeBars(canvas, position, dealer, sigmaDaily) {
+    const { ctx, W, H } = sizeDeCanvas(canvas);
+    const pad = { l: 64, r: 12, t: 24, b: 36 };
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+    deGrid(ctx, pad, W, H, 5);
+
+    const horizons = [
+      { label: 'now', days: 0 },
+      { label: '+1h', days: 1/6 },
+      { label: '+4h', days: 4/24 },
+      { label: 'tmr', days: 1 },
+      { label: 'exp', days: Math.max(position.dte, 1) },
+    ];
+    const values = horizons.map(h => expectedPnLAtHorizon(position, dealer, sigmaDaily, h.days));
+
+    let minVal = Math.min(...values, 0);
+    let maxVal = Math.max(...values, 100);
+    minVal -= 50; maxVal += 50;
+
+    const yScale = (v) => pad.t + (H - pad.t - pad.b) * (1 - (v - minVal) / (maxVal - minVal));
+    const zeroY = yScale(0);
+    const barW = (W - pad.l - pad.r) / (horizons.length * 2.2);
+
+    // Zero baseline
+    ctx.strokeStyle = 'rgba(160,160,160,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, zeroY);
+    ctx.lineTo(W - pad.r, zeroY);
+    ctx.stroke();
+
+    // Bars
+    horizons.forEach((h, i) => {
+      const val = values[i];
+      const x = pad.l + (W - pad.l - pad.r) / horizons.length * (i + 0.5);
+      const barH = (H - pad.t - pad.b) * Math.abs(val - 0) / (maxVal - minVal);
+      const barY = val >= 0 ? zeroY - barH : zeroY;
+      const color = val >= 0 ? 'rgba(0,200,212,0.75)' : 'rgba(255,51,85,0.75)';
+      ctx.fillStyle = color;
+      ctx.fillRect(x - barW / 2, barY, barW, barH);
+
+      // Label above/below
+      ctx.fillStyle = val >= 0 ? '#00c8d4' : '#ff3355';
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(`$${val.toFixed(0)}`, x, val >= 0 ? barY - 4 : barY + barH + 12);
+
+      // X axis label
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillText(h.label, x, H - 8);
+    });
+
+    // Y axis labels
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#64748b';
+    for (let g = 0; g <= 5; g++) {
+      const v = minVal + (maxVal - minVal) * g / 5;
+      ctx.fillText(`${v >= 0 ? '+' : ''}$${v.toFixed(0)}`, pad.l - 5, yScale(v) + 3);
+    }
+  }
+
+  function drawDeState(canvas, position, dealer, s1, s3, sigmaDaily) {
+    const { ctx, W, H } = sizeDeCanvas(canvas);
+    const pad = { l: 52, r: 12, t: 14, b: 28 };
+    const spot = Number(dealer.spot || 0);
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+
+    // MC paths to terminal
+    const paths = [];
+    for (let p = 0; p < 1000; p++) {
+      let price = spot;
+      for (let d = 0; d < position.dte; d++) {
+        const drift = 0;
+        const dW = Math.random() * 2 - 1;
+        price *= Math.exp((drift - 0.5 * sigmaDaily * sigmaDaily) * 1 + sigmaDaily * Math.sqrt(1 / 4) * dW);
+      }
+      paths.push(price);
+    }
+    paths.sort((a, b) => a - b);
+
+    const minTerm = Math.min(...paths) - 1;
+    const maxTerm = Math.max(...paths) + 1;
+    const nBins = 40;
+    const bins = Array(nBins).fill(0);
+    paths.forEach(p => {
+      const idx = Math.floor((p - minTerm) / (maxTerm - minTerm) * nBins);
+      if (idx >= 0 && idx < nBins) bins[idx]++;
+    });
+    const maxCount = Math.max(...bins);
+
+    const xScale = (i) => pad.l + (W - pad.l - pad.r) * i / nBins;
+    const yScale = (count) => H - pad.b - (count / maxCount) * (H - pad.t - pad.b) * 0.65;
+    const zeroY = H - pad.b;
+
+    // Background zones
+    const priceScale = (p) => pad.l + (W - pad.l - pad.r) * (p - minTerm) / (maxTerm - minTerm);
+    ctx.fillStyle = 'rgba(120,0,20,0.45)';
+    ctx.fillRect(pad.l, 0, priceScale(s3) - pad.l, H);
+    ctx.fillStyle = 'rgba(80,40,0,0.30)';
+    ctx.fillRect(priceScale(s3), 0, priceScale(spot) - priceScale(s3), H);
+    ctx.fillStyle = 'rgba(0,80,30,0.35)';
+    ctx.fillRect(priceScale(spot), 0, priceScale(s1) - priceScale(spot), H);
+    ctx.fillStyle = 'rgba(0,100,50,0.50)';
+    ctx.fillRect(priceScale(s1), 0, W - pad.r - priceScale(s1), H);
+
+    // Bars
+    ctx.fillStyle = 'rgba(210,220,225,0.88)';
+    const barW = (W - pad.l - pad.r) / nBins - 0.5;
+    bins.forEach((count, i) => {
+      const x = xScale(i);
+      const y = yScale(count);
+      const h = zeroY - y;
+      ctx.fillRect(x, y, barW, h);
+    });
+
+    // Reference lines
+    const lines = [
+      { price: s1, color: '#00c8d4', label: 'S1' },
+      { price: s3, color: '#ff3355', label: 'S3' },
+      { price: spot, color: '#a0a0a0', label: 'Spot' }
+    ];
+    lines.forEach(line => {
+      ctx.strokeStyle = line.color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      const x = priceScale(line.price);
+      ctx.moveTo(x, pad.t);
+      ctx.lineTo(x, H - pad.b);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = line.color;
+      ctx.font = '10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(line.label, x, pad.t - 3);
+    });
+
+    // X axis labels
+    ctx.font = '9px JetBrains Mono';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#a0a0a0';
+    [s3, spot, s1].forEach(p => {
+      ctx.fillText(`$${p.toFixed(0)}`, priceScale(p), H - 8);
+    });
+  }
+
   function drawSparkline(canvas, points) {
     const ctx = canvas.getContext('2d');
     const W = canvas.width = canvas.clientWidth;
@@ -405,9 +797,9 @@
         <span class="muted">Confidence: ${Math.round(50 + score / 2)}%</span>
       </div>
       <h4>Levels</h4>
-      <div class="row-line"><span class="muted">S1</span><span class="mono">$${s1.toFixed(2)} (call wall / king)</span></div>
-      <div class="row-line"><span class="muted">S2</span><span class="mono">$${s3.toFixed(2)}–$${s1.toFixed(2)}</span></div>
-      <div class="row-line"><span class="muted">S3</span><span class="mono">$${s3.toFixed(2)} (put wall)</span></div>
+      <div class="row-line"><span class="muted">S1</span><span class="mono" style="color:#00c853">$${s1.toFixed(2)} (call wall / king)</span></div>
+      <div class="row-line"><span class="muted">S2</span><span class="mono" style="color:#ffd600">$${s3.toFixed(2)}–$${s1.toFixed(2)}</span></div>
+      <div class="row-line"><span class="muted">S3</span><span class="mono" style="color:#ff3355">$${s3.toFixed(2)} (put wall)</span></div>
 
       <h4>Probability Engine</h4>
       <div class="row-line"><span class="muted">P(touch S1)</span><span class="mono">${(probs.touch_s1 * 100).toFixed(0)}%</span></div>
@@ -430,10 +822,10 @@
 
       <h4>Trade Plan</h4>
       <div class="target-tree">
-        <div>├─ <span class="t1">Target 1: $${(spot * 1.02).toFixed(2)} (king node) → TRIM 1/3</span></div>
-        <div>├─ <span class="t2">Target 2: $${s1.toFixed(2)} (call wall) → TRIM 1/3</span></div>
-        <div>├─ <span class="runner">Runner: hold 1/3 → $${(s1 * 1.03).toFixed(2)}</span></div>
-        <div>└─ <span class="stop">Stop: $${s3.toFixed(2)} (put wall breach)</span></div>
+        <div>├─ Target 1: $${(spot * 1.02).toFixed(2)} (king node) → TRIM 1/3</div>
+        <div>├─ Target 2: $${s1.toFixed(2)} (call wall) → TRIM 1/3</div>
+        <div>├─ Runner: hold 1/3 → $${(s1 * 1.03).toFixed(2)}</div>
+        <div style="color:var(--red)">└─ Stop: $${s3.toFixed(2)} (put wall breach)</div>
       </div>
 
       <h4>Invalidation</h4>
@@ -449,19 +841,45 @@
         <div class="ev-bar-label">${score >= 0 ? '+' : ''}${score}</div>
       </div>
 
-      <h4>Expected P&L Timeline</h4>
-      <canvas class="spark" id="ev-spark" height="60"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px">1) Net profit curve at expiry</div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px">Combined positions</div>
+          <canvas id="de-payoff" style="width:100%;height:300px;display:block;background:var(--card-alt);border-radius:6px;border:1px solid var(--border)"></canvas>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px">2) Monte Carlo fan</div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px">Auto-derived S1 / S2 / S3 overlaid</div>
+          <canvas id="de-fan" style="width:100%;height:300px;display:block;background:var(--card-alt);border-radius:6px;border:1px solid var(--border)"></canvas>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px">3) Time-series expected P&L</div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px">Expected mark-to-model by horizon</div>
+          <canvas id="de-bars" style="width:100%;height:300px;display:block;background:var(--card-alt);border-radius:6px;border:1px solid var(--border)"></canvas>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px">
+          <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px">4) State map at final expiry</div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px">Terminal distribution vs S1/S2/S3</div>
+          <canvas id="de-state" style="width:100%;height:300px;display:block;background:var(--card-alt);border-radius:6px;border:1px solid var(--border)"></canvas>
+        </div>
+      </div>
     `;
 
-    const horizons = [
-      { label: 'now', days: 0 },
-      { label: '+1h', days: 1 / 6 },
-      { label: '+4h', days: 4 / 24 },
-      { label: 'tmr', days: 1 },
-      { label: 'exp', days: Math.max(position.dte, 1) },
-    ];
-    const points = horizons.map(h => ({ label: h.label, value: expectedPnLAtHorizon(position, dealer, sigmaDaily, h.days) }));
-    drawSparkline(document.getElementById('ev-spark'), points);
+    requestAnimationFrame(() => {
+      drawDePayoff(document.getElementById('de-payoff'), position, dealer, s1, s3);
+      if (position.dte >= 1) {
+        drawDeFan(document.getElementById('de-fan'), position, dealer, s1, s3, sigmaDaily);
+      } else {
+        const fc = document.getElementById('de-fan');
+        const ctx = fc.getContext('2d');
+        fc.width = fc.parentElement.clientWidth; fc.height = 300;
+        ctx.fillStyle = '#141414'; ctx.fillRect(0, 0, fc.width, fc.height);
+        ctx.fillStyle = '#64748b'; ctx.font = '11px JetBrains Mono'; ctx.textAlign = 'center';
+        ctx.fillText('Monte Carlo not shown at 0 DTE', fc.width / 2, 155);
+      }
+      drawDeBars(document.getElementById('de-bars'), position, dealer, sigmaDaily);
+      drawDeState(document.getElementById('de-state'), position, dealer, s1, s3, sigmaDaily);
+    });
   }
 
   // ---------- Active Positions ----------

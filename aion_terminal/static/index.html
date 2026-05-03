@@ -177,8 +177,12 @@
   }
 
   function drawCone(canvas, bars, paths, days, drift) {
-    const dpr = window.devicePixelRatio || 1;
     const W = canvas.parentElement.clientWidth;
+    if (W < 50) {
+      requestAnimationFrame(() => drawCone(canvas, bars, paths, days, drift));
+      return;
+    }
+    const dpr = window.devicePixelRatio || 1;
     const H = 340;
     canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
@@ -211,7 +215,8 @@
       const v = lo + (hi - lo) * (g / 5);
       const y = yScale(v);
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillText(`$${v.toFixed(1)}`, 4, y + 3);
+      ctx.textAlign = 'right';
+      ctx.fillText(`$${v.toFixed(1)}`, padL - 4, y + 3);
     }
 
     // Forecast bands
@@ -552,6 +557,12 @@
     document.getElementById('cone-history').addEventListener('change', refreshAll);
     document.getElementById('cone-forecast').addEventListener('change', refreshAll);
     refreshAll();
+    let resizeTimer;
+    const ro = new ResizeObserver(() => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(refreshAll, 200);
+    });
+    ro.observe(document.getElementById('cone-card'));
     setInterval(refreshAll, 60000);
   });
   </script>
