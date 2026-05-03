@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -20,6 +27,9 @@ class Settings:
     )
     poll_seconds: int = field(default_factory=lambda: int(os.getenv("POLL_SECONDS", "600")))
     dte_max: int = field(default_factory=lambda: int(os.getenv("DTE_MAX", "60")))
+    cache_only: bool = field(default_factory=lambda: _env_bool("AION_CACHE_ONLY", True))
+    allow_route_refresh: bool = field(default_factory=lambda: _env_bool("AION_ALLOW_ROUTE_REFRESH", False))
+    marketdata_enabled: bool = field(default_factory=lambda: _env_bool("AION_MARKETDATA_ENABLED", True))
 
 
 settings = Settings()

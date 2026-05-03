@@ -5,6 +5,7 @@ import urllib.request
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
+from aion_terminal.app.config import settings
 
 router = APIRouter(tags=["cone"])
 
@@ -20,6 +21,8 @@ def get_etf_bars(symbol: str, days: int = 90):
     symbol = symbol.upper().strip()
     if not symbol:
         raise HTTPException(status_code=400, detail="symbol required")
+    if settings.cache_only:
+        return {"symbol": symbol, "bars": [], "warnings": ["cache_miss", "refresh_required"], "cache_only": True}
 
     days = max(10, min(days, 730))
     range_days = max(days * 2, 30)
@@ -58,4 +61,4 @@ def get_etf_bars(symbol: str, days: int = 90):
             }
         )
 
-    return {"symbol": symbol, "bars": bars[-days:]}
+    return {"symbol": symbol, "bars": bars[-days:], "cache_only": settings.cache_only}
