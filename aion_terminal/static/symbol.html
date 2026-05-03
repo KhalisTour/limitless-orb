@@ -26,11 +26,18 @@
       <!-- LEFT -->
       <div class="flex-col gap-16">
         <div class="card" style="padding:0;overflow:hidden">
-          <div style="padding:14px 18px 0">
-            <h3>Chart</h3>
+          <div style="padding:10px 18px 0;display:flex;align-items:center;justify-content:space-between">
+            <h3 style="margin:0">Chart</h3>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)">Live Feed</span>
+              <button id="tv-toggle-btn" style="padding:4px 10px;font-size:9px;border:1px solid var(--orange);color:var(--orange);border-radius:5px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;font-family:var(--font-mono);background:transparent">ON</button>
+            </div>
           </div>
-          <div class="tradingview-widget-container" style="height:430px">
-            <div id="tradingview-chart" style="height:430px"></div>
+          <div id="tv-live-wrap" class="tradingview-widget-container" style="height:460px">
+            <div id="tradingview-chart" style="height:460px"></div>
+          </div>
+          <div id="tv-static-wrap" style="display:none;height:460px;position:relative">
+            <canvas id="tv-static-canvas" style="width:100%;height:460px;display:block;background:#0d0d0d;border-radius:0;border:none"></canvas>
           </div>
         </div>
 
@@ -69,15 +76,30 @@
               <button data-v="999">ALL</button>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns: 1fr 1fr;gap:10px">
-            <div>
-              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">GEX</div>
-              <canvas id="heatmap-gex" width="380" height="380"></canvas>
+          <div id="gex-grid-container" style="overflow:auto"></div>
+        </div>
+
+        <div class="card" id="vex-card">
+          <h3>VEX Heatmap <span class="muted" style="font-size:9px;letter-spacing:0.5px">(≈ Δ·Vega / Spot)</span></h3>
+          <div class="heatmap-controls">
+            <span>STRIKES</span>
+            <div class="btn-group" id="vex-strike-group">
+              <button data-v="15">±15</button>
+              <button data-v="30" class="active">±30</button>
+              <button data-v="50">±50</button>
+              <button data-v="999">ALL</button>
             </div>
-            <div>
-              <div class="muted uppercase" style="font-size:10px;margin-bottom:4px">VEX (≈Δ·V/Spot)</div>
-              <canvas id="heatmap-vex" width="380" height="380"></canvas>
+            <span style="margin-left:8px">EXPIRIES</span>
+            <div class="btn-group" id="vex-expiry-group">
+              <button data-v="5" class="active">5</button>
+              <button data-v="10">10</button>
+              <button data-v="15">15</button>
+              <button data-v="999">ALL</button>
             </div>
+          </div>
+          <div id="vex-grid-container">
+            <div class="muted" style="font-size:11px;padding:18px 0;text-align:center">VEX data not yet available from backend.</div>
+            <div class="muted" style="font-size:9px;text-align:center;opacity:0.5;margin-top:4px">Will auto-populate when /curve/ emits pt.vex or pt.vanna</div>
           </div>
         </div>
 
@@ -178,13 +200,13 @@
       card.innerHTML = `
         <div class="engine-out">
           <div class="row-line"><span class="muted">King Node</span>
-            <span class="mono" style="color:var(--orange)">$${king.toFixed(2)}</span></div>
+            <span class="mono" style="color:var(--silver)">$${king.toFixed(2)}</span></div>
           <div class="row-line"><span class="muted">Call Wall</span>
             <span class="mono" style="color:var(--purple)">$${cw.toFixed(2)} <span class="muted">(${fmtPct(cwPct)})</span></span></div>
           <div class="row-line"><span class="muted">Put Wall</span>
             <span class="mono" style="color:var(--blue)">$${pw.toFixed(2)} <span class="muted">(${fmtPct(pwPct)})</span></span></div>
           <div class="row-line"><span class="muted">Flip Zone</span>
-            <span class="mono" style="color:var(--orange)">$${flip ? flip.toFixed(2) : '—'} <span class="muted">(${flip ? fmtPct(flipPct) : '—'})</span></span></div>
+            <span class="mono" style="color:var(--silver)">$${flip ? flip.toFixed(2) : '—'} <span class="muted">(${flip ? fmtPct(flipPct) : '—'})</span></span></div>
           <div class="row-line"><span class="muted">Regime</span>
             <span class="badge ${regimeClass(r.regime)}">${r.regime || '—'}</span></div>
         </div>
@@ -249,7 +271,7 @@
       co.curve.forEach(pt => {
         const i = strikes.indexOf(Number(pt.strike));
         if (i < 0) return;
-        gex[i][exIdx] = Number(pt.gex || 0);
+        gex[i][exIdx] = Number(pt.net_exposure || 0);
         vex[i][exIdx] = Number(pt.vex || pt.vanna || 0);
       });
     });
@@ -257,93 +279,125 @@
     return { strikes, expiries, gex, vex, spot, ranking };
   }
 
-  function drawHeatmap(canvas, strikes, expiries, grid, spot, ranking, label) {
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    if (!strikes.length || !expiries.length) {
-      ctx.fillStyle = '#64748b';
-      ctx.font = '12px JetBrains Mono';
-      ctx.fillText('No chain data', 12, 20);
-      return;
-    }
-
-    const padL = 60, padT = 30, padR = 8, padB = 8;
-    const cellW = (W - padL - padR) / expiries.length;
-    const cellH = (H - padT - padB) / strikes.length;
-
-    // Normalization
+  function renderGexTable(strikes, expiries, gexGrid, spot) {
+    const strikesDesc = [...strikes].sort((a, b) => b - a);
     let absMax = 0;
-    grid.forEach(row => row.forEach(v => { if (Math.abs(v) > absMax) absMax = Math.abs(v); }));
+    gexGrid.forEach(row => row.forEach(v => { if (Math.abs(v) > absMax) absMax = Math.abs(v); }));
     if (absMax === 0) absMax = 1;
 
-    // Cells
-    for (let i = 0; i < strikes.length; i++) {
-      for (let j = 0; j < expiries.length; j++) {
-        const v = grid[i][j];
+    const nExp = expiries.length;
+    const container = document.getElementById('gex-grid-container');
+    if (!container) return;
+
+    let html = '<table style="border-collapse:collapse;width:100%;font-size:9px;font-family:var(--font-mono)">';
+    html += '<thead><tr>';
+    html += '<th style="text-align:right;padding:3px 6px 3px 0;color:var(--text-dim);font-weight:400;font-size:9px">Strike</th>';
+    expiries.forEach(exp => {
+      const mmdd = String(exp).slice(5);
+      html += `<th style="text-align:center;padding:3px 2px;color:var(--text-dim);font-weight:400;font-size:9px">${mmdd}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    strikesDesc.forEach(strike => {
+      const origIdx = strikes.indexOf(strike);
+      const isSpot = Math.abs(strike - spot) <= Math.min(1, (strikes[1] - strikes[0]) / 2);
+      const spotOutline = isSpot ? 'outline:1px solid rgba(0,200,212,0.5);outline-offset:-1px;' : '';
+      const strikeColor = isSpot ? 'color:#00c8d4;font-weight:700;' : 'color:var(--text-dim);';
+      const strikeLabel = (isSpot ? '→ ' : '') + '$' + (strike >= 100 ? strike.toFixed(0) : strike.toFixed(2));
+
+      html += '<tr>';
+      html += `<td style="text-align:right;padding:2px 6px 2px 0;white-space:nowrap;${strikeColor}font-size:9px">${strikeLabel}</td>`;
+
+      expiries.forEach((_, expIdx) => {
+        const v = gexGrid[origIdx] ? gexGrid[origIdx][expIdx] : 0;
         const t = 0.5 + 0.5 * (v / absMax);
-        const c = cmap(t);
-        ctx.fillStyle = rgbStr(c);
-        const y = padT + (strikes.length - 1 - i) * cellH;
-        ctx.fillRect(padL + j * cellW, y, cellW, cellH);
-      }
-    }
+        const c = AION.cmap(t);
+        const bg = AION.rgbStr(c);
+        const fg = AION.rgbLum(c) < 0.45 ? '#ffffff' : '#000000';
+        const cellH = strikes.length <= 40 ? 26 : strikes.length <= 80 ? 22 : 18;
+        const cellW = Math.max(64, 4);
+        html += `<td style="background:${bg};color:${fg};border:1px solid rgba(0,0,0,0.35);${spotOutline}height:${cellH}px;min-width:${cellW}px;text-align:center;padding:2px 4px;font-size:8px;font-weight:700;font-family:var(--font-mono)">${AION.fmtDollar(v)}</td>`;
+      });
+      html += '</tr>';
+    });
 
-    // Labels (strikes)
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px JetBrains Mono';
-    const skipS = Math.max(1, Math.floor(strikes.length / 14));
-    for (let i = 0; i < strikes.length; i += skipS) {
-      const y = padT + (strikes.length - 1 - i) * cellH + cellH / 2 + 3;
-      ctx.fillText(`$${Number(strikes[i]).toFixed(0)}`, 4, y);
-    }
-    ctx.save();
-    ctx.translate(0, 0);
-    for (let j = 0; j < expiries.length; j++) {
-      const x = padL + j * cellW + cellW / 2;
-      const lbl = String(expiries[j]).slice(5);
-      const w = ctx.measureText(lbl).width;
-      ctx.fillText(lbl, x - w / 2, 14);
-    }
-    ctx.restore();
+    html += '</tbody></table>';
+    html += `<div style="margin-top:8px">
+      <div style="height:10px;border-radius:3px;width:180px;background:linear-gradient(90deg,#ff69b4,#7b2fff)"></div>
+      <div style="display:flex;justify-content:space-between;width:180px;font-size:9px;color:var(--text-dim);margin-top:2px;font-family:var(--font-mono)">
+        <span>− Negative GEX</span><span>+ Positive GEX</span>
+      </div>
+    </div>`;
 
-    // Spot line
-    if (spot > 0 && strikes.length) {
-      const lo = strikes[0], hi = strikes[strikes.length - 1];
-      if (spot >= lo && spot <= hi) {
-        const i = strikes.length * (spot - lo) / Math.max(hi - lo, 1e-6);
-        const y = padT + (strikes.length - i) * cellH;
-        ctx.fillStyle = 'rgba(160,160,160,0.08)';
-        ctx.fillRect(padL, y - cellH / 2, W - padL - padR, cellH);
-        ctx.strokeStyle = 'rgba(160,160,160,0.5)';
-        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      }
-    }
+    container.innerHTML = html;
+  }
 
-    // Star nodes per expiry (highest |GEX|)
-    for (let j = 0; j < expiries.length; j++) {
-      let bestI = -1, bestV = 0;
-      for (let i = 0; i < strikes.length; i++) {
-        if (Math.abs(grid[i][j]) > bestV) { bestV = Math.abs(grid[i][j]); bestI = i; }
-      }
-      if (bestI < 0) continue;
-      const x = padL + j * cellW + cellW / 2;
-      const y = padT + (strikes.length - 1 - bestI) * cellH + cellH / 2;
-      ctx.fillStyle = '#ff6b00';
-      ctx.font = '11px JetBrains Mono';
-      ctx.fillText('★', x - 4, y + 4);
-    }
+  function renderVexTable(strikes, expiries, vexGrid, spot) {
+    const strikesDesc = [...strikes].sort((a, b) => b - a);
+    let absMax = 0;
+    vexGrid.forEach(row => row.forEach(v => { if (Math.abs(v) > absMax) absMax = Math.abs(v); }));
+    if (absMax === 0) absMax = 1;
+
+    const container = document.getElementById('vex-grid-container');
+    if (!container) return;
+
+    let html = '<table style="border-collapse:collapse;width:100%;font-size:9px;font-family:var(--font-mono)">';
+    html += '<thead><tr>';
+    html += '<th style="text-align:right;padding:3px 6px 3px 0;color:var(--text-dim);font-weight:400;font-size:9px">Strike</th>';
+    expiries.forEach(exp => {
+      const mmdd = String(exp).slice(5);
+      html += `<th style="text-align:center;padding:3px 2px;color:var(--text-dim);font-weight:400;font-size:9px">${mmdd}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    strikesDesc.forEach(strike => {
+      const origIdx = strikes.indexOf(strike);
+      const isSpot = Math.abs(strike - spot) <= Math.min(1, (strikes[1] - strikes[0]) / 2);
+      const spotOutline = isSpot ? 'outline:1px solid rgba(0,200,212,0.5);outline-offset:-1px;' : '';
+      const strikeColor = isSpot ? 'color:#00c8d4;font-weight:700;' : 'color:var(--text-dim);';
+      const strikeLabel = (isSpot ? '→ ' : '') + '$' + (strike >= 100 ? strike.toFixed(0) : strike.toFixed(2));
+
+      html += '<tr>';
+      html += `<td style="text-align:right;padding:2px 6px 2px 0;white-space:nowrap;${strikeColor}font-size:9px">${strikeLabel}</td>`;
+
+      expiries.forEach((_, expIdx) => {
+        const v = vexGrid[origIdx] ? vexGrid[origIdx][expIdx] : 0;
+        const t = 0.5 + 0.5 * (v / absMax);
+        const c = AION.cmap(t);
+        const bg = AION.rgbStr(c);
+        const fg = AION.rgbLum(c) < 0.45 ? '#ffffff' : '#000000';
+        const cellH = strikes.length <= 40 ? 26 : strikes.length <= 80 ? 22 : 18;
+        const cellW = Math.max(64, 4);
+        html += `<td style="background:${bg};color:${fg};border:1px solid rgba(0,0,0,0.35);${spotOutline}height:${cellH}px;min-width:${cellW}px;text-align:center;padding:2px 4px;font-size:8px;font-weight:700;font-family:var(--font-mono)">${AION.fmtDollar(v)}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    html += `<div style="margin-top:8px">
+      <div style="height:10px;border-radius:3px;width:180px;background:linear-gradient(90deg,#ff69b4,#7b2fff)"></div>
+      <div style="display:flex;justify-content:space-between;width:180px;font-size:9px;color:var(--text-dim);margin-top:2px;font-family:var(--font-mono)">
+        <span>− Negative VEX</span><span>+ Positive VEX</span>
+      </div>
+    </div>`;
+
+    container.innerHTML = html;
   }
 
   async function renderHeatmap() {
     const card = document.querySelector('#heatmap-card');
     try {
       const data = await buildGexGrid();
-      const cv1 = document.getElementById('heatmap-gex');
-      const cv2 = document.getElementById('heatmap-vex');
-      drawHeatmap(cv1, data.strikes, data.expiries, data.gex, data.spot, data.ranking, 'GEX');
-      drawHeatmap(cv2, data.strikes, data.expiries, data.vex, data.spot, data.ranking, 'VEX');
+      renderGexTable(data.strikes, data.expiries, data.gex, data.spot);
+      const hasVex = data.vex && data.vex.some(row => row.some(v => v !== 0));
+      if (hasVex) {
+        renderVexTable(data.strikes, data.expiries, data.vex, data.spot);
+      } else {
+        const vexContainer = document.getElementById('vex-grid-container');
+        if (vexContainer) {
+          vexContainer.innerHTML = `<div class="muted" style="font-size:11px;padding:18px 0;text-align:center">VEX data not yet available from backend.</div>`;
+        }
+      }
     } catch (err) {
       card.querySelector('h3').insertAdjacentHTML('afterend', errorPane(err));
     }
@@ -365,10 +419,13 @@
         { label: 'Px > 50w', on: !!r.price_above_50w_ma },
       ];
       const dotsHtml = conds.map(c => `<span class="dot ${c.on ? 'on' : ''}" title="${c.label}"></span>`).join('');
+      const percentile = Number(r.rs_percentile || 0);
       card.innerHTML = `
         <div class="row-line"><span class="muted">RS Score</span><span class="mono">${score.toFixed(0)}</span></div>
-        <div class="gauge" style="margin:6px 0 12px"><div class="gauge-fill" style="width:${score}%"></div></div>
-        <div class="row-line"><span class="muted">Percentile</span><span class="mono">${Number(r.rs_percentile||0).toFixed(0)}</span></div>
+        <div class="gauge" style="margin:6px 0 12px;height:8px" title="Percentile: ${percentile.toFixed(0)}th">
+          <div class="gauge-fill" style="width:${AION.clamp(percentile,0,100)}%;background:var(--rs-blue)"></div>
+        </div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:-8px;margin-bottom:8px">${percentile.toFixed(0)}th percentile</div>
         <div class="row-line"><span class="muted">RS new high</span><span class="mono">${r.rs_new_high_63d ? '✓' : '—'}</span></div>
         <div class="row-line"><span class="muted">RS-before-price</span><span class="mono">${r.rs_new_high_before_price ? '✓' : '—'}</span></div>
         <div class="row-line"><span class="muted">Conditions</span><span class="dots">${dotsHtml}</span></div>
@@ -463,6 +520,62 @@
     renderContracts('bullish');
   }
 
+  let tvLive = true;
+
+  function toggleTVFeed() {
+    tvLive = !tvLive;
+    document.getElementById('tv-live-wrap').style.display = tvLive ? 'block' : 'none';
+    document.getElementById('tv-static-wrap').style.display = tvLive ? 'none' : 'block';
+    const btn = document.getElementById('tv-toggle-btn');
+    btn.textContent = tvLive ? 'ON' : 'OFF';
+    btn.style.borderColor = tvLive ? 'var(--orange)' : 'var(--border)';
+    btn.style.color = tvLive ? 'var(--orange)' : 'var(--text-dim)';
+    if (!tvLive) {
+      setTimeout(drawStaticPriceChart, 50);
+    }
+  }
+
+  function drawStaticPriceChart() {
+    const canvas = document.getElementById('tv-static-canvas');
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.parentElement.clientWidth || 600;
+    const H = 460;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, W, H);
+
+    const pad = { l: 48, r: 20, t: 20, b: 30 };
+
+    const spot = dealerCache ? Number(dealerCache.spot || 0) : 0;
+
+    ctx.fillStyle = 'rgba(100,116,139,0.5)';
+    ctx.font = '11px JetBrains Mono';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${TICKER} · 15m  [live feed paused]`, pad.l + 4, pad.t + 14);
+
+    if (spot > 0) {
+      const midY = H / 2;
+      ctx.strokeStyle = 'rgba(160,160,160,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(pad.l, midY);
+      ctx.lineTo(W - pad.r, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#a0a0a0';
+      ctx.textAlign = 'left';
+      ctx.font = '10px JetBrains Mono';
+      ctx.fillText(`$${spot.toFixed(2)}`, pad.l + 4, midY - 4);
+    }
+  }
+
   ready(() => {
     renderNav('symbol');
     document.title = `ETRNL · ${TICKER}`;
@@ -496,6 +609,8 @@
 
     chatMessages.push({ role: 'system', content: `Trade Plan agent loaded for ${TICKER}. Ask about levels, sizing, stops.` });
     renderChatHistory();
+
+    document.getElementById('tv-toggle-btn').addEventListener('click', toggleTVFeed);
 
     refresh();
     setInterval(() => { renderDealer(); renderHeatmap(); }, 30000);
