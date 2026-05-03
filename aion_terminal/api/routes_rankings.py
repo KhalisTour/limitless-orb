@@ -22,6 +22,19 @@ router = APIRouter(tags=["rankings"])
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 
 
+def _cache_only_payload(symbol: str, data_key: str, data_value):
+    return {
+        "symbol": symbol.upper(),
+        data_key: data_value,
+        "warnings": ["cache_miss", "refresh_required"],
+        "cache_only": True,
+    }
+
+
+def _route_refresh_allowed(refresh: bool) -> bool:
+    return refresh and settings.allow_route_refresh and (settings.marketdata_enabled or not settings.cache_only)
+
+
 @router.get("/rankings/health")
 def rankings_health():
     return {"ok": True}
@@ -76,6 +89,7 @@ def get_rankings(
         "rankings": [asdict(item) for item in items],
         "warnings": warnings,
         "generated_at": utc_now_iso(),
+        "cache_only": settings.cache_only,
     }
     return result
 
@@ -97,12 +111,15 @@ def get_ranking_symbol(
         budget=budget,
         min_confidence=min_confidence,
     )
-    if not ranking.errors and ranking.spot == 0.0:
+    if not ranking.errors and ranking.spot == 0.0 and not settings.cache_only:
         raise HTTPException(status_code=404, detail=f"No chain data for {symbol.upper()}")
 
     payload = asdict(ranking)
     if selected_bias:
         payload["signals"] = [s for s in payload["signals"] if s.get("bias") == selected_bias]
+    payload["cache_only"] = settings.cache_only
+    if settings.cache_only and (not payload.get("signals")) and payload.get("spot", 0.0) == 0.0:
+        payload.setdefault("warnings", ["cache_miss", "refresh_required"])
     return payload
 
 
@@ -113,6 +130,8 @@ def get_setups_for_symbol(symbol: str):
     try:
         chain = query_latest_chain(conn, symbol.upper())
         if not chain:
+            if settings.cache_only:
+                return _cache_only_payload(symbol, "signals", [])
             raise HTTPException(status_code=404, detail=f"No chain data for {symbol.upper()}")
 
         spot = as_float(chain[0].get("underlying_price"))
@@ -151,6 +170,7 @@ def get_setups_for_symbol(symbol: str):
         serialized = [serialize_signal(s) for s in signals]
 
         return {
+            "cache_only": settings.cache_only,
             "symbol": symbol.upper(),
             "signals": serialized,
             "spot": spot,
@@ -168,14 +188,39 @@ def get_contracts_for_symbol(
     dte_min: int = 9,
     dte_max: int = 14,
     budget: float | None = None,
+    refresh: bool = False,
 ):
     selected_bias = _validate_bias(bias) or "bearish"
+    if refresh and not _route_refresh_allowed(refresh):
+        return {
+            "symbol": symbol.upper(),
+            "bias": selected_bias,
+            "spot": 0.0,
+            "best": None,
+            "safer": None,
+            "convex": None,
+            "all_scored": [],
+            "warnings": ["route_refresh_disabled"],
+            "cache_only": settings.cache_only,
+        }
 
     conn = get_connection(settings.db_path)
     bootstrap_schema(conn, SCHEMA_PATH)
     try:
         chain = query_latest_chain(conn, symbol.upper())
         if not chain:
+            if settings.cache_only:
+                return {
+                    "symbol": symbol.upper(),
+                    "bias": selected_bias,
+                    "spot": 0.0,
+                    "best": None,
+                    "safer": None,
+                    "convex": None,
+                    "all_scored": [],
+                    "warnings": ["cache_miss", "refresh_required"],
+                    "cache_only": True,
+                }
             raise HTTPException(status_code=404, detail=f"No chain data for {symbol.upper()}")
         spot = as_float(chain[0].get("underlying_price"))
         rec = score_and_rank_contracts(
@@ -188,6 +233,7 @@ def get_contracts_for_symbol(
             budget=budget,
         )
         return {
+            "cache_only": settings.cache_only,
             "symbol": symbol.upper(),
             "bias": selected_bias,
             "spot": spot,

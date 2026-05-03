@@ -62,6 +62,8 @@ def get_system_status(conn: sqlite3.Connection) -> dict[str, Any]:
         
         stale_minutes = _stale_minutes(last_snapshot_ts)
         return {
+            "cache_only": settings.cache_only,
+            "marketdata_enabled": settings.marketdata_enabled and not settings.cache_only,
             "last_snapshot_ts": last_snapshot_ts,
             "is_stale": stale_minutes is None or stale_minutes > 60,
             "stale_minutes": stale_minutes,
@@ -73,6 +75,8 @@ def get_system_status(conn: sqlite3.Connection) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("Failed to gather system status: %s", exc)
         return {
+            "cache_only": settings.cache_only,
+            "marketdata_enabled": settings.marketdata_enabled and not settings.cache_only,
             "last_snapshot_ts": None,
             "is_stale": True,
             "stale_minutes": None,

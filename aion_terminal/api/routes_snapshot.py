@@ -5,6 +5,7 @@ import asyncio
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 from aion_terminal.app.dependencies import runtime_state
+from aion_terminal.app.config import settings
 from aion_terminal.services.engine_service import (
     compute_or_load_levels,
     levels_without_curve,
@@ -37,7 +38,10 @@ def get_curve(ticker: str, expiry: str | None = None):
 @router.get("/expiries/{ticker}")
 def get_expiries(ticker: str):
     try:
-        return {"symbol": ticker.upper(), "expiries": query_expiries(ticker.upper(), runtime_state)}
+        expiries = query_expiries(ticker.upper(), runtime_state)
+        if settings.cache_only and not expiries:
+            return {"symbol": ticker.upper(), "expiries": [], "warnings": ["cache_miss", "refresh_required"], "cache_only": True}
+        return {"symbol": ticker.upper(), "expiries": expiries, "cache_only": settings.cache_only}
     except Exception as exc:  # pragma: no cover
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
