@@ -59,6 +59,20 @@ def compute_or_load_levels(ticker: str, runtime_state, expiry_override: str | No
         if not expiry_override or expiry_override == "combined":
             return _attach_curve_expiry_labels(cached)
 
+    if settings.cache_only:
+        conn = _get_conn()
+        try:
+            rows = repositories.query_latest_chain(conn, ticker)
+            if not rows:
+                return {"symbol": ticker, "spot": 0.0, "curve": [], "warnings": ["cache_miss", "refresh_required"], "cache_only": True}
+            from aion_terminal.features.dealer import compute_levels
+            spot = rows[0].get("underlying_price") or 0.0
+            levels = compute_levels(rows, spot=spot, symbol=ticker)
+            levels["cache_only"] = True
+            return levels
+        finally:
+            conn.close()
+
     conn = _get_conn()
     try:
         levels = ingest_symbol(
