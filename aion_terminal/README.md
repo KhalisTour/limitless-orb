@@ -1,286 +1,373 @@
-# Aion Terminal
+# Aion Terminal Operating Manual
 
-## 1. Project Overview
+## 1) Project Overview
 
-Aion Terminal is a local quantitative options research terminal built on Python,
-FastAPI, and SQLite. It ingests real-time options chain data, computes dealer/GEX
-structure, scores setups and contracts, screens for relative strength candidates,
-and runs AI agents for macro briefing and chart analysis.
+Aion Terminal is a **local FastAPI + SQLite options research terminal** for directional idea discovery and trade planning.
 
-This is a research tool. It does not place trades or connect to a brokerage.
+It is designed to help you:
+- ingest and cache options/underlying data,
+- compute dealer/GEX/OI structure and expiry-aware levels,
+- generate technical and volatility features,
+- rank setups and score contracts,
+- produce disciplined trade plans through agent workflows.
 
-## 2. Core Features
+Aion Terminal is **not** automated execution software. It does not place live brokerage orders.
 
-- MarketData options chain ingestion (real-time and 15-min delayed)
-- Dealer / GEX structure (king node, call wall, put wall, flip zone, GEX curve)
-- Expiry-aware levels (front/back expiry structure, OI concentration by expiry)
-- Technical feature engine (EMA stack, VWAP, ATR, RVOL, compression, S/R)
-- Setup engine (pullback_into_support, momentum_continuation, squeeze_unwind, event_rerating)
-- Contract scoring engine (delta/gamma efficiency, liquidity, OI cluster, expected move fit)
-- Backtest / outcome mapping (delta proxy expectancy, excursion analysis)
-- Rankings API (universe ranking by signal confidence and setup class)
-- RS screener (2,385-ticker universe, RS score, RS new high, RS-before-price detection)
-- Agent 1: Morning macro brief (Anthropic claude-haiku-4-5, web search enabled)
-- Agent 3: Chart analysis (Anthropic claude-sonnet-4-6, vision)
+Primary goal: **discover and rank directional options opportunities, then generate disciplined, explainable trade plans from cached research context**.
 
-## 3. Architecture
+---
 
-- FastAPI backend serving all research endpoints
-- Two SQLite databases (options_terminal.db, rs_universe.db)
-- MarketData.app as the options chain data source
-- yfinance (raw urllib implementation) for RS screener bar data
-- Anthropic API for agent modules
-- python-dotenv for environment configuration
-- No frontend yet — all interaction via API endpoints and CLI scripts
+## 2) Core Architecture
 
-## 4. Directory Structure
+Aion Terminal is organized into five layers:
 
-aion_terminal/
-  api/           — FastAPI route modules
-  agents/        — AI agent modules (brief, chart, prompts)
-  backtests/     — Outcome mapping and expectancy engine
-  data/          — RS engine, static holdings files, brief outputs
-  data_sources/  — MarketData API client
-  features/      — Dealer, technical, and contract feature engines
-  scripts/       — CLI scripts for ingestion, RS scan, morning brief
-  services/      — Ingestion service, ranking service
-  signals/       — Setup rules, leadership signal detection
-  storage/       — SQLite repositories, schema, db connection
-  tests/         — Pytest test suite (70 passing)
-  app/           — FastAPI app, config, main entrypoint
+1. **Data refresh layer (CLI scripts)**
+   - `bootstrap_history.py`
+   - `run_backfill.py`
+   - `run_daily_snapshot.py`
 
-## 5. Environment Setup
+2. **Cache/database layer (SQLite)**
+   - primary DB: `options_terminal.db`
+   - stores chain snapshots, bars, feature snapshots, levels, setups, outcomes
 
-Python version: 3.12
+3. **API serving layer (FastAPI)**
+   - serves cached data
+   - runs in cache-only mode by default
 
-Commands:
+4. **Frontend layer**
+   - dashboard + symbol pages + rankings/contracts/setups views + agent pages
+   - should consume API responses from SQLite/cache, not trigger broad live refresh
+
+5. **Agent layer**
+   - Agent 1: macro brief
+   - Agent 2: trade plan generation
+   - Agent 3: chart analysis
+
+---
+
+## 3) Data Flow
+
+Typical research flow:
+
+`RS screener / manual watchlist`
+→ `run_daily_snapshot`
+→ `raw_chain_snapshots / underlying_bars / feature_snapshots`
+→ `setup engine / ranking engine / contract scoring`
+→ `dashboard/frontend`
+→ `Agent 2 trade plan`
+
+Use the scripts to refresh intentionally, then inspect and plan from cached state.
+
+---
+
+## 4) Cache-Only Mode (Default and Recommended)
+
+### Required environment
+
+- `AION_CACHE_ONLY=true`
+- `AION_ALLOW_ROUTE_REFRESH=false`
+- `AION_MARKETDATA_ENABLED=true`
+
+### Behavior
+
+- FastAPI starts **without** automatic background ingestion.
+- Expected startup log:
+
+```text
+cache-only mode enabled; background ingestion pipeline disabled
+```
+
+- Frontend/API routes read from SQLite/cache.
+- Missing data should surface as cache-miss/refresh-required behavior, rather than silently triggering large live fetches.
+
+### Important nuance
+
+`AION_MARKETDATA_ENABLED=true` can remain enabled so CLI scripts can still fetch MarketData.
+
+In cache-only server behavior, route-level live refresh is effectively disabled, so dashboard-like status fields may report effective MarketData route refresh as disabled while scripts still work.
+
+### Why this mode exists
+
+To prevent **429/rate-limit storms** and excess credit burn on MarketData Starter plans.
+
+---
+
+## 5) Environment Variables
+
+Example baseline:
+
+```bash
+OPTIONS_DB_PATH=options_terminal.db
+MARKETDATA_APP_TOKEN=
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+WATCHLIST=AMD,IONQ,APLD
+AION_CACHE_ONLY=true
+AION_ALLOW_ROUTE_REFRESH=false
+AION_MARKETDATA_ENABLED=true
+POLL_SECONDS=600
+DTE_MAX=60
+```
+
+What each does:
+
+- `OPTIONS_DB_PATH` — SQLite file path for the primary options research database.
+- `MARKETDATA_APP_TOKEN` — token for MarketData API ingestion.
+- `OPENAI_API_KEY` — key for OpenAI-backed agent calls.
+- `ANTHROPIC_API_KEY` — key for Anthropic-backed chart analysis path.
+- `WATCHLIST` — default comma-separated symbols used by polling/scripts where applicable.
+- `AION_CACHE_ONLY` — when true, disables background ingestion pipeline at server startup.
+- `AION_ALLOW_ROUTE_REFRESH` — enables/disables refresh pathways from selected API routes.
+- `AION_MARKETDATA_ENABLED` — global MarketData enable flag (commonly true for scripts).
+- `POLL_SECONDS` — polling interval when running background polling mode.
+- `DTE_MAX` — default max DTE filter used in contract/setups workflows.
+
+---
+
+## 6) Setup
+
+```bash
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
 
-Required .env file at project root:
+---
 
-MARKETDATA_APP_TOKEN=your_token_here
-OPENAI_API_KEY=sk-your_key_here
-ANTHROPIC_API_KEY=sk-ant-your_key_here
-OPTIONS_DB_PATH=options_terminal.db
-WATCHLIST=NVDA,SPY,QQQ,GLD,COIN,ASTS,PLTR
-POLL_SECONDS=3600
-DTE_MAX=60
+## 7) Running the Backend Safely
 
-## 6. Running Locally
+```bash
+uvicorn aion_terminal.app.main:app --host 0.0.0.0 --port 8000
+```
 
-Start the FastAPI server:
+With `AION_CACHE_ONLY=true`, starting FastAPI should **not** trigger automatic MarketData refresh calls.
 
-source venv/bin/activate
-PYTHONPATH=/path/to/limitless-orb uvicorn aion_terminal.app.main:app --host 0.0.0.0 --port 8000
+---
 
-With auto-reload for development:
+## 8) Refreshing Market Data (Intended Path)
 
-PYTHONPATH=/path/to/limitless-orb uvicorn aion_terminal.app.main:app --reload --port 8000
+Use CLI scripts for intentional refresh:
 
-The server starts an ingestion pipeline loop on startup that refreshes all
-WATCHLIST symbols at the POLL_SECONDS interval.
+```bash
+python -m aion_terminal.scripts.bootstrap_history
+```
 
-## 7. Databases
+```bash
+python -m aion_terminal.scripts.run_backfill \
+  --symbols AMD \
+  --days 90 \
+  --timeframes 15m,1h,1d \
+  --verbose
+```
 
-### options_terminal.db
-Primary database. Tables:
-- raw_chain — raw options chain records
-- computed_levels — dealer structure per symbol per snapshot
-- raw_chain_snapshots — timestamped chain snapshots used for scoring
-- underlying_bars — OHLCV bars for technical feature computation
-- feature_snapshots — computed technical features per symbol
-- setup_candidates — setup signals with confidence scores
-- setup_outcomes — backtest outcome records
-- manual_narrative_tags — narrative event tags per symbol
+```bash
+python -m aion_terminal.scripts.run_daily_snapshot \
+  --symbols AMD,IONQ,APLD \
+  --max-symbols 3 \
+  --sleep-seconds 8 \
+  --skip-refresh-if-recent-minutes 240 \
+  --verbose
+```
 
-### aion_terminal/storage/rs_universe.db
-RS screener database. Tables:
-- rs_candidates — symbols passing the RS screen with scores and expiry
-- rs_scan_runs — scan run history and stats
+Guidelines:
+- Use small symbol batches on MarketData Starter plans.
+- Avoid casual full-universe refresh runs.
+- Scripts are the intended data refresh mechanism.
 
-## 8. API Endpoints
+---
 
-### Market Data / Dealer Structure
-GET /levels/{symbol}
-GET /curve/{symbol}
-GET /expiries/{symbol}
+## 9) API Endpoints
 
-### Rankings / Setups / Contracts
-GET /rankings
-GET /rankings/{symbol}
-GET /setups/{symbol}
-GET /contracts/{symbol}
-POST /tags/manual
+### Dashboard
+- `GET /dashboard`
+
+### Rankings
+- `GET /rankings`
+- `GET /rankings/{symbol}`
+
+### Setups / Contracts
+- `GET /setups/{symbol}`
+- `GET /contracts/{symbol}`
+- `GET /expiries/{symbol}`
+
+### Dealer / Snapshot
+- `GET /levels/{ticker}`
+- `GET /curve/{ticker}`
 
 ### RS Screener
-GET /rs/candidates
-GET /rs/candidates/{ticker}
-GET /rs/scan/status
-POST /rs/promote/{ticker}
-POST /rs/scan/trigger
-GET /rs/events
+- `GET /rs/candidates`
+- `GET /rs/candidates/{symbol}`
 
 ### Agents
-POST /agents/brief
-GET /agents/brief/latest
-POST /agents/chart
-GET /agents/chart/history
+- `GET /agents/brief/latest`
+- `POST /agents/brief`
+- `POST /agents/chart`
+- `GET /agents/chart/history`
+- `POST /agents/trade-plan`
+- `GET /agents/trade-plan/history`
 
-### Backtests
-GET /backtests/expectancy
+### Cone
+- `GET /cone/etf-bars`
 
-## 9. CLI Scripts
+---
 
-### Ingestion
-Run a single symbol ingest manually (bypasses the background loop):
-PYTHONPATH=. python -m aion_terminal.scripts.run_ingest --symbol NVDA
-
-### RS Screener
-Run the full 2,385-ticker RS scan:
-PYTHONPATH=. python -m aion_terminal.scripts.run_rs_scan
-
-Force a re-run even if the 2-day interval has not elapsed:
-PYTHONPATH=. python -m aion_terminal.scripts.run_rs_scan --force
-
-Compute and display results without writing to the database:
-PYTHONPATH=. python -m aion_terminal.scripts.run_rs_scan --dry-run
-
-Combine flags (compute fresh without persisting):
-PYTHONPATH=. python -m aion_terminal.scripts.run_rs_scan --force --dry-run
-
-### Morning Brief Agent
-Generate and save a morning macro brief:
-PYTHONPATH=. python -m aion_terminal.scripts.run_morning_brief
-
-Generate without posting narrative tags to the database:
-PYTHONPATH=. python -m aion_terminal.scripts.run_morning_brief --no-tags
-
-Validate configuration and prompt without making an API call:
-PYTHONPATH=. python -m aion_terminal.scripts.run_morning_brief --dry-run
-
-## 10. RS Screener
-
-The RS screener scans a combined universe of 2,385 unique tickers drawn from:
-- IWM holdings (1,884 US equities, aion_terminal/data/iwm_holdings.txt)
-- S&P 500 holdings (503 US equities, aion_terminal/data/sp500_holdings.txt)
-
-Bar data is fetched via direct Yahoo Finance HTTP requests (no yfinance binary dependency).
-SPY is used as the benchmark.
-
-A ticker passes the screen when 3 of 5 conditions are met:
-1. RS daily rating in top 25% of universe (percentile >= 75)
-2. RS new high over 63-day lookback
-3. RS new high before price new high (early leadership signal)
-4. Price above 200-day moving average
-5. Price above 50-week moving average (approximated as 250-day MA)
-
-Passing candidates are stored in rs_universe.db with a 21-day TTL.
-Promoted tickers can be added to the active watchlist for chain ingestion.
-
-The scan runs every 2 days. Use --force to override the interval.
-A full scan of 2,385 tickers takes approximately 8-10 minutes.
-
-## 11. Agent System
+## 10) Agents
 
 ### Agent 1 — Morning Macro Brief
-Model: gpt-5.4-mini
-Provider: OpenAI
-Purpose: generates a 900-1,300 word institutional macro regime brief covering
-  10 sections: regime, liquidity, rates, growth, inflation, credit, geopolitics,
-  sectors, cross-asset, risk matrix. Ends with trading implications per ticker.
-Output: saves JSON to aion_terminal/data/briefs/{date}_morning_brief.json
-  and posts narrative_tags to options_terminal.db
+- Model: `GPT-5.4-mini`
+- Optional grader/postprocessor: `GPT-5.4-nano`
+- Output: macro regime framing, sector leaders/laggards, narrative tags
+- Known issue: quality can depend on web-search/data availability
+
+### Agent 2 — Trade Plan Generator
+- Model: `GPT-5.4-mini`
+- Prompt system: `TRADE_PLAN_SYSTEM_PROMPT_V3`
+- Inputs: rankings, contracts, macro/chart context, `decision_engine` outputs
+- Output: narrative + `JSON_PLAN`
+- Can emit: `no_trade`, `wait`, `conditional_trade`
 
 ### Agent 3 — Chart Analysis
-Model: claude-haiku-4-5 (fallback: claude-sonnet-4-6)
-Provider: Anthropic
-Input: chart screenshot (PNG or JPEG) + optional dealer context from /rankings/{symbol}
-Output: JSON with setup_score (0-5), bias, EMA stack, RVOL state, RSI divergence,
-  setup_class, invalidation_note, and 2-3 sentence brief
+- Primary model: `Claude Haiku 4.5`
+- Fallback: `Claude Sonnet 4.6`
+- Role: parse chart screenshots + dealer context into structured JSON
 
-### Agent 2 — Trade Plan Generator (planned)
-Status: system prompt designed, Codex build prompt not yet submitted
-Purpose: combines terminal rankings, contract scores, macro tags, chart analysis,
-  and session context to generate structured trade plans with three-level
-  structural exits tied to dealer levels
+---
 
-## 12. Testing
+## 11) Decision Engine
 
-Run the full test suite:
+The decision engine is a deterministic quantitative signal layer.
+
+It provides fields such as:
+- `S1 / S2 / S3`
+- `EV score`
+- `p_touch_s1`
+- `p_touch_s3`
+- `action_bias`
+
+Agent 2 should interpret this as structured signal input and translate it into a human-readable plan.
+
+---
+
+## 12) Backtesting
+
+Current state:
+- Synthetic options P&L backtesting exists.
+- Delta-proxy method is preserved.
+- Synthetic Greeks path estimates delta/gamma/theta/IV effects.
+- Historical option candle depth may vary by data plan.
+
+Backtests are research estimates, **not** execution guarantees.
+
+---
+
+## 13) Database Tables
+
+Primary DB: `options_terminal.db`
+
+Key tables:
+- `raw_chain`
+- `computed_levels`
+- `raw_chain_snapshots`
+- `underlying_bars`
+- `feature_snapshots`
+- `setup_candidates`
+- `setup_outcomes`
+- `manual_narrative_tags`
+
+Do not write to `rs_universe.db` from agent modules unless explicitly intended.
+
+---
+
+## 14) Testing
+
+Run full tests:
+
+```bash
 pytest -q
+```
 
-Run with verbose output:
-pytest aion_terminal/tests/ -v
+Recent startup guard test:
 
-Current status: 70 tests passing across:
-- test_agents.py (9 tests)
-- test_backtest_mapping.py (6 tests)
-- test_contract_scoring.py (7 tests)
-- test_dealer_expiry_levels.py (1 test)
-- test_dealer_features.py (1 test)
-- test_ingestion_service.py (1 test)
-- test_marketdata_expiry_selection.py (1 test)
-- test_ranking_service.py (5 tests)
-- test_rs_engine.py (14 tests)
-- test_setup_rules.py (10 tests)
-- test_storage_repositories.py (3 tests)
-- test_technical_features.py (8 tests)
+```bash
+pytest -q aion_terminal/tests/test_startup_cache_only.py
+```
 
-No live API calls are made in tests. All external dependencies are monkeypatched.
+Known non-blocking warnings may include FastAPI `on_event` deprecation and `python_multipart` notices.
 
-## 13. Current Limitations
+---
 
-- MarketData Starter plan ($29/mo) provides 15-min delayed options data.
-  Real-time OPRA requires the Trader plan.
-- Daily credit limit of ~10,000 API credits. Full universe refresh costs ~112 credits.
-- yfinance bar data for the RS screener may be delayed or unavailable for
-  thinly traded tickers.
-- The ANTHROPIC_API_KEY must be set in .env for agent modules to function.
-- Chart agent requires a clear, labeled TradingView or equivalent screenshot.
-  It cannot interpret unlabeled or low-resolution charts reliably.
-- No frontend exists yet. All interaction is via API endpoints and CLI scripts.
-- This is not execution software. It does not connect to any brokerage.
-- Agent 2 (trade plan generator) is designed but not yet built.
-- RS scan takes 8-10 minutes for the full universe due to rate limiting.
+## 15) Troubleshooting
 
-## 14. Development Workflow
+### Problem: MarketData 429 spam on server start
+- Cause: background pipeline or route-refresh leakage triggering MarketData calls.
+- Fix: set `AION_CACHE_ONLY=true` and verify startup log shows pipeline disabled.
 
-Branch: codex-prompt3
+### Problem: contracts endpoint returns empty
+- Cause: cached expiries outside `dte_min/dte_max`, or missing cached chain data.
+- Try:
 
-Standard workflow:
-git checkout codex-prompt3
-pytest -q
-# make changes
-git add .
-git commit -m "feat: description"
-git push origin codex-prompt3
+```bash
+curl "http://localhost:8000/contracts/AMD?bias=bullish&dte_min=3&dte_max=21"
+```
 
-Codex task workflow:
-1. Create new Codex task pointing at codex-prompt3
-2. Review PR and run: git diff --name-only codex-prompt3 origin/<codex-branch>
-3. Verify only new files appear in the diff
-4. Cherry-pick new files: git checkout origin/<codex-branch> -- path/to/file
-5. Run pytest -q to confirm all tests pass
-6. Commit and push to codex-prompt3
+### Problem: `setup_candidates=0`
+- Cause: threshold filters, insufficient bars, or missing setup insertion during snapshot flow.
 
-## 15. Roadmap
+### Problem: only 7–10 bars available
+- Fix: run 90-day backfill and verify `underlying_bars` population.
 
-In approximate priority order:
-- Agent 2: trade plan generator with S1/S2/S3 state framework, structural exits,
-  session context injection, and outcome feedback loop
-- Prompt 10: single-file HTML frontend with dealer structure visualization,
-  RS screener watchlist, trade plan builder, structural trailing stop display,
-  and session log
-- Macro brief evaluator: lightweight grading loop using claude-haiku-4-5
-  to score brief quality after generation
-- macro_style_guide.md RAG injection: pass compact exemplars and style rules
-  into each brief call
-- Agent 4: narrative tag collector from X timeline / RSS feeds
-- Unusual Whales API integration: flow alerts, sector tide, Greek exposure
-- Weekly pattern summary: Sunday evening script querying setup_outcomes
-  to generate per-user historical performance by setup class, DTE, and ticker
-- Frontend upgrade: React or HTML artifact with live dealer curve,
-  RS screener integration, and agent chat panel
-- Databento / tick data integration (longer term)
+### Problem: macro brief cannot be produced
+- Fix: rerun after macro fallback improvements, or accept degraded-output mode if upstream data/search context is limited.
+
+---
+
+## 16) Current Limitations
+
+- MarketData Starter plans have strict credit/rate limits.
+- Some symbols may return 404/empty options chains.
+- Cached data can become stale between refresh runs.
+- Frontend should not auto-trigger broad live refresh.
+- Macro output quality depends on web-search reliability.
+- Contract scoring needs eligible cached contracts within DTE constraints.
+- Not live execution software.
+
+---
+
+## 17) Recommended Daily Workflow
+
+1. Edit `WATCHLIST` or pass symbols manually.
+2. Run backfill if bars are insufficient.
+3. Run daily snapshot on 1–3 symbols.
+4. Start server in cache-only mode.
+5. Open dashboard/frontend and inspect rankings/contracts.
+6. Generate Agent 2 trade plans only for top candidates.
+
+Concrete example:
+
+```bash
+python -m aion_terminal.scripts.run_daily_snapshot \
+  --symbols AMD,IONQ,APLD \
+  --max-symbols 3 \
+  --sleep-seconds 8 \
+  --skip-refresh-if-recent-minutes 240 \
+  --verbose
+
+uvicorn aion_terminal.app.main:app --host 0.0.0.0 --port 8000
+```
+
+Core operating principle:
+
+- **Do not operate as:** open frontend → fetch everything live
+- **Operate as:** refresh intentionally → cache data → inspect safely → generate plan
+
+---
+
+## 18) Roadmap
+
+- Improve macro brief quality and consistency.
+- Expand historical option-candle integration.
+- Strengthen setup candidate persistence and traceability.
+- Improve RS → ingestion prioritization.
+- Frontend polish and workflow UX improvements.
+- Add manual refresh controls with strict safeguards.
+- Add trade journal and outcome feedback loops.
