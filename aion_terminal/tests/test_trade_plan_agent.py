@@ -154,3 +154,34 @@ def test_trade_plan_route_fetches_contracts_with_new_defaults(monkeypatch):
     asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
     assert captured["bias"] == "bullish"
     assert captured["dte_min"] == 0 and captured["dte_max"] == 21
+
+def test_trade_plan_saved_and_memory_injected(monkeypatch, tmp_path):
+    routes_agents.settings.db_path = str(tmp_path / "mem.db")
+    captured = {}
+    monkeypatch.setattr(routes_agents, "rank_symbol", lambda *_args, **_kwargs: SimpleNamespace(symbol="AMD", spot=100.0, call_wall=101.0, put_wall=99.0, king_node=100.0, signals=[{"bias":"bullish"}], best_contract=None, safer_contract=None, convex_contract=None))
+    monkeypatch.setattr(routes_agents, "get_contract_recommendation", lambda *args, **kwargs: {"best": {"contract_symbol": "AMD1"}, "safer": None, "convex": None, "all_scored": [], "warnings": []})
+    def fake_gtp(*args, **kwargs):
+        captured["user_historical_outcomes"] = args[14]
+        return SimpleNamespace(generated_at="2026-05-01T00:00:00Z", symbol="AMD", decision="conditional_trade", bias="bullish", confidence=0.6, confidence_label="medium", narrative="n", json_plan={"best_plan": {"setup_class": "s1", "selected_contract": {"contract_symbol": "AMD1", "moneyness_bucket": "ATM"}}}, decision_engine={}, model="m", tokens_used=1, error=None)
+    monkeypatch.setattr(routes_agents, "generate_trade_plan", fake_gtp)
+    first = asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
+    assert first.get("plan_id")
+    summary = asyncio.run(asyncio.to_thread(routes_agents.rebuild_memory_summary))
+    assert "win_rate" in summary and "avg_return_pct" in summary
+    second = asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
+    assert second.get("plan_id")
+    assert "global_summary" in captured["user_historical_outcomes"]
+
+
+def test_outcome_and_history_endpoints(monkeypatch, tmp_path):
+    routes_agents.settings.db_path = str(tmp_path / "outcomes.db")
+    monkeypatch.setattr(routes_agents, "rank_symbol", lambda *_args, **_kwargs: SimpleNamespace(symbol="AMD", spot=100.0, call_wall=101.0, put_wall=99.0, king_node=100.0, signals=[{"bias":"bullish"}], best_contract=None, safer_contract=None, convex_contract=None))
+    monkeypatch.setattr(routes_agents, "get_contract_recommendation", lambda *args, **kwargs: {"best": {"contract_symbol": "AMD1"}, "safer": None, "convex": None, "all_scored": [], "warnings": []})
+    monkeypatch.setattr(routes_agents, "generate_trade_plan", lambda *args, **kwargs: SimpleNamespace(generated_at="2026-05-01T00:00:00Z", symbol="AMD", decision="conditional_trade", bias="bullish", confidence=0.6, confidence_label="medium", narrative="n", json_plan={"best_plan": {"setup_class": "s1"}}, decision_engine={}, model="m", tokens_used=1, error=None))
+    plan = asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
+    out = routes_agents.create_trade_plan_outcome(plan["plan_id"], routes_agents.TradePlanOutcomeRequest(contract_symbol="AMD1", realized_return_pct=10.0, followed_plan=True))
+    assert out["plan_id"] == plan["plan_id"]
+    hist = routes_agents.get_trade_plan_history(symbol="AMD", limit=20)
+    outcomes = routes_agents.get_trade_plan_outcomes(symbol="AMD", limit=100)
+    assert len(hist) >= 1
+    assert len(outcomes) == 1

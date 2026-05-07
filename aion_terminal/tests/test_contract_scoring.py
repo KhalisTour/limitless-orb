@@ -163,3 +163,35 @@ def test_score_and_rank_returns_recommendation(tmp_path):
 def test_expected_move_fit_atm_call():
     fit = compute_expected_move_fit(strike=105.0, spot=100.0, iv=0.30, dte=10, side="call")
     assert fit > 0.8
+
+def test_role_separation_prefers_balanced_best(tmp_path):
+    db_path = tmp_path / "roles.db"
+    conn = get_connection(str(db_path))
+    schema_path = Path(__file__).resolve().parents[1] / "storage" / "schema.sql"
+    bootstrap_schema(conn, str(schema_path))
+    rows = [
+        make_contract(strike=100, delta=0.50, gamma=0.05, bid=4.8, ask=5.2, option_symbol="ATM"),
+        make_contract(strike=110, delta=0.20, gamma=0.15, bid=0.9, ask=1.1, option_symbol="OTM"),
+        make_contract(strike=97, delta=0.62, gamma=0.04, bid=6.8, ask=7.2, option_symbol="ITM"),
+    ]
+    conn.executemany(
+        """
+        INSERT INTO raw_chain_snapshots (
+            snapshot_ts, symbol, expiry, option_symbol, side, strike, bid, ask, last, mark,
+            iv, delta, gamma, theta, vega, rho, open_interest, volume, dte, underlying_price,
+            source, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [(
+            r["snapshot_ts"], r["symbol"], r["expiry"], r["option_symbol"], r["side"], r["strike"],
+            r["bid"], r["ask"], r["mark"], r["mark"], r["iv"], r["delta"], r["gamma"], r["theta"],
+            0.0, 0.0, r["open_interest"], r["volume"], r["dte"], r["underlying_price"], "test", r["snapshot_ts"], r["snapshot_ts"]
+        ) for r in rows],
+    )
+    conn.commit()
+    rec = score_and_rank_contracts(conn, "SPY", "bullish", 100.0)
+    assert rec.convex is not None and rec.convex.contract_symbol == "OTM"
+    assert rec.best is not None and rec.best.contract_symbol != "OTM"
+    assert rec.safer is not None and abs(rec.safer.delta) >= abs(rec.best.delta)
+    assert len({rec.best.contract_symbol, rec.safer.contract_symbol, rec.convex.contract_symbol}) == 3
+    conn.close()

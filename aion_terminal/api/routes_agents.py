@@ -19,6 +19,18 @@ from aion_terminal.services.contract_service import get_contract_recommendation
 from aion_terminal.services.ranking_service import infer_bias, rank_symbol
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 
+from uuid import uuid4
+
+from aion_terminal.storage.repositories import (
+    get_agent_memory_summary,
+    insert_trade_plan,
+    insert_trade_plan_outcome,
+    query_recent_trade_plans,
+    query_trade_plan_outcomes,
+    upsert_agent_memory_summary,
+)
+from aion_terminal.utils.time_utils import utc_now_iso
+
 router = APIRouter(tags=["agents"])
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 BRIEF_DIR = Path("aion_terminal/data/briefs")
@@ -141,6 +153,49 @@ class TradePlanRequest(BaseModel):
     weekly_pattern_summary: str | None = None
 
 
+def build_agent_memory_summary(outcomes: list[dict[str, Any]], recent_plans: list[dict[str, Any]]) -> dict[str, Any]:
+    import statistics
+    by_plan = {p.get("plan_id"): p for p in recent_plans}
+    realized = [float(o.get("realized_return_pct")) for o in outcomes if o.get("realized_return_pct") is not None]
+    mfe = [float(o.get("mfe_pct")) for o in outcomes if o.get("mfe_pct") is not None]
+    mae = [float(o.get("mae_pct")) for o in outcomes if o.get("mae_pct") is not None]
+    win_rate = (sum(1 for v in realized if v > 0) / len(realized)) if realized else 0.0
+    exits = [str(o.get("exit_reason")) for o in outcomes if o.get("exit_reason")]
+    most_common_exit_reason = max(set(exits), key=exits.count) if exits else None
+    symbol_perf: dict[str, list[float]] = {}
+    setup_perf: dict[str, list[float]] = {}
+    money_perf: dict[str, list[float]] = {}
+    warnings: list[str] = []
+    for o in outcomes:
+        rr = o.get("realized_return_pct")
+        if rr is None:
+            continue
+        rr = float(rr)
+        symbol = str(o.get("symbol") or "")
+        symbol_perf.setdefault(symbol, []).append(rr)
+        plan = by_plan.get(o.get("plan_id"), {})
+        setup = str(plan.get("setup_class") or "unknown")
+        setup_perf.setdefault(setup, []).append(rr)
+        m_bucket = str((json.loads(plan.get("selected_contract_json") or "{}") or {}).get("moneyness_bucket") or "unknown")
+        money_perf.setdefault(m_bucket, []).append(rr)
+        if o.get("followed_plan") in (0, False) and rr < 0:
+            warnings.append("plan_deviation_losses")
+    sort_avg = lambda d, rev: sorted(((k, sum(v)/len(v)) for k, v in d.items() if v), key=lambda x: x[1], reverse=rev)
+    return {
+        "win_rate": win_rate,
+        "avg_return_pct": statistics.fmean(realized) if realized else 0.0,
+        "avg_mfe_pct": statistics.fmean(mfe) if mfe else 0.0,
+        "avg_mae_pct": statistics.fmean(mae) if mae else 0.0,
+        "most_common_exit_reason": most_common_exit_reason,
+        "best_symbols": [k for k, _ in sort_avg(symbol_perf, True)[:3]],
+        "worst_symbols": [k for k, _ in sort_avg(symbol_perf, False)[:3]],
+        "best_setup_classes": [k for k, _ in sort_avg(setup_perf, True)[:3]],
+        "worst_setup_classes": [k for k, _ in sort_avg(setup_perf, False)[:3]],
+        "best_moneyness_buckets": [k for k, _ in sort_avg(money_perf, True)[:3]],
+        "common_warnings": sorted(set(warnings)),
+        "behavioral_notes": ["favor_plan_adherence" if "plan_deviation_losses" in warnings else "stable_execution"],
+    }
+
 def _normalize_contract_fields(contract: dict[str, Any] | None) -> dict[str, Any] | None:
     if not contract:
         return None
@@ -221,7 +276,20 @@ async def create_trade_plan(payload: TradePlanRequest):
                 macro_context = json.loads(files[0].read_text(encoding="utf-8"))
         except Exception as exc:
             warnings.append(f"macro_context_fetch_failed: {exc}")
-    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, payload.user_historical_outcomes, payload.weekly_pattern_summary)
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        global_memory = get_agent_memory_summary(conn, "global")
+        symbol_outcomes = query_trade_plan_outcomes(conn, symbol=payload.symbol, limit=30)
+    finally:
+        conn.close()
+    memory_payload = payload.user_historical_outcomes or {}
+    if global_memory:
+        memory_payload = {**memory_payload, "global_summary": json.loads(global_memory.get("summary_json") or "{}")}
+    if symbol_outcomes:
+        memory_payload = {**memory_payload, "symbol_recent_outcomes": symbol_outcomes}
+
+    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, memory_payload, payload.weekly_pattern_summary)
     if isinstance(result, dict):
         out = result
     else:
@@ -232,18 +300,112 @@ async def create_trade_plan(payload: TradePlanRequest):
             out = result.__dict__ if hasattr(result, "__dict__") else {}
     if warnings:
         out.setdefault("json_plan", {}).setdefault("required_next_data", []).extend(warnings)
+    plan_id = str(uuid4())
+    out["plan_id"] = plan_id
+    selected_contract = ((out.get("json_plan") or {}).get("best_plan") or {}).get("selected_contract") or (contract_recommendations or {}).get("best")
+    context_payload = {"rankings_payload": rankings_payload, "contract_recommendations": contract_recommendations, "macro_context": macro_context, "chart_context": payload.chart_context}
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        insert_trade_plan(conn, {
+            "plan_id": plan_id,
+            "generated_at": out.get("generated_at") or utc_now_iso(),
+            "symbol": payload.symbol.upper(),
+            "bias": out.get("bias"),
+            "decision": out.get("decision") or (out.get("json_plan") or {}).get("decision"),
+            "confidence": out.get("confidence"),
+            "confidence_label": out.get("confidence_label"),
+            "setup_class": ((out.get("json_plan") or {}).get("best_plan") or {}).get("setup_class"),
+            "selected_contract_symbol": (selected_contract or {}).get("contract_symbol"),
+            "selected_contract_json": json.dumps(selected_contract or {}, default=str),
+            "decision_engine_json": json.dumps(out.get("decision_engine") or {}, default=str),
+            "json_plan": json.dumps(out.get("json_plan") or {}, default=str),
+            "narrative": out.get("narrative") or "",
+            "context_json": json.dumps(context_payload, default=str),
+            "model": out.get("model"),
+            "tokens_used": out.get("tokens_used"),
+        })
+    finally:
+        conn.close()
     TRADE_PLAN_HISTORY.appendleft(out)
     return out
 
 
 @router.get("/agents/trade-plan/history")
-def get_trade_plan_history(symbol: str | None = None, limit: int = 10):
-    limit = max(1, min(limit, 50))
-    rows = list(TRADE_PLAN_HISTORY)
-    if symbol:
-        rows = [r for r in rows if str(r.get("symbol", "")).upper() == symbol.upper()]
-    return rows[:limit]
+def get_trade_plan_history(symbol: str | None = None, limit: int = 20):
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        rows = query_recent_trade_plans(conn, symbol=symbol, limit=limit)
+    finally:
+        conn.close()
+    return rows
 
+
+
+
+class TradePlanOutcomeRequest(BaseModel):
+    contract_symbol: str | None = None
+    entry_ts: str | None = None
+    entry_price: float | None = None
+    exit_ts: str | None = None
+    exit_price: float | None = None
+    realized_return_pct: float | None = None
+    mfe_pct: float | None = None
+    mae_pct: float | None = None
+    exit_reason: str | None = None
+    followed_plan: bool | None = None
+    notes: str | None = None
+
+
+@router.post("/agents/trade-plan/{plan_id}/outcome")
+def create_trade_plan_outcome(plan_id: str, payload: TradePlanOutcomeRequest):
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        plans = query_recent_trade_plans(conn, limit=500)
+        plan = next((p for p in plans if p.get("plan_id") == plan_id), None)
+        symbol = str((plan or {}).get("symbol") or "")
+        outcome = {"outcome_id": str(uuid4()), "plan_id": plan_id, "symbol": symbol, **payload.model_dump(), "created_at": utc_now_iso()}
+        insert_trade_plan_outcome(conn, outcome)
+    finally:
+        conn.close()
+    return outcome
+
+
+@router.get("/agents/trade-plan/outcomes")
+def get_trade_plan_outcomes(symbol: str | None = None, limit: int = 100):
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        return query_trade_plan_outcomes(conn, symbol=symbol, limit=limit)
+    finally:
+        conn.close()
+
+
+@router.get("/agents/memory/summary")
+def get_memory_summary(scope: str = "global"):
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        row = get_agent_memory_summary(conn, scope)
+    finally:
+        conn.close()
+    return row or {"scope": scope, "summary_json": "{}"}
+
+
+@router.post("/agents/memory/rebuild")
+def rebuild_memory_summary():
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        outcomes = query_trade_plan_outcomes(conn, limit=500)
+        plans = query_recent_trade_plans(conn, limit=500)
+        summary = build_agent_memory_summary(outcomes, plans)
+        upsert_agent_memory_summary(conn, "global", json.dumps(summary, default=str))
+    finally:
+        conn.close()
+    return summary
 
 class ChatMessage(BaseModel):
     role: str

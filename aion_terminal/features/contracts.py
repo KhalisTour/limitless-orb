@@ -284,9 +284,33 @@ def score_and_rank_contracts(
 
     scored.sort(key=lambda c: c.total_score, reverse=True)
 
-    best = next((c for c in scored if c.liquidity_score > 0.3), None)
-    safer = next((c for c in scored if c.moneyness_bucket == "ITM"), None)
-    convex = next((c for c in scored if c.moneyness_bucket == "OTM"), None)
+    balanced_candidates = [
+        c for c in scored
+        if 0.35 <= abs(c.delta) <= 0.65 and c.spread_pct <= 10.0 and c.liquidity_score >= 0.4 and c.theta_burden <= 1.0 and c.moneyness_bucket in {"ATM", "ITM", "OTM"}
+    ]
+    if balanced_candidates:
+        balanced_candidates = sorted(
+            balanced_candidates,
+            key=lambda c: (0 if c.moneyness_bucket == "ATM" else 1, abs(abs(c.delta) - 0.5), -c.liquidity_score, c.theta_burden),
+        )
+    best = balanced_candidates[0] if balanced_candidates else next((c for c in scored if c.liquidity_score > 0.3), None)
+
+    safer_candidates = [
+        c for c in scored
+        if abs(c.delta) >= 0.55 and c.liquidity_score >= 0.45 and c.theta_burden <= 0.9 and c.moneyness_bucket in {"ITM", "ATM"}
+    ]
+    safer = safer_candidates[0] if safer_candidates else next((c for c in scored if c.moneyness_bucket in {"ITM", "ATM"}), None)
+
+    convex_candidates = sorted(
+        [c for c in scored if c.moneyness_bucket == "OTM" and c.liquidity_score >= 0.2],
+        key=lambda c: (c.gamma_per_dollar + c.delta_per_dollar + c.expected_move_fit),
+        reverse=True,
+    )
+    convex = convex_candidates[0] if convex_candidates else next((c for c in scored if c.moneyness_bucket == "OTM"), None)
+    if best is not None and convex is not None and best.contract_symbol == convex.contract_symbol:
+        alternate_best = next((c for c in balanced_candidates if c.contract_symbol != convex.contract_symbol), None)
+        if alternate_best is not None:
+            best = alternate_best
 
     warnings: list[str] = []
     if len(scored) < 5:

@@ -179,3 +179,57 @@ ON setup_outcomes(outcome_ts);
 
 CREATE INDEX IF NOT EXISTS idx_manual_tags_symbol_date
 ON manual_narrative_tags(symbol, tag_date);
+
+CREATE TABLE IF NOT EXISTS trade_plans (
+    plan_id TEXT PRIMARY KEY,
+    generated_at TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    bias TEXT,
+    decision TEXT,
+    confidence REAL,
+    confidence_label TEXT,
+    setup_class TEXT,
+    selected_contract_symbol TEXT,
+    selected_contract_json TEXT,
+    decision_engine_json TEXT,
+    json_plan TEXT NOT NULL,
+    narrative TEXT NOT NULL,
+    context_json TEXT,
+    model TEXT,
+    tokens_used INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS trade_plan_outcomes (
+    outcome_id TEXT PRIMARY KEY,
+    plan_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    contract_symbol TEXT,
+    entry_ts TEXT,
+    entry_price REAL,
+    exit_ts TEXT,
+    exit_price REAL,
+    realized_return_pct REAL,
+    mfe_pct REAL,
+    mae_pct REAL,
+    exit_reason TEXT,
+    followed_plan INTEGER,
+    notes TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(plan_id) REFERENCES trade_plans(plan_id)
+);
+
+CREATE TABLE IF NOT EXISTS agent_memory_summaries (
+    memory_id TEXT PRIMARY KEY,
+    updated_at TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    summary_json TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_trade_plans_symbol_generated_at
+ON trade_plans(symbol, generated_at);
+
+CREATE INDEX IF NOT EXISTS idx_trade_plan_outcomes_symbol_created_at
+ON trade_plan_outcomes(symbol, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_agent_memory_scope
+ON agent_memory_summaries(scope, updated_at);

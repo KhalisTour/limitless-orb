@@ -456,3 +456,113 @@ def query_ranked_candidates_by_date_range(
         (start_ts, end_ts, symbol, symbol, setup_class, setup_class, limit),
     ).fetchall()
     return [SetupCandidateRecord(**dict(row)) for row in rows]
+
+
+
+def insert_trade_plan(conn: sqlite3.Connection, plan_record: dict[str, Any]) -> None:
+    conn.execute(
+        """
+        INSERT INTO trade_plans (
+            plan_id, generated_at, symbol, bias, decision, confidence, confidence_label,
+            setup_class, selected_contract_symbol, selected_contract_json, decision_engine_json,
+            json_plan, narrative, context_json, model, tokens_used
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            plan_record.get("plan_id"),
+            plan_record.get("generated_at"),
+            plan_record.get("symbol"),
+            plan_record.get("bias"),
+            plan_record.get("decision"),
+            plan_record.get("confidence"),
+            plan_record.get("confidence_label"),
+            plan_record.get("setup_class"),
+            plan_record.get("selected_contract_symbol"),
+            plan_record.get("selected_contract_json"),
+            plan_record.get("decision_engine_json"),
+            plan_record.get("json_plan"),
+            plan_record.get("narrative"),
+            plan_record.get("context_json"),
+            plan_record.get("model"),
+            plan_record.get("tokens_used"),
+        ),
+    )
+    conn.commit()
+
+
+def query_recent_trade_plans(conn: sqlite3.Connection, symbol: str | None = None, limit: int = 20) -> list[dict[str, Any]]:
+    limit = max(1, min(limit, 500))
+    if symbol:
+        rows = conn.execute(
+            "SELECT * FROM trade_plans WHERE symbol = ? ORDER BY generated_at DESC LIMIT ?",
+            (symbol.upper(), limit),
+        ).fetchall()
+    else:
+        rows = conn.execute("SELECT * FROM trade_plans ORDER BY generated_at DESC LIMIT ?", (limit,)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def insert_trade_plan_outcome(conn: sqlite3.Connection, outcome_record: dict[str, Any]) -> None:
+    conn.execute(
+        """
+        INSERT INTO trade_plan_outcomes (
+            outcome_id, plan_id, symbol, contract_symbol, entry_ts, entry_price,
+            exit_ts, exit_price, realized_return_pct, mfe_pct, mae_pct,
+            exit_reason, followed_plan, notes, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            outcome_record.get("outcome_id"),
+            outcome_record.get("plan_id"),
+            outcome_record.get("symbol"),
+            outcome_record.get("contract_symbol"),
+            outcome_record.get("entry_ts"),
+            outcome_record.get("entry_price"),
+            outcome_record.get("exit_ts"),
+            outcome_record.get("exit_price"),
+            outcome_record.get("realized_return_pct"),
+            outcome_record.get("mfe_pct"),
+            outcome_record.get("mae_pct"),
+            outcome_record.get("exit_reason"),
+            1 if outcome_record.get("followed_plan") else 0,
+            outcome_record.get("notes"),
+            outcome_record.get("created_at"),
+        ),
+    )
+    conn.commit()
+
+
+def query_trade_plan_outcomes(conn: sqlite3.Connection, symbol: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+    limit = max(1, min(limit, 1000))
+    if symbol:
+        rows = conn.execute(
+            "SELECT * FROM trade_plan_outcomes WHERE symbol = ? ORDER BY created_at DESC LIMIT ?",
+            (symbol.upper(), limit),
+        ).fetchall()
+    else:
+        rows = conn.execute("SELECT * FROM trade_plan_outcomes ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def upsert_agent_memory_summary(conn: sqlite3.Connection, scope: str, summary_json: str) -> None:
+    now = utc_now_iso()
+    conn.execute(
+        """
+        INSERT INTO agent_memory_summaries (memory_id, updated_at, scope, summary_json)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(memory_id) DO UPDATE SET
+            updated_at=excluded.updated_at,
+            scope=excluded.scope,
+            summary_json=excluded.summary_json
+        """,
+        (f"{scope}:latest", now, scope, summary_json),
+    )
+    conn.commit()
+
+
+def get_agent_memory_summary(conn: sqlite3.Connection, scope: str) -> dict[str, Any] | None:
+    row = conn.execute(
+        "SELECT * FROM agent_memory_summaries WHERE scope = ? ORDER BY updated_at DESC LIMIT 1",
+        (scope,),
+    ).fetchone()
+    return dict(row) if row else None
