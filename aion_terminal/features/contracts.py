@@ -10,8 +10,8 @@ from aion_terminal.utils.math_utils import as_float, as_int
 
 logger = logging.getLogger(__name__)
 
-TARGET_DTE_MIN = 9
-TARGET_DTE_MAX = 14
+TARGET_DTE_MIN = 1
+TARGET_DTE_MAX = 30
 ATM_BAND_PCT = 2.0
 ITM_DEPTH_PCT = 5.0
 OTM_DEPTH_PCT = 5.0
