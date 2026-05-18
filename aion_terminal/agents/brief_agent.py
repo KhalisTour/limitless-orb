@@ -56,9 +56,14 @@ def _extract_output_text(response: Any) -> str:
 
 def _extract_json_payload(text: str) -> dict[str, Any]:
     match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if not match:
-        raise ValueError("json block missing")
-    payload = json.loads(match.group(1))
+    if match:
+        payload = json.loads(match.group(1))
+    else:
+        # Fallback: attempt to parse the last JSON object in raw text
+        candidates = re.findall(r"(\{[\s\S]*\})", text)
+        if not candidates:
+            raise ValueError("json block missing")
+        payload = json.loads(candidates[-1])
     
     # Ensure all required fields are present with sensible defaults
     payload.setdefault("regime", "neutral")
@@ -77,6 +82,7 @@ def _extract_json_payload(text: str) -> dict[str, Any]:
     payload.setdefault("risk_level", "medium")
     payload.setdefault("exec_summary", "")
     payload.setdefault("contradictions_resolved", [])
+    payload.setdefault("access_failures", [])
     payload.setdefault("data_quality", "medium")
     payload.setdefault("word_count", 0)
     
@@ -186,8 +192,9 @@ def generate_morning_brief(
             logger.warning("Refusal pattern detected in brief response; retrying with nudge")
             try:
                 full_text, retry_tokens = _call_api(
-                    nudge_msg="Proceed with a degraded brief per the DATA AVAILABILITY FALLBACK rules. "
-                              "Produce a complete 900-1300 word brief with all 10 sections and JSON output."
+                    nudge_msg="Proceed with degraded data handling and complete the full brief. "
+                              "If any dataset is inaccessible, continue and populate access_failures with entries like "
+                              "'access failed:domain.tld'. Return valid JSON in ```json fenced block."
                 )
                 tokens_used += retry_tokens
                 logger.info("Retry successful; combined token usage: %s", tokens_used)
