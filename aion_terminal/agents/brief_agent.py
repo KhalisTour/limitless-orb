@@ -37,7 +37,25 @@ class BriefResult:
     exec_summary: str
     model: str
     tokens_used: int
+    regime_probabilities: dict[str, float] = field(default_factory=dict)
+    causal_chain: str = ""
     error: str | None = None
+
+
+_THINKING_BLOCK_RE = re.compile(r"<thinking>.*?</thinking>\s*", re.DOTALL | re.IGNORECASE)
+
+
+def _strip_thinking_block(text: str) -> str:
+    """Remove <thinking>...</thinking> blocks from model output.
+
+    The reasoning pass is auditable but must not be exposed to end users.
+    Stripped content is logged at DEBUG so it remains inspectable.
+    """
+    if not text:
+        return text
+    for match in _THINKING_BLOCK_RE.finditer(text):
+        logger.debug("Stripped thinking block: %s", match.group(0))
+    return _THINKING_BLOCK_RE.sub("", text).lstrip()
 
 
 def _extract_output_text(response: Any) -> str:
@@ -85,7 +103,9 @@ def _extract_json_payload(text: str) -> dict[str, Any]:
     payload.setdefault("access_failures", [])
     payload.setdefault("data_quality", "medium")
     payload.setdefault("word_count", 0)
-    
+    payload.setdefault("regime_probabilities", {})
+    payload.setdefault("causal_chain", "")
+
     return payload
 
 
@@ -200,12 +220,13 @@ def generate_morning_brief(
     try:
         full_text, tokens_used = _call_api()
         logger.info("Morning brief token usage: %s", tokens_used)
-        
+        full_text = _strip_thinking_block(full_text)
+
         # Check for refusal patterns and retry if detected
         if _is_refusal_pattern(full_text):
             logger.warning("Refusal pattern detected in brief response; retrying with nudge")
             try:
-                full_text, retry_tokens = _call_api(
+                retry_text, retry_tokens = _call_api(
                     nudge_msg="Do not ask for permission, do not defer, do not offer choices. "
                         "Ship the full brief in this response. Use the sanctioned uncertainty "
                      "register for gaps ('directional read only,' 'data sparse — inference "
@@ -215,6 +236,7 @@ def generate_morning_brief(
                       "the regime-defining signal sentence."
                 )
                 tokens_used += retry_tokens
+                full_text = _strip_thinking_block(retry_text)
                 logger.info("Retry successful; combined token usage: %s", tokens_used)
             except Exception as exc:
                 logger.exception("Retry failed; using original output")
@@ -278,6 +300,11 @@ def generate_morning_brief(
         exec_summary=exec_summary,
         model=BRIEF_MODEL,
         tokens_used=tokens_used,
+        regime_probabilities={
+            str(k): float(v)
+            for k, v in (payload.get("regime_probabilities") or {}).items()
+        },
+        causal_chain=str(payload.get("causal_chain", "")),
         error=None,
     )
 
