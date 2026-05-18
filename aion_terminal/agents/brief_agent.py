@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 BRIEF_MODEL = "gpt-5.4-mini"
 TAG_POSTPROCESS_MODEL = "gpt-5.4-nano"
-MAX_TOKENS = 4096
+MAX_TOKENS = 8000
 
 WEB_SEARCH_TOOL = {"type": "web_search"}
 
@@ -56,9 +56,14 @@ def _extract_output_text(response: Any) -> str:
 
 def _extract_json_payload(text: str) -> dict[str, Any]:
     match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if not match:
-        raise ValueError("json block missing")
-    payload = json.loads(match.group(1))
+    if match:
+        payload = json.loads(match.group(1))
+    else:
+        # Fallback: attempt to parse the last JSON object in raw text
+        candidates = re.findall(r"(\{[\s\S]*\})", text)
+        if not candidates:
+            raise ValueError("json block missing")
+        payload = json.loads(candidates[-1])
     
     # Ensure all required fields are present with sensible defaults
     payload.setdefault("regime", "neutral")
@@ -77,6 +82,7 @@ def _extract_json_payload(text: str) -> dict[str, Any]:
     payload.setdefault("risk_level", "medium")
     payload.setdefault("exec_summary", "")
     payload.setdefault("contradictions_resolved", [])
+    payload.setdefault("access_failures", [])
     payload.setdefault("data_quality", "medium")
     payload.setdefault("word_count", 0)
     
@@ -102,15 +108,29 @@ def _build_exec_summary(payload: dict[str, Any], full_text: str) -> str:
     return _first_sentences(full_text, 2)
 
 def _is_refusal_pattern(text: str) -> bool:
-    """Detect if output contains refusal patterns."""
-    refusal_keywords = [
-        "i cannot", "unable to", "insufficient data", "cannot provide",
-        "i apologize", "unable to complete", "not enough information",
-        "cannot write", "unwilling to", "refuse"
-    ]
-    text_lower = text.lower()
-    return any(keyword in text_lower for keyword in refusal_keywords)
+    """Detect refusals AND deferrals — both prevent the brief from shipping."""
+    # Only check the first 600 chars; refusals/deferrals come at the top
+    head = text[:600].lower()
 
+    refusal_keywords = [
+        "i cannot provide", "i apologize", "i'm unable to complete",
+        "i am unable to complete", "i refuse", "i cannot write",
+        "i'm not able to provide", "i am not able to provide",
+    ]
+    deferral_keywords = [
+        "i can do this, but",
+        "i need one more",
+        "i need another",
+        "one more search pass",
+        "one more pass",
+        "before i can write",
+        "before writing the full brief",
+        "if you want, i can proceed",
+        "would you like me to",
+        "should i proceed",
+        "i won't fabricate",
+    ]
+    return any(keyword in head for keyword in refusal_keywords + deferral_keywords)
 
 
 def _safe_tokens_used(response: Any) -> int:
@@ -155,8 +175,8 @@ def generate_morning_brief(
             client = OpenAI(api_key=key)
             user_msg = (
                 f"Generate today's morning macro brief. Today's date is {today}. "
-                f"My trading universe is: {universe}. "
-                "Search for current data before writing. Be specific and opinionated."
+                "Search for current data before writing. Be specific and opinionated. "
+                "This is a pure macro regime brief — no single-stock calls."
             )
             if nudge_msg:
                 user_msg += f"\n\n{nudge_msg}"
@@ -186,8 +206,13 @@ def generate_morning_brief(
             logger.warning("Refusal pattern detected in brief response; retrying with nudge")
             try:
                 full_text, retry_tokens = _call_api(
-                    nudge_msg="Proceed with a degraded brief per the DATA AVAILABILITY FALLBACK rules. "
-                              "Produce a complete 900-1300 word brief with all 10 sections and JSON output."
+                    nudge_msg="Do not ask for permission, do not defer, do not offer choices. "
+                        "Ship the full brief in this response. Use the sanctioned uncertainty "
+                     "register for gaps ('directional read only,' 'data sparse — inference "
+                     "from related signal'). Populate access_failures for any inaccessible "
+                      "sources. Return the 10-section narrative, TRADING IMPLICATIONS, and "
+                      "valid JSON in ```json fenced block. No preamble — open directly with "
+                      "the regime-defining signal sentence."
                 )
                 tokens_used += retry_tokens
                 logger.info("Retry successful; combined token usage: %s", tokens_used)
