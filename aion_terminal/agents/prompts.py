@@ -117,6 +117,71 @@ Do not mention both sides without explaining which force dominates and why.
    as macro confirmation.
 
 ====================================================
+INTERNAL REASONING PASS — COMPLETE BEFORE WRITING PROSE
+====================================================
+
+Before you write a single word of the narrative, you must complete a
+structured reasoning pass. Wrap this entire pass in <thinking> and
+</thinking> tags. The contents inside the tags will be stripped from
+the final output before it reaches the user; the tags exist so the
+reasoning is auditable but not user-visible. Do not skip any step. Do
+not collapse steps. Produce the steps in this exact order:
+
+1. STATE VECTOR
+   For each of these six buckets, assign exactly one directional signal
+   from this fixed vocabulary:
+     accelerating | decelerating | stable | convex | concave |
+     regime-unstable | crowded | reflexive
+   Buckets (in order): liquidity, growth, inflation, credit, positioning,
+   geopolitics. Follow each signal with one sentence of evidence citing
+   the specific datapoint and source.
+
+2. REGIME CLASSIFICATION
+   Assign probabilities (summing to 1.0) across these seven historical
+   analog regimes:
+     late_cycle_reflation, disinflation_soft_landing, stagflation_shock,
+     pre_credit_event, liquidity_squeeze, qt_tightening, melt_up
+   Pick the top three by probability; all others must be 0.0. Provide
+   one sentence of justification for each non-zero probability. The
+   top-probability regime becomes the narrative's regime label.
+
+3. CONTRADICTION RESOLUTION
+   List every contradiction present in the data (e.g., "equities near
+   highs while HY spreads tight despite restrictive real yields"). For
+   each, name the dominant variable using this strict priority order:
+     liquidity > inflation impulse > credit stress > positioning > growth
+   State which variable wins and why in one sentence per contradiction.
+
+4. CAUSAL CHAIN
+   Write exactly one explicit transmission chain of at least five steps
+   tracing how the dominant signal propagates through markets. Format:
+     "A → B → C → D → E."
+   This chain becomes the spine of the narrative — every later section
+   must hang off a link in this chain.
+
+5. REFLEXIVITY CHECK
+   One sentence on the second-order flow risk: if the dominant variable
+   continues moving in its current direction, what positioning unwind
+   or feedback loop activates?
+
+6. UNCERTAINTY SURFACE
+   For each of the six state vector buckets (liquidity, growth,
+   inflation, credit, positioning, geopolitics), mark uncertainty as
+   low / medium / high. This calibration governs the register of each
+   later section: high-uncertainty sections use the sanctioned
+   uncertainty register ("directional read only," "data sparse —
+   inference from related signal"); low-uncertainty sections are
+   stated declaratively.
+
+After </thinking>, write the 10-section narrative. The narrative MUST
+inherit, without contradiction:
+  - The regime label from step 2 (top probability).
+  - The causal chain from step 4 as its narrative spine.
+  - The contradiction resolutions from step 3, woven into the relevant
+    sections rather than restated as a list.
+  - The confidence calibration from step 6.
+
+====================================================
 TEN SECTIONS — IN ORDER, CONTINUOUS PROSE
 ====================================================
 
@@ -304,8 +369,23 @@ accurate.
   "contradictions_resolved": ["list any contradictions identified and resolved"],
   "access_failures": ["access failed:domain.tld"],
   "data_quality": "high|medium|low",
-  "word_count": 0
+  "word_count": 0,
+  "regime_probabilities": {
+    "late_cycle_reflation": 0.0,
+    "disinflation_soft_landing": 0.0,
+    "stagflation_shock": 0.0,
+    "pre_credit_event": 0.0,
+    "liquidity_squeeze": 0.0,
+    "qt_tightening": 0.0,
+    "melt_up": 0.0
+  },
+  "causal_chain": "A → B → C → D → E"
 }
+
+The regime_probabilities dict must match step 2 of the internal
+reasoning pass exactly, summing to 1.0 with only the top three regimes
+non-zero. The causal_chain string must match the chain produced in
+step 4 of the internal reasoning pass.
 
 TAG SCHEMA — STRICT
 Each narrative tag is a dict with three fields: symbol, tag_key, tag_value.
