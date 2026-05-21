@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from aion_terminal.api import (
     routes_agents,
+    routes_arbitration,
     routes_backtests,
     routes_cone,
     routes_contracts,
@@ -41,6 +42,7 @@ app.include_router(routes_backtests.router)
 app.include_router(routes_tags.router)
 app.include_router(routes_rs.router)
 app.include_router(routes_cone.router)
+app.include_router(routes_arbitration.router)
 
 app.mount(
     "/static",

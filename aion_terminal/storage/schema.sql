@@ -233,3 +233,66 @@ ON trade_plan_outcomes(symbol, created_at);
 
 CREATE INDEX IF NOT EXISTS idx_agent_memory_scope
 ON agent_memory_summaries(scope, updated_at);
+
+CREATE TABLE IF NOT EXISTS arbitration_snapshots (
+    arb_id TEXT PRIMARY KEY,
+    generated_at TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    arb_decision TEXT NOT NULL,
+    final_bias TEXT,
+    confidence REAL,
+    confidence_bucket TEXT,
+    setup_class TEXT,
+    agreement_json TEXT NOT NULL,
+    conflicts_json TEXT,
+    required_trigger_json TEXT,
+    kill_switch_json TEXT,
+    approved_contract_role TEXT,
+    sizing_modifier REAL,
+    hold_policy_json TEXT,
+    warnings_json TEXT,
+    supporting_factors_json TEXT,
+    rejection_factors_json TEXT,
+    inputs_summary_json TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS adaptive_expectancy (
+    exp_id TEXT PRIMARY KEY,
+    updated_at TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    sample_count INTEGER NOT NULL,
+    win_rate REAL,
+    avg_pnl_pct REAL,
+    avg_mfe_pct REAL,
+    avg_mae_pct REAL,
+    avg_hold_minutes REAL,
+    expectancy_modifier REAL,
+    raw_stats_json TEXT,
+    UNIQUE(scope)
+);
+
+CREATE TABLE IF NOT EXISTS setup_performance_stats (
+    stat_id TEXT PRIMARY KEY,
+    updated_at TEXT NOT NULL,
+    symbol TEXT,
+    setup_class TEXT NOT NULL,
+    direction TEXT,
+    regime TEXT,
+    moneyness TEXT,
+    dte_bucket TEXT,
+    sample_count INTEGER NOT NULL,
+    win_rate REAL,
+    avg_pnl_pct REAL,
+    expectancy_modifier REAL,
+    UNIQUE(symbol, setup_class, direction, regime, moneyness, dte_bucket)
+);
+
+CREATE INDEX IF NOT EXISTS idx_arbitration_snapshots_symbol_ts
+ON arbitration_snapshots(symbol, generated_at);
+
+CREATE INDEX IF NOT EXISTS idx_adaptive_expectancy_scope
+ON adaptive_expectancy(scope, updated_at);
+
+CREATE INDEX IF NOT EXISTS idx_setup_performance_symbol_class
+ON setup_performance_stats(symbol, setup_class);
