@@ -66,18 +66,36 @@ def _extract_json_plan(raw: str) -> tuple[str, dict]:
     raise ValueError("json_plan_missing")
 
 
-def generate_trade_plan(symbol: str, user_requested_bias: str | None = None, user_requested_style: str | None = None, user_thesis_text: str | None = None, account_buying_power: float | None = 5000, portfolio_value: float | None = None, cash_account: bool = True, rankings_payload: dict | None = None, contract_recommendations: dict | None = None, macro_context: dict | None = None, chart_context: dict | None = None, current_positions: list[dict] | None = None, session_prior_trades: list[dict] | None = None, user_historical_outcomes: dict | None = None, weekly_pattern_summary: str | None = None, api_key: str | None = None) -> TradePlanResult:
+def generate_trade_plan(symbol: str, user_requested_bias: str | None = None, user_requested_style: str | None = None, user_thesis_text: str | None = None, account_buying_power: float | None = 5000, portfolio_value: float | None = None, cash_account: bool = True, rankings_payload: dict | None = None, contract_recommendations: dict | None = None, macro_context: dict | None = None, chart_context: dict | None = None, current_positions: list[dict] | None = None, session_prior_trades: list[dict] | None = None, user_historical_outcomes: dict | None = None, weekly_pattern_summary: str | None = None, arbitration_result: dict | None = None, api_key: str | None = None) -> TradePlanResult:
     key = api_key if api_key is not None else getattr(settings, "openai_api_key", "")
     if not key:
         return TradePlanResult(utc_now_iso(), symbol.upper(), "", "", None, None, "", {}, {}, TRADE_PLAN_MODEL, 0, "OPENAI_API_KEY not configured")
-    payload = {"symbol": symbol.upper(), "user_requested_bias": user_requested_bias, "user_requested_style": user_requested_style, "user_thesis_text": user_thesis_text, "account_buying_power": account_buying_power, "portfolio_value": portfolio_value, "cash_account": cash_account, "rankings_payload": rankings_payload, "contract_recommendations": contract_recommendations, "macro_context": macro_context, "chart_context": chart_context, "current_positions": current_positions or [], "session_prior_trades": session_prior_trades or [], "user_historical_outcomes": user_historical_outcomes or {}, "weekly_pattern_summary": weekly_pattern_summary}
+    payload = {"symbol": symbol.upper(), "user_requested_bias": user_requested_bias, "user_requested_style": user_requested_style, "user_thesis_text": user_thesis_text, "account_buying_power": account_buying_power, "portfolio_value": portfolio_value, "cash_account": cash_account, "rankings_payload": rankings_payload, "contract_recommendations": contract_recommendations, "macro_context": macro_context, "chart_context": chart_context, "current_positions": current_positions or [], "session_prior_trades": session_prior_trades or [], "user_historical_outcomes": user_historical_outcomes or {}, "weekly_pattern_summary": weekly_pattern_summary, "arbitration_result": arbitration_result}
     decision_engine_output = run_decision_engine(symbol, payload)
     payload["decision_engine"] = decision_engine_output
+    system_prompt = TRADE_PLAN_SYSTEM_PROMPT_V3
+    if arbitration_result:
+        arb_context = (
+            "\n\nARBITRATION DECISION (deterministic — do not override):\n"
+            f"Decision: {arbitration_result.get('arb_decision')}\n"
+            f"Confidence: {arbitration_result.get('confidence')}\n"
+            f"Approved contract role: {arbitration_result.get('approved_contract_role')}\n"
+            f"Sizing modifier: {arbitration_result.get('sizing_modifier')}\n"
+            f"Conflicts: {arbitration_result.get('conflicts', [])}\n"
+            f"Required trigger: {arbitration_result.get('required_trigger')}\n"
+            f"Kill switch: {arbitration_result.get('kill_switch')}\n"
+            f"Hold policy: {arbitration_result.get('hold_policy')}\n"
+            f"Warnings: {arbitration_result.get('warnings', [])}\n\n"
+            "Your job is to explain WHY the arbiter reached this decision and produce "
+            "an execution plan consistent with it. Do NOT override the arb_decision. "
+            "Do NOT recommend a contract role different from approved_contract_role."
+        )
+        system_prompt = arb_context + "\n\n" + TRADE_PLAN_SYSTEM_PROMPT_V3
     try:
         from openai import OpenAI
 
         llm_payload = json.dumps(payload, default=str)
-        response = OpenAI(api_key=key).responses.create(model=TRADE_PLAN_MODEL, max_output_tokens=MAX_TOKENS, input=[{"role": "system", "content": TRADE_PLAN_SYSTEM_PROMPT_V3}, {"role": "user", "content": llm_payload}])
+        response = OpenAI(api_key=key).responses.create(model=TRADE_PLAN_MODEL, max_output_tokens=MAX_TOKENS, input=[{"role": "system", "content": system_prompt}, {"role": "user", "content": llm_payload}])
         raw = _extract_output_text(response)
         tokens = _safe_tokens(response)
         logger.info("Trade plan token usage: %s", tokens)

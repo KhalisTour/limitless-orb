@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from aion_terminal.api import (
     routes_agents,
+    routes_arbitration,
     routes_backtests,
     routes_cone,
     routes_contracts,
@@ -32,6 +33,7 @@ app = FastAPI(title=settings.app_name)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(routes_agents.router)
+app.include_router(routes_arbitration.router)
 app.include_router(routes_dashboard.router)
 app.include_router(routes_snapshot.router)
 app.include_router(routes_universe.router)

@@ -289,7 +289,20 @@ async def create_trade_plan(payload: TradePlanRequest):
     if symbol_outcomes:
         memory_payload = {**memory_payload, "symbol_recent_outcomes": symbol_outcomes}
 
-    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, memory_payload, payload.weekly_pattern_summary)
+    arbitration_result = None
+    try:
+        from aion_terminal.arbitration.service import get_arbitration, _arb_to_json
+        arb_conn = get_connection(settings.db_path)
+        bootstrap_schema(arb_conn, SCHEMA_PATH)
+        try:
+            arb = await asyncio.to_thread(get_arbitration, payload.symbol.upper(), arb_conn)
+            arbitration_result = _arb_to_json(arb)
+        finally:
+            arb_conn.close()
+    except Exception as arb_exc:
+        warnings.append(f"arbitration_unavailable: {arb_exc}")
+
+    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, memory_payload, payload.weekly_pattern_summary, arbitration_result)
     if isinstance(result, dict):
         out = result
     else:
