@@ -334,6 +334,41 @@ def post_brief_tags(brief: BriefResult, conn) -> int:
     return upsert_manual_narrative_tags(conn, records)
 
 
+def save_brief_to_db(conn, result: "BriefResult") -> str:
+    """Persist a BriefResult to the morning_briefs table (upsert by date)."""
+    brief_date = date.today().isoformat()
+    brief_id = f"brief_{brief_date}"
+    raw = asdict(result)
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO morning_briefs (
+            brief_id, brief_date, generated_at, regime, dominant_signal,
+            regime_30d_call, risk_level, sector_leaders_json, sector_laggards_json,
+            narrative_tags_json, full_text, exec_summary, model, tokens_used, raw_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            brief_id,
+            brief_date,
+            result.generated_at,
+            result.regime,
+            result.dominant_signal,
+            result.regime_30d_call,
+            result.risk_level,
+            json.dumps(result.sector_leaders or []),
+            json.dumps(result.sector_laggards or []),
+            json.dumps(result.narrative_tags or []),
+            result.full_text,
+            result.exec_summary,
+            result.model,
+            int(result.tokens_used or 0),
+            json.dumps(raw, default=str),
+        ),
+    )
+    conn.commit()
+    return brief_id
+
+
 def save_brief_to_file(
     brief: BriefResult,
     output_dir: str = "aion_terminal/data/briefs",

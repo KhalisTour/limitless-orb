@@ -296,3 +296,53 @@ ON adaptive_expectancy(scope, updated_at);
 
 CREATE INDEX IF NOT EXISTS idx_setup_performance_symbol_class
 ON setup_performance_stats(symbol, setup_class);
+
+CREATE TABLE IF NOT EXISTS morning_briefs (
+    brief_id TEXT PRIMARY KEY,
+    brief_date TEXT NOT NULL,
+    generated_at TEXT NOT NULL,
+    regime TEXT,
+    dominant_signal TEXT,
+    regime_30d_call TEXT,
+    risk_level TEXT,
+    sector_leaders_json TEXT,
+    sector_laggards_json TEXT,
+    narrative_tags_json TEXT,
+    full_text TEXT,
+    exec_summary TEXT,
+    model TEXT,
+    tokens_used INTEGER,
+    raw_json TEXT NOT NULL,
+    UNIQUE(brief_date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_morning_briefs_date
+ON morning_briefs(brief_date DESC);
+
+CREATE TABLE IF NOT EXISTS user_trades (
+    trade_id TEXT PRIMARY KEY,
+    logged_at TEXT NOT NULL,
+    trade_date TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    direction TEXT NOT NULL,
+    contract_symbol TEXT,
+    side TEXT,
+    strike REAL,
+    expiry TEXT,
+    dte_at_entry INTEGER,
+    entry_price REAL,
+    exit_price REAL,
+    contracts INTEGER,
+    pnl_dollars REAL,
+    pnl_pct REAL,
+    exit_reason TEXT,
+    setup_source TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_trades_symbol_date
+ON user_trades(symbol, trade_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_user_trades_date
+ON user_trades(trade_date DESC);

@@ -116,7 +116,7 @@ def _load_underlying_bars(conn: sqlite3.Connection, symbol: str) -> list[Underly
         """
         SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap
         FROM underlying_bars
-        WHERE symbol = ?
+        WHERE symbol = ? AND timeframe IN ('1D', 'D', 'daily', '1d')
         ORDER BY bar_ts DESC
         LIMIT ?
         """,

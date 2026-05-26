@@ -15,10 +15,12 @@ from aion_terminal.api import (
     routes_cone,
     routes_contracts,
     routes_dashboard,
+    routes_health,
     routes_rankings,
     routes_rs,
     routes_snapshot,
     routes_tags,
+    routes_trades,
     routes_universe,
 )
 from aion_terminal.app.config import settings
@@ -43,6 +45,8 @@ app.include_router(routes_backtests.router)
 app.include_router(routes_tags.router)
 app.include_router(routes_rs.router)
 app.include_router(routes_cone.router)
+app.include_router(routes_health.router)
+app.include_router(routes_trades.router)
 
 app.mount(
     "/static",
