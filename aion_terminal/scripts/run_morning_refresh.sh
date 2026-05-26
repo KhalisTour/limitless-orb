@@ -45,6 +45,7 @@ python -m aion_terminal.scripts.run_backfill \
 echo "[2/4] Running chain snapshot..." | tee -a "$LOG_FILE"
 python -m aion_terminal.scripts.run_daily_snapshot \
   --symbols "$SYMBOLS" \
+  --max-symbols 20 \
   --sleep-seconds 6 \
   --skip-refresh-if-recent-minutes 0 \
   --verbose >> "$LOG_FILE" 2>&1

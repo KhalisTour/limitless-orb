@@ -116,11 +116,18 @@ def _load_underlying_bars(conn: sqlite3.Connection, symbol: str) -> list[Underly
         """
         SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap
         FROM underlying_bars
-        WHERE symbol = ? AND timeframe IN ('1D', 'D', 'daily', '1d')
+        WHERE symbol = ?
+          AND timeframe = (
+              SELECT CASE
+                  WHEN EXISTS (SELECT 1 FROM underlying_bars WHERE symbol = ? AND timeframe = '1D') THEN '1D'
+                  WHEN EXISTS (SELECT 1 FROM underlying_bars WHERE symbol = ? AND timeframe = 'daily') THEN 'daily'
+                  ELSE 'D'
+              END
+          )
         ORDER BY bar_ts DESC
         LIMIT ?
         """,
-        (symbol, BARS_LOOKBACK),
+        (symbol, symbol, symbol, BARS_LOOKBACK),
     ).fetchall()
 
     reversed_rows = list(reversed(rows))
