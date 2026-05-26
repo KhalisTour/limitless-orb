@@ -24,16 +24,27 @@ export PYTHONPATH="$REPO_DIR"
 
 echo "=== AION Morning Refresh $(date) ===" | tee -a "$LOG_FILE"
 
+# Build symbol list from .env WATCHLIST
+SYMBOLS=$(python -c "
+import os
+from dotenv import load_dotenv
+load_dotenv()
+w = os.getenv('WATCHLIST','')
+symbols = [s.strip().upper() for s in w.split(',') if s.strip()]
+print(','.join(symbols))
+")
+echo "Watchlist: $SYMBOLS" | tee -a "$LOG_FILE"
+
 echo "[1/4] Refreshing bars..." | tee -a "$LOG_FILE"
 python -m aion_terminal.scripts.run_backfill \
-  --symbols IONQ,PLTR,APLD,AVAV,AMZN,LLY \
+  --symbols "$SYMBOLS" \
   --days 90 \
   --timeframes 1d \
   --verbose >> "$LOG_FILE" 2>&1
 
 echo "[2/4] Running chain snapshot..." | tee -a "$LOG_FILE"
 python -m aion_terminal.scripts.run_daily_snapshot \
-  --symbols IONQ,PLTR,APLD,AVAV,AMZN,LLY \
+  --symbols "$SYMBOLS" \
   --sleep-seconds 6 \
   --skip-refresh-if-recent-minutes 0 \
   --verbose >> "$LOG_FILE" 2>&1

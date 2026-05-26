@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 
 import base64
 import json
@@ -97,7 +98,12 @@ def _extract_usage_tokens(resp: Any) -> int:
 
 def _parse_chart_json(raw_text: str, model: str, dealer_context: dict[str, Any]) -> ChartAnalysisResult:
     try:
-        payload = json.loads(raw_text)
+        # Strip markdown code fences if model wrapped JSON in ```json ... ```
+        clean = raw_text.strip()
+        if clean.startswith("```"):
+            clean = re.sub(r"^```(?:json)?\s*", "", clean)
+            clean = re.sub(r"\s*```$", "", clean.strip())
+        payload = json.loads(clean)
     except Exception:
         return ChartAnalysisResult(
             symbol="UNKNOWN",

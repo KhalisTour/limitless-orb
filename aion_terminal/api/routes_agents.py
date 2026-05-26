@@ -111,12 +111,50 @@ def get_brief_history(days: int = 14):
 
 @router.get("/agents/brief/latest")
 def get_latest_brief():
-    if not BRIEF_DIR.exists():
-        return {"error": "no brief found"}
-    files = sorted(BRIEF_DIR.glob("*_morning_brief.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    if not files:
-        return {"error": "no brief found"}
-    return json.loads(files[0].read_text(encoding="utf-8"))
+    """Return latest brief from DB (primary) with filesystem fallback."""
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        row = conn.execute(
+            """SELECT * FROM morning_briefs ORDER BY brief_date DESC LIMIT 1"""
+        ).fetchone()
+        if row:
+            import json as _json
+            raw = row["raw_json"]
+            if raw:
+                try:
+                    return _json.loads(raw)
+                except Exception:
+                    pass
+            # Return structured fields if raw_json fails
+            return {
+                "generated_at": row["generated_at"],
+                "regime": row["regime"],
+                "dominant_signal": row["dominant_signal"],
+                "regime_30d_call": row["regime_30d_call"],
+                "sector_leaders": _json.loads(row["sector_leaders_json"] or "[]"),
+                "sector_laggards": _json.loads(row["sector_laggards_json"] or "[]"),
+                "narrative_tags": _json.loads(row["narrative_tags_json"] or "[]"),
+                "risk_level": row["risk_level"],
+                "full_text": row["full_text"] or "",
+                "exec_summary": row["exec_summary"] or "",
+                "model": row["model"],
+                "tokens_used": row["tokens_used"],
+                "regime_probabilities": {},
+                "causal_chain": "",
+                "error": None,
+            }
+    finally:
+        conn.close()
+    # Filesystem fallback
+    if BRIEF_DIR.exists():
+        files = sorted(BRIEF_DIR.glob("*_morning_brief.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if files:
+            try:
+                return json.loads(files[0].read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    return {"error": "no brief found"}
 
 
 def _dealer_context_for_symbol(symbol: str) -> dict[str, Any]:
