@@ -10,7 +10,12 @@ from typing import Any
 from fastapi import APIRouter, File, Form, UploadFile
 from pydantic import BaseModel, Field
 
-from aion_terminal.agents.brief_agent import generate_morning_brief, post_brief_tags, save_brief_to_file
+from aion_terminal.agents.brief_agent import (
+    generate_morning_brief,
+    post_brief_tags,
+    save_brief_to_db,
+    save_brief_to_file,
+)
 from aion_terminal.agents.chart_agent import analyze_chart_from_bytes
 from aion_terminal.agents.prompts import TRADE_PLAN_SYSTEM_PROMPT_V3
 from aion_terminal.agents.trade_plan_agent import generate_trade_plan
@@ -48,19 +53,60 @@ async def create_morning_brief(payload: BriefRequest):
     brief = await asyncio.to_thread(generate_morning_brief, payload.watchlist)
 
     tags_posted = 0
-    if payload.post_tags and not brief.error:
-        conn = get_connection(settings.db_path)
-        bootstrap_schema(conn, SCHEMA_PATH)
-        try:
+    brief_id = None
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        if not brief.error:
+            brief_id = await asyncio.to_thread(save_brief_to_db, conn, brief)
+        if payload.post_tags and not brief.error:
             tags_posted = await asyncio.to_thread(post_brief_tags, brief, conn)
-        finally:
-            conn.close()
+    finally:
+        conn.close()
 
     file_path = await asyncio.to_thread(save_brief_to_file, brief)
     response = asdict(brief)
     response["tags_posted"] = tags_posted
     response["saved_to"] = file_path
+    response["brief_id"] = brief_id
     return response
+
+
+@router.get("/agents/brief/history")
+def get_brief_history(days: int = 14):
+    """Return last N days of morning briefs from morning_briefs table."""
+    days = max(1, min(int(days), 365))
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        rows = conn.execute(
+            """
+            SELECT brief_date, generated_at, regime, dominant_signal, risk_level,
+                   sector_leaders_json, exec_summary
+            FROM morning_briefs
+            ORDER BY brief_date DESC
+            LIMIT ?
+            """,
+            (days,),
+        ).fetchall()
+    finally:
+        conn.close()
+    out = []
+    for r in rows:
+        try:
+            leaders = json.loads(r["sector_leaders_json"] or "[]")
+        except Exception:
+            leaders = []
+        out.append({
+            "brief_date": r["brief_date"],
+            "generated_at": r["generated_at"],
+            "regime": r["regime"],
+            "dominant_signal": r["dominant_signal"],
+            "risk_level": r["risk_level"],
+            "sector_leaders": leaders,
+            "exec_summary": r["exec_summary"],
+        })
+    return out
 
 
 @router.get("/agents/brief/latest")
