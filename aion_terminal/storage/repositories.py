@@ -29,18 +29,16 @@ INSERT INTO computed_levels (
 """
 
 SELECT_LATEST_CHAIN = """
-SELECT r.id, r.timestamp, r.symbol, r.option_symbol,
-       r.strike, r.expiry, r.type, r.gamma,
+SELECT r.id, r.snapshot_ts AS timestamp, r.symbol, r.option_symbol,
+       r.strike, r.expiry, r.side AS type, r.gamma,
        r.open_interest, r.iv, r.dte, r.underlying_price
-FROM raw_chain r
-INNER JOIN (
-    SELECT expiry, MAX(timestamp) AS max_ts
-    FROM raw_chain
-    WHERE symbol = ?
-    GROUP BY expiry
-) latest ON r.expiry = latest.expiry
-         AND r.timestamp = latest.max_ts
-         AND r.symbol = ?
+FROM raw_chain_snapshots r
+WHERE r.symbol = ?
+  AND r.snapshot_ts >= (
+      SELECT datetime(MAX(snapshot_ts), '-1 hour')
+      FROM raw_chain_snapshots
+      WHERE symbol = ?
+  )
 ORDER BY r.expiry, r.strike, r.option_symbol
 """
 
