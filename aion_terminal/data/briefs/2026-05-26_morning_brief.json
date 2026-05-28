@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-05-26T15:21:30.011495+00:00",
+  "regime": "neutral",
+  "dominant_signal": "Generation error",
+  "regime_30d_call": "Unable to generate brief due to API error",
+  "sector_leaders": [],
+  "sector_laggards": [],
+  "narrative_tags": [],
+  "risk_level": "medium",
+  "full_text": "",
+  "exec_summary": "",
+  "model": "gpt-5.4-mini",
+  "tokens_used": 0,
+  "regime_probabilities": {},
+  "causal_chain": "",
+  "error": "api_error: Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-5.4-mini in organization org-bIe9wY3gqZeIDFsFvX41WYtI on tokens per min (TPM): Limit 200000, Used 168081, Requested 45473. Please try again in 4.066s. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}"
+}
