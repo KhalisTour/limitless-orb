@@ -18,7 +18,23 @@
       <div class="section-meta" id="last-updated">Last updated: —</div>
     </div>
 
-    <!-- ROW 1: 4 cards -->
+    <!-- ROW 1: Arbitration hero -->
+    <div class="section-header">
+      <h1 class="gradient-text" style="font-size:14px;letter-spacing:2.5px;">Arbitration Hero</h1>
+    </div>
+    <div class="h-scroll-row" id="arb-hero-row">
+      <div class="muted" style="padding:14px">Loading arbitration…</div>
+    </div>
+
+    <!-- ROW 2: X Feed -->
+    <div class="section-header">
+      <h1 class="gradient-text" style="font-size:14px;letter-spacing:2.5px;">X Feed</h1>
+    </div>
+    <div class="h-scroll-row" id="x-feed-row">
+      <div class="muted" style="padding:14px">Loading feed…</div>
+    </div>
+
+    <!-- ROW 3: 4 data cards -->
     <div class="row row-4">
       <div class="card" id="card-macro"><h3>Macro Regime</h3><div class="content"></div></div>
       <div class="card" id="card-rs"><h3>RS Leaders / Laggards</h3><div class="content"></div></div>
@@ -26,10 +42,11 @@
       <div class="card" id="card-sector-regime"><h3>Sector Regime</h3><div class="content"></div></div>
     </div>
 
-    <!-- ROW 2: Predictive cone -->
-    <div class="row row-1">
-      <div class="card" id="cone-card">
-        <h3>▶ PREDICTIVE OUTLOOK</h3>
+    <!-- ROW 5 placeholder (moved to bottom of container in JS): Predictive cone, collapsed -->
+    <details class="collapsible-section" id="cone-collapsible">
+      <summary>▶ PREDICTIVE OUTLOOK (click to expand)</summary>
+      <div class="body card" id="cone-card" style="border:none;margin:0;padding:0">
+        <h3 style="display:none">PREDICTIVE OUTLOOK</h3>
         <div class="cone-controls">
           <span>HISTORY</span>
           <select id="cone-history">
@@ -55,13 +72,14 @@
         </div>
         <div class="cone-wrap"><canvas id="cone-canvas"></canvas></div>
       </div>
-    </div>
+    </details>
 
-    <!-- ROW 3: Ticker grid -->
+    <!-- ROW 4: Ticker grid -->
     <div class="section-header">
       <h1 class="gradient-text" style="font-size:14px;letter-spacing:2.5px;">Sector Tickers</h1>
     </div>
     <div class="row" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));" id="ticker-grid"></div>
+
   </div>
 
   <script src="/static/shared.js"></script>
@@ -473,6 +491,22 @@
   }
 
   // ---------- Ticker grid ----------
+  function _freshnessDot(rankedAt) {
+    if (!rankedAt) return `<span class="freshness-dot" style="background:var(--red)" title="No data"></span>`;
+    const h = (Date.now() - new Date(rankedAt).getTime()) / 3600000;
+    const color = h < 6 ? 'var(--green)' : (h < 24 ? 'var(--amber)' : 'var(--red)');
+    return `<span class="freshness-dot" style="background:${color}" title="${h.toFixed(1)}h old"></span>`;
+  }
+  function _arbSummary(ticker) {
+    const a = _arbCache[String(ticker).toUpperCase()];
+    if (!a) return '';
+    const dec = String(a.decision || 'WAIT').split('_')[0];
+    const mod = Number(a.sizing_modifier || 0);
+    const role = a.role || a.contract_role || '—';
+    const bp = Number(SS.get('aion_buying_power', 5000));
+    const risk = bp * 0.02 * mod;
+    return `<div class="mono" style="font-size:10px;color:var(--text-dim);margin-top:4px">[${dec}] ${mod.toFixed(2)} · ${role} · $${risk.toFixed(0)} risk</div>`;
+  }
   function tickerCard(r) {
     const reg = String(r.regime || '').toUpperCase();
     const spot = Number(r.spot || 0);
@@ -484,7 +518,8 @@
     const change = Number(r.change_pct || 0);
     const changeColor = change >= 0 ? 'var(--blue)' : 'var(--red)';
     return `
-      <div class="card ticker-card" data-t="${r.ticker}">
+      <div class="card ticker-card" data-t="${r.ticker}" style="position:relative">
+        <div style="position:absolute;top:8px;right:8px">${_freshnessDot(r.ranked_at || r.snapshot_ts || r.updated_at)}</div>
         <div class="row1">
           <span class="symbol">${r.ticker}</span>
           <span class="badge ${regimeClass(reg)}">${reg || '—'}</span>
@@ -497,6 +532,7 @@
           King: $${king.toFixed(2)} · Call: $${cw.toFixed(2)} (${fmtPct(cwPct)}) · Put: $${pw.toFixed(2)} (${fmtPct(pwPct)})
         </div>
         ${sigHtml}
+        ${_arbSummary(r.ticker)}
       </div>
     `;
   }
@@ -551,11 +587,114 @@
     renderMacroCard();
   }
 
+  // ---------- Arbitration hero ----------
+  let _arbCache = {};
+  async function loadArbHero() {
+    const row = document.getElementById('arb-hero-row');
+    try {
+      const data = await api('/arbitration/candidates?limit=8');
+      const items = Array.isArray(data) ? data : (data && data.candidates) ? data.candidates : [];
+      if (!items.length) {
+        row.innerHTML = `<div class="muted" style="padding:14px">No arbitration data — run: <code>curl -X POST http://localhost:8000/arbitration/rebuild</code></div>`;
+        return;
+      }
+      _arbCache = {};
+      items.forEach(it => { if (it && it.symbol) _arbCache[String(it.symbol).toUpperCase()] = it; });
+      row.innerHTML = items.map(it => {
+        const sym = it.symbol || '—';
+        const reg = String(it.regime || '').toUpperCase() || '—';
+        const dec = it.decision || 'WAIT';
+        const mod = Number(it.sizing_modifier || 0);
+        const role = it.role || (it.contract_role) || '—';
+        const conf = Number(it.confidence || 0);
+        const agree = it.agreement_matrix && typeof it.agreement_matrix.average === 'function'
+          ? it.agreement_matrix.average() : (it.agreement_avg || 0);
+        const bp = Number(SS.get('aion_buying_power', 5000));
+        const base = bp * 0.02;
+        const recommended = base * mod;
+        const dotColor = mod >= 0.8 ? 'var(--green)' : (mod >= 0.5 ? 'var(--amber)' : 'var(--red)');
+        const trig = it.required_trigger || (it.kill_switch && it.kill_switch.note) || '';
+        const rationale = (it.rationale && (it.rationale[0] || it.rationale.summary)) || it.thesis || '';
+        return `
+          <div class="arb-hero-card" data-t="${sym}">
+            <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span class="symbol mono" style="font-weight:700">${sym}</span>
+              <span class="freshness-dot" style="background:${dotColor}"></span>
+            </div>
+            <div style="margin-bottom:6px"><span class="badge ${regimeClass(reg)}">${reg}</span></div>
+            <div class="mono" style="font-size:11px;color:var(--text-dim)">arb: ${dec}</div>
+            <div class="mono" style="font-size:11px">size: ${mod.toFixed(2)}x → $${recommended.toFixed(0)} of $${bp.toFixed(0)}</div>
+            <div class="mono" style="font-size:11px">role: ${role}</div>
+            <div style="border-top:1px solid var(--border-dim);margin:6px 0"></div>
+            <div style="font-size:11px;color:var(--text-dim)">${String(rationale).slice(0, 80)}</div>
+            ${trig ? `<div class="mono" style="font-size:10px;color:var(--amber);margin-top:4px">trigger: ${String(trig).slice(0, 60)}</div>` : ''}
+          </div>`;
+      }).join('');
+      row.querySelectorAll('.arb-hero-card').forEach(el => {
+        el.addEventListener('click', () => goToSymbol(el.dataset.t));
+      });
+    } catch (err) {
+      row.innerHTML = `<div class="muted" style="padding:14px">Arbitration unavailable.</div>`;
+    }
+  }
+
+  // ---------- X feed ----------
+  function _ago(iso) {
+    try {
+      const d = new Date(iso);
+      const m = (Date.now() - d.getTime()) / 60000;
+      if (m < 60) return `${Math.max(1, Math.floor(m))}m ago`;
+      if (m < 1440) return `${Math.floor(m/60)}h ago`;
+      return `${Math.floor(m/1440)}d ago`;
+    } catch (_) { return ''; }
+  }
+
+  async function loadXFeed() {
+    const row = document.getElementById('x-feed-row');
+    try {
+      const data = await api('/feed/x');
+      const posts = (data && Array.isArray(data.posts)) ? data.posts : [];
+      if (!posts.length || data.error) {
+        row.innerHTML = `<div class="muted" style="padding:14px">⚡ X feed unavailable</div>`;
+        return;
+      }
+      row.innerHTML = posts.slice(0, 40).map(p => {
+        const isMatch = (p.watchlist_match || []).length > 0;
+        const pills = (p.watchlist_match || []).map(t =>
+          `<span class="ticker-pill" data-t="${t}">${t} ↗</span>`
+        ).join('');
+        return `
+          <div class="x-feed-card ${isMatch ? 'watchlist-match' : ''}">
+            <div class="mono" style="font-size:11px;color:var(--orange);margin-bottom:4px">
+              @${p.username} · ${_ago(p.published_at)}
+            </div>
+            <div style="font-size:11.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical">
+              ${(p.text || '').replace(/</g,'&lt;')}
+            </div>
+            ${pills ? `<div style="margin-top:6px">${pills}</div>` : ''}
+          </div>`;
+      }).join('');
+      row.querySelectorAll('.ticker-pill').forEach(el => {
+        el.addEventListener('click', (e) => { e.stopPropagation(); goToSymbol(el.dataset.t); });
+      });
+    } catch (err) {
+      row.innerHTML = `<div class="muted" style="padding:14px">⚡ X feed unavailable</div>`;
+    }
+  }
+
   ready(async () => {
     renderNav('dashboard');
     renderSectorSelect();
+    // Move cone collapsible to bottom of container
+    const cont = document.querySelector('.container');
+    const coneEl = document.getElementById('cone-collapsible');
+    if (cont && coneEl) cont.appendChild(coneEl);
     document.getElementById('cone-history').addEventListener('change', refreshAll);
     document.getElementById('cone-forecast').addEventListener('change', refreshAll);
+    loadArbHero();
+    loadXFeed();
+    setInterval(loadXFeed, 300000);
+    setInterval(loadArbHero, 120000);
     refreshAll();
     let resizeTimer;
     const ro = new ResizeObserver(() => {

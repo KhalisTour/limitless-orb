@@ -16,6 +16,7 @@ from aion_terminal.api import (
     routes_contracts,
     routes_dashboard,
     routes_health,
+    routes_nitter,
     routes_rankings,
     routes_rs,
     routes_snapshot,
@@ -47,6 +48,7 @@ app.include_router(routes_rs.router)
 app.include_router(routes_cone.router)
 app.include_router(routes_health.router)
 app.include_router(routes_trades.router)
+app.include_router(routes_nitter.router)
 
 app.mount(
     "/static",

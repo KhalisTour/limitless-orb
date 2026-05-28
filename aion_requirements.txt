@@ -1,21 +1,22 @@
+# AION Terminal — Python dependencies
+# Only packages actually imported by aion_terminal/ are listed.
+
 # Web Framework
-fastapi==0.104.1
-uvicorn==0.24.0
+fastapi>=0.110
+uvicorn[standard]>=0.27
 
-# Configuration & Serialization
-pydantic==2.5.0
-python-dotenv==1.0.0
+# Configuration
+python-dotenv>=1.0
 
-# HTTP & Networking
-requests==2.31.0
+# HTTP / data validation (HTTP traffic uses stdlib urllib)
+pydantic>=2.5
 
 # AI/LLM APIs
-openai>=1.0.0
-anthropic>=0.0.0
+openai>=1.30
+anthropic>=0.34
 
 # Data Processing
-pandas>=2.0.0
-numpy>=1.24.0
+pandas>=2.0
 
 # Testing
-pytest>=7.4.0
+pytest>=8.0

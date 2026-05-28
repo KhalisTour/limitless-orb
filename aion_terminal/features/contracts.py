@@ -145,6 +145,8 @@ def score_contract(
     budget: float | None = None,
 ) -> ContractScore | None:
     """Score one chain contract row. Returns None when base quality filters fail."""
+    # AUDIT FIX: field name corrected — accept either "side" (raw_chain_snapshots
+    # column) or "type" (SELECT_LATEST_CHAIN alias).
     contract_side = str(contract.get("side") or contract.get("type") or "").lower()
     if contract_side != side:
         return None

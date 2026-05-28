@@ -248,8 +248,17 @@ def query_underlying_bars_count(conn: sqlite3.Connection, symbol: str) -> int:
 
 
 def query_expiries(conn: sqlite3.Connection, symbol: str, dte_max: int = 60) -> list[str]:
+    from datetime import date as _date
+
     rows = query_latest_chain(conn, symbol)
-    return sorted({r.get("expiry") for r in rows if r.get("expiry") and r.get("dte", 999) <= dte_max})
+    today = _date.today().isoformat()
+    return sorted({
+        r.get("expiry") for r in rows
+        if r.get("expiry")
+        and r.get("expiry") >= today
+        and r.get("dte", 999) <= dte_max
+        and r.get("dte", -1) >= 1
+    })
 
 
 # -------- Research engine repository functions --------

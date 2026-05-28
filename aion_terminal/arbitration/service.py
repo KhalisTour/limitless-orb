@@ -84,9 +84,12 @@ def _load_features(conn: sqlite3.Connection, symbol: str) -> dict | None:
 
 
 def _load_contracts(conn: sqlite3.Connection, symbol: str) -> dict | None:
+    # AUDIT FIX: field name corrected — selecting actual raw_chain_snapshots
+    # columns (side, strike, bid, ask, iv, delta, gamma, theta, open_interest,
+    # volume, dte, expiry/underlying_price), not the SELECT_LATEST_CHAIN alias.
     rows = conn.execute(
         """
-        SELECT option_symbol, side, strike, bid, ask, mark, iv, delta, gamma,
+        SELECT option_symbol, side, strike, expiry, bid, ask, mark, iv, delta, gamma,
                theta, vega, open_interest, volume, dte, underlying_price
         FROM raw_chain_snapshots
         WHERE symbol = ?

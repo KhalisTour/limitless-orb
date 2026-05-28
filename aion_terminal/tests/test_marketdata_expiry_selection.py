@@ -8,6 +8,7 @@ from aion_terminal.services import ingestion_service
 
 
 def test_select_relevant_expiry_buckets_includes_weekly_ranges_and_monthly_anchor():
+    # New selection rules: up to 6 expiries within the next 14 days, DTE>=2.
     candidates = [
         ExpiryCandidate(expiry="2026-04-10", dte=1, is_monthly_anchor=False),
         ExpiryCandidate(expiry="2026-04-17", dte=8, is_monthly_anchor=True),
@@ -21,11 +22,14 @@ def test_select_relevant_expiry_buckets_includes_weekly_ranges_and_monthly_ancho
     selected = select_relevant_expiry_buckets(candidates)
     expiries = {c.expiry for c in selected}
 
-    assert "2026-04-03" in expiries  # 0 DTE bucket
-    assert "2026-04-11" in expiries  # 0-2 DTE bucket
-    assert "2026-04-14" in expiries  # 3-7 DTE bucket
-    assert "2026-04-21" in expiries  # 8-14 DTE bucket
-    assert "2026-04-17" in expiries  # nearest monthly anchor
+    assert "2026-04-03" not in expiries  # DTE 0 skipped
+    assert "2026-04-10" not in expiries  # DTE 1 skipped
+    assert "2026-04-24" not in expiries  # DTE 15 over horizon
+    assert "2026-04-11" in expiries
+    assert "2026-04-14" in expiries
+    assert "2026-04-17" in expiries
+    assert "2026-04-21" in expiries
+    assert len(selected) <= 6
 
 
 def test_marketdata_client_retries_on_429_and_backoff(monkeypatch):

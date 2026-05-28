@@ -42,8 +42,32 @@
         </div>
 
         <div class="card" id="dealer-card">
+          <div id="staleness-banner" class="staleness-warn" style="display:none">
+            <span>⚠</span>
+            <span>Data stale — last updated <strong id="data-age"></strong> ago.
+              Run: <code>python -m aion_terminal.scripts.run_daily_snapshot --symbols <span id="stale-ticker"></span> --skip-refresh-if-recent-minutes 0</code>
+            </span>
+          </div>
           <h3>Dealer Structure</h3>
           <div class="content"></div>
+        </div>
+
+        <div class="sizing-card" id="sizing-card">
+          <div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="margin:0">POSITION SIZING</h3>
+            <div class="mono" style="font-size:11px">Buying power: $<input type="number" id="buying-power-input" style="width:90px;font-family:var(--font-mono);padding:2px 6px"></div>
+          </div>
+          <div id="sizing-body" class="muted">Awaiting arbitration…</div>
+        </div>
+
+        <div class="exit-ladder" id="exit-ladder">
+          <div style="font-family:var(--font-title);letter-spacing:2px;text-transform:uppercase;font-size:13px;margin-bottom:10px">STRUCTURAL EXITS</div>
+          <div id="exit-ladder-body" class="muted">Awaiting dealer data…</div>
+        </div>
+
+        <div class="card" id="x-mentions-card" style="display:none">
+          <h3>X Mentions — <span id="x-mentions-ticker"></span></h3>
+          <div class="x-mentions-list" id="x-mentions-list"></div>
         </div>
 
         <div class="card" id="contracts-card">
@@ -61,21 +85,21 @@
         <div class="card" id="heatmap-card">
           <h3>GEX Heatmap</h3>
           <div class="heatmap-controls">
-            <span>STRIKES</span>
+            <span>RANGE</span>
             <div class="btn-group" id="strike-group">
-              <button data-v="15">±15</button>
-              <button data-v="30" class="active">±30</button>
-              <button data-v="50">±50</button>
-              <button data-v="999">ALL</button>
+              <button data-v="10">±10%</button>
+              <button data-v="15" class="active">±15%</button>
+              <button data-v="20">±20%</button>
             </div>
             <span style="margin-left:8px">EXPIRIES</span>
             <div class="btn-group" id="expiry-group">
-              <button data-v="5" class="active">5</button>
+              <button data-v="6" class="active">6</button>
               <button data-v="10">10</button>
               <button data-v="15">15</button>
               <button data-v="999">ALL</button>
             </div>
           </div>
+          <div id="star-nodes-bar" class="flex gap-8" style="flex-wrap:wrap;margin:8px 0"></div>
           <div id="gex-grid-container" style="overflow:auto"></div>
         </div>
 
@@ -134,7 +158,8 @@
 
   let TICKER = (getQueryParam('ticker') || sessionStorage.getItem('aion_ticker') || 'NVDA').toUpperCase();
   SS.set('aion_ticker', TICKER);
-  let strikeRange = 30, expiryCount = 5;
+  let strikeRange = 15, expiryCount = 6;
+  let arbCache = null;
   let dealerCache = null;
   let chatMessages = [];
 
@@ -389,6 +414,7 @@
     try {
       const data = await buildGexGrid();
       renderGexTable(data.strikes, data.expiries, data.gex, data.spot);
+      renderStarNodes(data.strikes, data.expiries, data.gex);
       const hasVex = data.vex && data.vex.some(row => row.some(v => v !== 0));
       if (hasVex) {
         renderVexTable(data.strikes, data.expiries, data.vex, data.spot);
@@ -511,13 +537,183 @@
     }
   }
 
+  // ---------- Staleness ----------
+  function checkStaleness(rankedAt, ticker) {
+    if (!rankedAt) return;
+    const h = (Date.now() - new Date(rankedAt).getTime()) / 3600000;
+    if (h > 6) {
+      const banner = document.getElementById('staleness-banner');
+      if (banner) {
+        const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+        document.getElementById('data-age').textContent = hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+        document.getElementById('stale-ticker').textContent = ticker;
+        banner.style.display = 'flex';
+      }
+    } else {
+      const banner = document.getElementById('staleness-banner');
+      if (banner) banner.style.display = 'none';
+    }
+  }
+
+  // ---------- Sizing card ----------
+  function modifierColor(mod) {
+    if (mod >= 0.8) return 'var(--green)';
+    if (mod >= 0.5) return 'var(--amber)';
+    return 'var(--red)';
+  }
+  function modifierLabel(mod) {
+    if (mod >= 0.8) return 'FULL SIZE';
+    if (mod >= 0.5) return 'REDUCED';
+    return 'MINIMAL';
+  }
+  function renderSizingCard(arb) {
+    const body = document.getElementById('sizing-body');
+    const bp = Number(SS.get('aion_buying_power', 5000));
+    const base = bp * 0.02;
+    if (!arb) {
+      body.innerHTML = `
+        <div class="mono" style="font-size:12px">
+          <div class="row-line"><span class="muted">Base risk</span><span>2% of $${bp.toFixed(0)} = $${base.toFixed(0)}</span></div>
+          <div class="muted" style="margin-top:8px">Run arbitration for modifier.</div>
+        </div>`;
+      return;
+    }
+    const mod = Number(arb.sizing_modifier || 0);
+    const recommended = base * mod;
+    const role = arb.role || arb.contract_role || '—';
+    const conf = Number(arb.confidence || 0);
+    const color = modifierColor(mod);
+    const label = modifierLabel(mod);
+    body.innerHTML = `
+      <div class="mono" style="font-size:12px">
+        <div class="row-line"><span class="muted">Base risk</span><span>2% of $${bp.toFixed(0)} = $${base.toFixed(0)}</span></div>
+        <div class="row-line"><span class="muted">Arbiter</span><span style="color:${color}">× ${mod.toFixed(2)}</span></div>
+        <div class="row-line"><span class="muted">Recommended</span><span style="color:${color};font-weight:700">$${recommended.toFixed(0)}</span></div>
+        <div class="row-line"><span class="muted">Role</span><span>${role}</span></div>
+        <div style="margin-top:8px;padding:6px 10px;border:1px solid ${color};border-radius:4px;color:${color};font-size:11px">
+          [${label} — arbiter confidence ${(conf*100).toFixed(0)}%]
+        </div>
+      </div>`;
+  }
+
+  // ---------- Exit ladder ----------
+  function renderExitLadder(rankings) {
+    const body = document.getElementById('exit-ladder-body');
+    if (!rankings) { body.textContent = 'No dealer data.'; return; }
+    const spot = Number(rankings.spot || 0);
+    const s1 = Number(rankings.call_wall || 0);
+    const s2_raw = Number(rankings.king_node || 0);
+    const s3 = Number(rankings.put_wall || 0);
+    const s2 = (s1 === s2_raw && spot && s3) ? ((spot + s3) / 2) : s2_raw;
+    function fmt(v) { return v ? `$${v.toFixed(2)}` : '—'; }
+    body.innerHTML = `
+      <div class="exit-s1">S1 ── TRIM 1/3 ─── ${fmt(s1)}  <span class="muted">call wall</span></div>
+      <div class="exit-s2" style="margin-top:6px">S2 ── TRIM 1/3 ─── ${fmt(s2)}  <span class="muted">${s1===s2_raw ? 'midpoint(spot, put_wall)' : 'king node'}</span></div>
+      <div class="exit-s3" style="margin-top:6px">S3 ── EXIT ALL ─── ${fmt(s3)}  <span class="muted">put wall</span></div>
+      <div style="margin-top:10px;border-top:1px solid var(--border-dim);padding-top:8px;color:var(--text-dim)">
+        Stop: underlying loses ${fmt(s3)}<br>
+        (put wall breach → exit 100%)
+      </div>`;
+  }
+
+  // ---------- Arbitration loader ----------
+  async function loadArbitration() {
+    try {
+      const arb = await api(`/arbitration/${TICKER}`);
+      arbCache = arb;
+      renderSizingCard(arb);
+    } catch (err) {
+      arbCache = null;
+      renderSizingCard(null);
+    }
+  }
+
+  // ---------- X mentions ----------
+  async function loadXMentions() {
+    try {
+      const data = await api('/feed/x');
+      const posts = (data && data.posts) || [];
+      const matches = posts.filter(p => (p.watchlist_match || []).some(t => String(t).toUpperCase() === TICKER));
+      // Also pull persisted tags from last 24h via /tags
+      let extras = [];
+      try {
+        const tags = await api(`/tags/${TICKER}`);
+        const arr = Array.isArray(tags) ? tags : (tags.tags || []);
+        const dayCut = Date.now() - 24*3600*1000;
+        extras = arr.filter(t => t.tag_key === 'x_feed_mention').map(t => {
+          let ctx = {};
+          try { ctx = JSON.parse(t.context_json || '{}'); } catch (_) {}
+          return {
+            username: t.tag_value,
+            text: ctx.text || '',
+            url: ctx.url || '',
+            published_at: t.updated_at || t.created_at,
+          };
+        }).filter(p => {
+          const dt = new Date(p.published_at).getTime();
+          return !isNaN(dt) && dt >= dayCut;
+        });
+      } catch (_) {}
+      const seenUrls = new Set(matches.map(m => m.url));
+      extras.forEach(e => { if (!seenUrls.has(e.url)) matches.push(e); });
+      const card = document.getElementById('x-mentions-card');
+      if (!matches.length) { card.style.display = 'none'; return; }
+      document.getElementById('x-mentions-ticker').textContent = TICKER;
+      card.style.display = 'block';
+      document.getElementById('x-mentions-list').innerHTML = matches.slice(0, 12).map(p => `
+        <div class="row">
+          <span class="handle">@${escapeHtml(p.username || '')}</span>
+          <span class="muted"> · ${_ago2(p.published_at)} — </span>
+          ${escapeHtml((p.text || '').slice(0, 200))}
+          ${p.url ? ` <a href="${p.url}" target="_blank" rel="noopener">↗</a>` : ''}
+        </div>`).join('');
+    } catch (err) {
+      document.getElementById('x-mentions-card').style.display = 'none';
+    }
+  }
+  function _ago2(iso) {
+    try {
+      const d = new Date(iso);
+      const m = (Date.now() - d.getTime()) / 60000;
+      if (m < 60) return `${Math.max(1, Math.floor(m))}m`;
+      if (m < 1440) return `${Math.floor(m/60)}h`;
+      return `${Math.floor(m/1440)}d`;
+    } catch (_) { return ''; }
+  }
+
+  // ---------- Star nodes bar (per-expiry GEX peak) ----------
+  function renderStarNodes(strikes, expiries, gexGrid) {
+    const bar = document.getElementById('star-nodes-bar');
+    if (!bar) return;
+    if (!expiries.length) { bar.innerHTML = ''; return; }
+    const chips = expiries.map((exp, j) => {
+      let bestI = -1, bestAbs = 0, bestVal = 0;
+      for (let i = 0; i < strikes.length; i++) {
+        const v = (gexGrid[i] && gexGrid[i][j]) || 0;
+        if (Math.abs(v) > bestAbs) { bestAbs = Math.abs(v); bestVal = v; bestI = i; }
+      }
+      if (bestI < 0) return '';
+      const sk = strikes[bestI];
+      const cls = bestVal >= 0 ? 'amber' : 'green';
+      const mmdd = String(exp).slice(5);
+      return `<span class="pill ${cls}">${mmdd} $${sk >= 100 ? sk.toFixed(0) : sk.toFixed(2)} ★</span>`;
+    }).filter(Boolean).join('');
+    bar.innerHTML = chips;
+  }
+
   // ---------- Init ----------
   async function refresh() {
     await renderDealer();
+    if (dealerCache) {
+      checkStaleness(dealerCache.ranked_at || dealerCache.snapshot_ts || dealerCache.updated_at, TICKER);
+      renderExitLadder(dealerCache);
+    }
     renderHeatmap();
     renderRSCard();
     renderMacroMini();
     renderContracts('bullish');
+    loadArbitration();
+    loadXMentions();
   }
 
   let tvLive = true;
@@ -612,8 +808,20 @@
 
     document.getElementById('tv-toggle-btn').addEventListener('click', toggleTVFeed);
 
+    // Buying power input
+    const bpInput = document.getElementById('buying-power-input');
+    if (bpInput) {
+      bpInput.value = SS.get('aion_buying_power', 5000);
+      bpInput.addEventListener('change', () => {
+        const v = Math.max(100, Number(bpInput.value) || 5000);
+        SS.set('aion_buying_power', v);
+        renderSizingCard(arbCache);
+      });
+    }
+
     refresh();
-    setInterval(() => { renderDealer(); renderHeatmap(); }, 30000);
+    setInterval(() => { renderDealer(); renderHeatmap(); loadArbitration(); }, 30000);
+    setInterval(loadXMentions, 300000);
   });
   </script>
 </body>

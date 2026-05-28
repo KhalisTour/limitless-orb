@@ -13,6 +13,9 @@ def _compute_levels_core(normalized_contracts: list[dict[str, Any]], spot: float
         strike = as_float(contract.get("strike"))
         gamma = as_float(contract.get("gamma"))
         open_interest = as_int(contract.get("open_interest"))
+        # AUDIT FIX: field name corrected — uses "type" key (SELECT_LATEST_CHAIN
+        # aliases side AS type; grouped_chain consumers map side→type before
+        # calling _compute_levels_core).
         option_type = (contract.get("type") or "").lower()
 
         exposure = gamma * open_interest * 100.0
