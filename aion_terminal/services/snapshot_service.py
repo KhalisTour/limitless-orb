@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 
 def build_levels_snapshot(conn, symbol: str, spot: float) -> dict[str, Any]:
     """Legacy fallback snapshot built from compatibility rows."""
+    # AUDIT FIX: field name corrected — query_latest_chain returns rows with
+    # the "type" alias (from SELECT_LATEST_CHAIN: side AS type), which is what
+    # compute_levels() expects via contract.get("type").
     latest = repositories.query_latest_chain(conn, symbol)
     return compute_levels(latest, spot, symbol=symbol)
 

@@ -200,21 +200,13 @@ def fallback_expiry_candidates(weeks_ahead: int = 10) -> list[ExpiryCandidate]:
 
 
 def select_relevant_expiry_buckets(candidates: list[ExpiryCandidate]) -> list[ExpiryCandidate]:
-    """Select expiries by edge buckets: 0-2, 3-7, 8-14 DTE + nearest monthly anchor."""
+    """Select up to 6 expiries within the next 14 days. Skip DTE < 2."""
     if not candidates:
         return []
 
-    chosen: dict[str, ExpiryCandidate] = {}
-    for c in candidates:
-        if 0 <= c.dte <= 2 or 3 <= c.dte <= 7 or 8 <= c.dte <= 14:
-            chosen[c.expiry] = c
-
-    monthly_anchors = [c for c in candidates if c.is_monthly_anchor and c.dte >= 0]
-    if monthly_anchors:
-        nearest_anchor = min(monthly_anchors, key=lambda c: c.dte)
-        chosen[nearest_anchor.expiry] = nearest_anchor
-
-    return sorted(chosen.values(), key=lambda c: (c.dte, c.expiry))
+    eligible = [c for c in candidates if 2 <= c.dte <= 14]
+    eligible.sort(key=lambda c: (c.dte, c.expiry))
+    return eligible[:6]
 
 
 def discover_relevant_expiries(client: MarketDataClient, symbol: str) -> tuple[list[ExpiryCandidate], str | None]:

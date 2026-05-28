@@ -136,6 +136,12 @@ def refresh_one_symbol(symbol: str, conn=None, *, dte_max: int | None = None, sk
                 logger.info("ingestion expiry discovery symbol=%s warning=%s", symbol, expiry_warning)
 
         result.attempted_expiries = [e.expiry for e in expiry_candidates]
+        logger.info(
+            "ingestion expiry fetch symbol=%s eligible=%d selected=%s",
+            symbol,
+            len(expiry_candidates),
+            result.attempted_expiries,
+        )
 
         spot = result.quote_price
         research_rows = []
