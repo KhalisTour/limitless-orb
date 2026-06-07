@@ -1,0 +1,378 @@
+=== AION Morning Refresh Tue Jun  2 13:30:15 EDT 2026 ===
+Watchlist: IONQ,PLTR,AVAV,OKLO,IREN,ONDS,TSLA,TE,DRAM,CRM,CRWV
+[1/4] Refreshing bars...
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IONQ timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=300 legacy_rows=258 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=PLTR timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=PLTR eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=PLTR ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=330 legacy_rows=264 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=AVAV timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AVAV eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AVAV ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=322 legacy_rows=175 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=OKLO timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=OKLO eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=OKLO ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=238 legacy_rows=212 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IREN timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=312 legacy_rows=258 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=ONDS timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=ONDS eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=ONDS ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=164 legacy_rows=127 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=TSLA timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=5 selected=['2026-06-05', '2026-06-08', '2026-06-10', '2026-06-12', '2026-06-15']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=5 grouped_expiries=['2026-06-05', '2026-06-08', '2026-06-10', '2026-06-12', '2026-06-15'] chain_rows=1112 legacy_rows=781 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=TE timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TE eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TE ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=180 legacy_rows=111 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=DRAM timeframe=1D start=2026-03-04 end=2026-06-02 upserted=42
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=DRAM eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=DRAM ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=276 legacy_rows=226 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=CRM timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=CRM eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=CRM ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=232 legacy_rows=186 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=CRWV timeframe=1D start=2026-03-04 end=2026-06-02 upserted=63
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=CRWV eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=CRWV ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=368 legacy_rows=324 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-04 end=2026-06-02; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-04 end=2026-06-02; treating as non-fatal
+Backfill summary: 11/11 symbols succeeded
+IONQ: ok=True bars=63 option_rows=0
+PLTR: ok=True bars=63 option_rows=0
+AVAV: ok=True bars=63 option_rows=0
+OKLO: ok=True bars=63 option_rows=0
+IREN: ok=True bars=63 option_rows=0
+ONDS: ok=True bars=63 option_rows=0
+TSLA: ok=True bars=63 option_rows=0
+TE: ok=True bars=63 option_rows=0
+DRAM: ok=True bars=42 option_rows=0
+CRM: ok=True bars=63 option_rows=0
+CRWV: ok=True bars=63 option_rows=0
+[2/4] Running chain snapshot...
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IONQ cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IONQ signals=0 contracts=154 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=PLTR cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=PLTR signals=0 contracts=105 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=AVAV cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=AVAV signals=0 contracts=43 regime=trend
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=OKLO cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=OKLO signals=0 contracts=81 regime=trend
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IREN cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IREN signals=0 contracts=88 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=ONDS cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=ONDS signals=0 contracts=43 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=TSLA cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=TSLA signals=0 contracts=338 regime=trend
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=TE cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=TE signals=0 contracts=33 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=DRAM cache_hit=True
+WARNING:aion_terminal.features.technical:Technical feature build for DRAM has only 42 bars; 55+ is recommended.
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=DRAM signals=0 contracts=56 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=CRM cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=CRM signals=0 contracts=31 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=CRWV cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=CRWV signals=0 contracts=90 regime=acceleration
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=300 legacy_rows=260 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=IONQ count=0
+WARNING:aion_terminal.services.ingestion_service:ingestion quote failed symbol=PLTR error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion bars failed symbol=PLTR error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion expiry discovery symbol=PLTR warning=expiries_fallback_calendar
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=PLTR eligible=2 selected=['2026-06-05', '2026-06-12']
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=PLTR expiry=2026-06-05 dte=3 error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=PLTR expiry=2026-06-12 dte=10 error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=PLTR ok=False expiries=2 grouped_expiries=[] chain_rows=0 legacy_rows=0 bars=0 errors=['quote_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'bars_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'expiries_fallback_calendar', 'chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known', 'chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known']
+INFO:__main__:no expiries available; skipping feature snapshot
+WARNING:aion_terminal.services.ingestion_service:ingestion quote failed symbol=AVAV error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion bars failed symbol=AVAV error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion expiry discovery symbol=AVAV warning=expiries_fallback_calendar
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AVAV eligible=2 selected=['2026-06-05', '2026-06-12']
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=AVAV expiry=2026-06-05 dte=3 error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=AVAV expiry=2026-06-12 dte=10 error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AVAV ok=False expiries=2 grouped_expiries=[] chain_rows=0 legacy_rows=0 bars=0 errors=['quote_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'bars_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'expiries_fallback_calendar', 'chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known', 'chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known']
+INFO:__main__:no expiries available; skipping feature snapshot
+WARNING:aion_terminal.services.ingestion_service:ingestion quote failed symbol=OKLO error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion bars failed symbol=OKLO error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion expiry discovery symbol=OKLO warning=expiries_fallback_calendar
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=OKLO eligible=2 selected=['2026-06-05', '2026-06-12']
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=OKLO expiry=2026-06-05 dte=3 error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=OKLO expiry=2026-06-12 dte=10 error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=OKLO ok=False expiries=2 grouped_expiries=[] chain_rows=0 legacy_rows=0 bars=0 errors=['quote_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'bars_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'expiries_fallback_calendar', 'chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known', 'chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known']
+INFO:__main__:no expiries available; skipping feature snapshot
+WARNING:aion_terminal.services.ingestion_service:ingestion quote failed symbol=IREN error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion bars failed symbol=IREN error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion expiry discovery symbol=IREN warning=expiries_fallback_calendar
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=312 legacy_rows=258 bars=0 errors=['quote_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'bars_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'expiries_fallback_calendar']
+INFO:__main__:setup candidates inserted symbol=IREN count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=ONDS eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=ONDS ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=164 legacy_rows=129 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=ONDS count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=5 selected=['2026-06-05', '2026-06-08', '2026-06-10', '2026-06-12', '2026-06-15']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=5 grouped_expiries=['2026-06-05', '2026-06-08', '2026-06-10', '2026-06-12', '2026-06-15'] chain_rows=1112 legacy_rows=780 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=TSLA count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TE eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TE ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=180 legacy_rows=107 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=TE count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=DRAM eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=DRAM ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=276 legacy_rows=225 bars=6 errors=[]
+WARNING:aion_terminal.features.technical:Technical feature build for DRAM has only 53 bars; 55+ is recommended.
+INFO:__main__:setup candidates inserted symbol=DRAM count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=CRM eligible=2 selected=['2026-06-05', '2026-06-12']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=CRM ok=True expiries=2 grouped_expiries=['2026-06-05', '2026-06-12'] chain_rows=232 legacy_rows=186 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=CRM count=0
+WARNING:aion_terminal.services.ingestion_service:ingestion quote failed symbol=CRWV error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion bars failed symbol=CRWV error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion expiry discovery symbol=CRWV warning=expiries_fallback_calendar
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=CRWV eligible=2 selected=['2026-06-05', '2026-06-12']
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=CRWV expiry=2026-06-05 dte=3 error=url_error:[Errno 8] nodename nor servname provided, or not known
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=CRWV expiry=2026-06-12 dte=10 error=url_error:[Errno 8] nodename nor servname provided, or not known
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=CRWV ok=False expiries=2 grouped_expiries=[] chain_rows=0 legacy_rows=0 bars=0 errors=['quote_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'bars_error:url_error:[Errno 8] nodename nor servname provided, or not known', 'expiries_fallback_calendar', 'chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known', 'chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known']
+INFO:__main__:no expiries available; skipping feature snapshot
+IONQ | skipped_recent=False | refreshed=True | chain_rows=300 | bars_used=True | setups=0 | contracts=1 | errors=
+PLTR | skipped_recent=False | refreshed=True | chain_rows=0 | bars_used=True | setups=0 | contracts=0 | errors=quote_error:url_error:[Errno 8] nodename nor servname provided, or not known;bars_error:url_error:[Errno 8] nodename nor servname provided, or not known;expiries_fallback_calendar;chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known;chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known
+AVAV | skipped_recent=False | refreshed=True | chain_rows=0 | bars_used=True | setups=0 | contracts=0 | errors=quote_error:url_error:[Errno 8] nodename nor servname provided, or not known;bars_error:url_error:[Errno 8] nodename nor servname provided, or not known;expiries_fallback_calendar;chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known;chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known
+OKLO | skipped_recent=False | refreshed=True | chain_rows=0 | bars_used=True | setups=0 | contracts=0 | errors=quote_error:url_error:[Errno 8] nodename nor servname provided, or not known;bars_error:url_error:[Errno 8] nodename nor servname provided, or not known;expiries_fallback_calendar;chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known;chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known
+IREN | skipped_recent=False | refreshed=True | chain_rows=312 | bars_used=True | setups=0 | contracts=0 | errors=quote_error:url_error:[Errno 8] nodename nor servname provided, or not known;bars_error:url_error:[Errno 8] nodename nor servname provided, or not known;expiries_fallback_calendar
+ONDS | skipped_recent=False | refreshed=True | chain_rows=164 | bars_used=True | setups=0 | contracts=1 | errors=
+TSLA | skipped_recent=False | refreshed=True | chain_rows=1112 | bars_used=True | setups=0 | contracts=1 | errors=
+TE | skipped_recent=False | refreshed=True | chain_rows=180 | bars_used=True | setups=0 | contracts=1 | errors=
+DRAM | skipped_recent=False | refreshed=True | chain_rows=276 | bars_used=True | setups=0 | contracts=1 | errors=
+CRM | skipped_recent=False | refreshed=True | chain_rows=232 | bars_used=True | setups=0 | contracts=1 | errors=
+CRWV | skipped_recent=False | refreshed=True | chain_rows=0 | bars_used=True | setups=0 | contracts=0 | errors=quote_error:url_error:[Errno 8] nodename nor servname provided, or not known;bars_error:url_error:[Errno 8] nodename nor servname provided, or not known;expiries_fallback_calendar;chain_error:2026-06-05:url_error:[Errno 8] nodename nor servname provided, or not known;chain_error:2026-06-12:url_error:[Errno 8] nodename nor servname provided, or not known
+[3/4] Invalidating cache...
+Cache invalidate skipped (server may not be running)
+[4/4] Running morning brief...
+Brief generation API call failed
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 101, in handle_request
+    raise exc
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 78, in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1019, in request
+    response = self._send_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 400, in _send_request
+    return self._send_with_auth_retry(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 378, in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 947, in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 204, in _call_api
+    response = client.responses.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/resources/responses/responses.py", line 917, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1054, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+Brief generation failed
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 101, in handle_request
+    raise exc
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 78, in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1019, in request
+    response = self._send_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 400, in _send_request
+    return self._send_with_auth_retry(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 378, in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 947, in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 8] nodename nor servname provided, or not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 221, in generate_morning_brief
+    full_text, tokens_used = _call_api()
+                             ^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 218, in _call_api
+    raise exc
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 204, in _call_api
+    response = client.responses.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/resources/responses/responses.py", line 917, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1054, in request
+    raise APIConnectionError(request=request) from err
+openai.APIConnectionError: Connection error.
+=== MORNING MACRO BRIEF ===
+Generated: 2026-06-02T17:41:54.449708+00:00
+Model: gpt-5.4-mini
+Tokens used: 0
+Regime: neutral | Risk level: medium
+30-day call: Unable to generate brief due to API error
+
+Sector leaders: []
+Sector laggards: []
+
+Narrative tags posted: 0
+
+--- FULL BRIEF ---
+
+=== Refresh complete Tue Jun  2 13:41:54 EDT 2026 ===
