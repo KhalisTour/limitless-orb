@@ -1,0 +1,116 @@
+name: MLB HR daily pipeline
+
+on:
+  schedule:
+    # 14:00 UTC ~= 10am ET (DST) / 9am ET (standard). Adjust as needed.
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Date YYYY-MM-DD (default: today UTC)"
+        required: false
+        default: ""
+      run_backtest:
+        description: "Force backtest + refit"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: mlb_hr_pipeline
+    steps:
+      - name: Checkout pipeline branch
+        uses: actions/checkout@v4
+        with:
+          ref: claude/wizardly-mccarthy-hz1EE
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: mlb_hr_pipeline/requirements.txt
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Restore pybaseball cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pybaseball_cache
+          key: pybaseball-${{ runner.os }}-v1
+
+      - name: Resolve date
+        id: d
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            echo "date=${{ github.event.inputs.date }}" >> $GITHUB_OUTPUT
+          else
+            echo "date=$(date -u +%F)" >> $GITHUB_OUTPUT
+          fi
+          echo "yesterday=$(python -c 'import datetime; print((datetime.date.today()-datetime.timedelta(days=1)).isoformat())')" >> $GITHUB_OUTPUT
+          echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
+
+      - name: Score yesterday (if predictions exist)
+        run: |
+          if [ -f "data/predictions_${{ steps.d.outputs.yesterday }}.json" ]; then
+            python score.py "${{ steps.d.outputs.yesterday }}" || true
+          else
+            echo "no predictions_${{ steps.d.outputs.yesterday }}.json — skipping"
+          fi
+
+      - name: Backtest + fit (Sundays or on-demand)
+        if: steps.d.outputs.dow == '7' || github.event.inputs.run_backtest == 'true'
+        run: |
+          python backtest.py
+          python fit_model.py
+
+      - name: First-time backtest (only if backtest.csv missing)
+        run: |
+          if [ ! -f data/backtest.csv ]; then
+            echo "no backtest.csv — running initial backtest + fit"
+            python backtest.py
+            python fit_model.py
+          fi
+
+      - name: Ingest today
+        run: python ingest_live.py "${{ steps.d.outputs.date }}"
+
+      - name: Predict today
+        run: python predict_today.py "${{ steps.d.outputs.date }}"
+
+      - name: Commit artifacts
+        run: |
+          cd ..
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mlb_hr_pipeline/data/ mlb_hr_pipeline/models_out/ mlb_hr_pipeline/logs/ || true
+          if git diff --staged --quiet; then
+            echo "no changes to commit"
+          else
+            git commit -m "pipeline run ${{ steps.d.outputs.date }}"
+            for i in 1 2 3 4; do
+              git push origin claude/wizardly-mccarthy-hz1EE && break || sleep $((2**i))
+            done
+          fi
+
+      - name: Upload run logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-${{ steps.d.outputs.date }}
+          path: |
+            mlb_hr_pipeline/data/predictions_*.json
+            mlb_hr_pipeline/data/base_rates.json
+            mlb_hr_pipeline/data/calibration_log.csv
+            mlb_hr_pipeline/data/calibration_metrics.json
+            mlb_hr_pipeline/models_out/
+            mlb_hr_pipeline/logs/

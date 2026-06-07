@@ -75,13 +75,16 @@ def get_lineup(game_id):
 
 BATTER_FEATURES = [
     "xba", "xslg", "xobp", "xiso", "xwoba",
-    "avg_best_speed", "avg_hyper_speed",      # EV family
+    "exit_velocity_avg", "avg_best_speed", "avg_hyper_speed",   # EV family
     "barrel_batted_rate", "hard_hit_percent",
     "launch_angle_avg", "sweet_spot_percent",
     "k_percent", "bb_percent",
     "pull_percent", "straightaway_percent", "opposite_percent",
     "whiff_percent", "swing_percent",
+    "z_swing_percent", "oz_swing_percent",     # zone / chase swing rates
     "groundballs_percent", "flyballs_percent",
+    "weak_percent", "topped_percent", "under_percent",
+    "flare_burner_percent", "solid_contact_percent",
     "bat_speed", "attack_angle", "ideal_angle_rate",   # bat-tracking
 ]
 
