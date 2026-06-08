@@ -1,0 +1,211 @@
+{
+  "date": "2026-06-08",
+  "generated_at": "2026-06-08T23:07:27.885536Z",
+  "games": [
+    {
+      "game_id": 824829,
+      "away": "Seattle Mariners",
+      "home": "Baltimore Orioles",
+      "away_sp": "Emerson Hancock",
+      "home_sp": "Trey Gibson",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Trey Gibson"
+        },
+        "home": {
+          "per_hitter": {
+            "Taylor Ward": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Gunnar Henderson": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Pete Alonso": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            }
+          },
+          "sim": {
+            "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+          },
+          "pitcher": "Emerson Hancock"
+        }
+      }
+    },
+    {
+      "game_id": 822972,
+      "away": "Boston Red Sox",
+      "home": "Tampa Bay Rays",
+      "away_sp": "Connelly Early",
+      "home_sp": "Ian Seymour",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Ian Seymour"
+        },
+        "home": {
+          "per_hitter": {
+            "Yandy D\u00edaz": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Junior Caminero": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Jonathan Aranda": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Cedric Mullins": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            }
+          },
+          "sim": {
+            "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+          },
+          "pitcher": "Connelly Early"
+        }
+      }
+    },
+    {
+      "game_id": 824427,
+      "away": "New York Yankees",
+      "home": "Cleveland Guardians",
+      "away_sp": "Will Warren",
+      "home_sp": "Gavin Williams",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "Trent Grisham": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Ben Rice": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Cody Bellinger": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Jazz Chisholm Jr.": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            }
+          },
+          "sim": {
+            "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+          },
+          "pitcher": "Gavin Williams"
+        },
+        "home": {
+          "error": "No pitcher row for Will Warren"
+        }
+      }
+    },
+    {
+      "game_id": 822806,
+      "away": "Philadelphia Phillies",
+      "home": "Toronto Blue Jays",
+      "away_sp": "Cristopher S\u00e1nchez",
+      "home_sp": "Patrick Corbin",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Patrick Corbin"
+        },
+        "home": {
+          "per_hitter": {
+            "Vladimir Guerrero Jr.": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Kazuma Okamoto": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Ernie Clement": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Andr\u00e9s Gim\u00e9nez": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            }
+          },
+          "sim": {
+            "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+          },
+          "pitcher": "Cristopher S\u00e1nchez"
+        }
+      }
+    },
+    {
+      "game_id": 824025,
+      "away": "Houston Astros",
+      "home": "Los Angeles Angels",
+      "away_sp": "Spencer Arrighetti",
+      "home_sp": "Grayson Rodriguez",
+      "sides": {
+        "away": {
+          "error": "No away lineup yet for game 824025"
+        },
+        "home": {
+          "error": "No home lineup yet for game 824025"
+        }
+      }
+    },
+    {
+      "game_id": 823289,
+      "away": "Cincinnati Reds",
+      "home": "San Diego Padres",
+      "away_sp": "Andrew Abbott",
+      "home_sp": "Walker Buehler",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Walker Buehler"
+        },
+        "home": {
+          "per_hitter": {
+            "Fernando Tatis Jr.": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Jackson Merrill": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Manny Machado": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Xander Bogaerts": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            },
+            "Gavin Sheets": {
+              "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+            }
+          },
+          "sim": {
+            "error": "unsupported operand type(s) for +: 'NoneType' and 'int'"
+          },
+          "pitcher": "Andrew Abbott"
+        }
+      }
+    },
+    {
+      "game_id": 823218,
+      "away": "Washington Nationals",
+      "home": "San Francisco Giants",
+      "away_sp": "Richard Lovelady",
+      "home_sp": "Logan Webb",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Logan Webb"
+        },
+        "home": {
+          "error": "No home lineup yet for game 823218"
+        }
+      }
+    },
+    {
+      "game_id": 824998,
+      "away": "Milwaukee Brewers",
+      "home": "Athletics",
+      "away_sp": "Kyle Harrison",
+      "home_sp": "Jeffrey Springs",
+      "sides": {
+        "away": {
+          "error": "No away lineup yet for game 824998"
+        },
+        "home": {
+          "error": "No pitcher row for Kyle Harrison"
+        }
+      }
+    }
+  ]
+}
