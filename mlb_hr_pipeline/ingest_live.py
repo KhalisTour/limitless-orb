@@ -188,7 +188,15 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     LINEUP_ORDER = []
     for _, row in my_lineup.iterrows():
         nm = row["player_name"]
+        # Try exact match first
         match = bat[bat[name_col].astype(str).str.lower() == str(nm).lower()]
+        # If no exact match and name_col is "Last, First", try flipping
+        if match.empty and name_col == "last_name, first_name":
+            bat["name_flipped"] = bat[name_col].apply(
+                lambda x: f"{x.split(',')[1].strip()} {x.split(',')[0].strip()}"
+                if isinstance(x, str) and "," in x else x
+            )
+            match = bat[bat["name_flipped"].astype(str).str.lower() == str(nm).lower()]
         if match.empty:
             print(f"[bridge] WARN no batter row for {nm} — skipping")
             continue
@@ -197,6 +205,12 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
 
     # Opposing SP
     p_match = pit[pit[pname_col].astype(str).str.lower() == str(opp_sp_name).lower()]
+    if p_match.empty and pname_col == "last_name, first_name":
+        pit["name_flipped"] = pit[pname_col].apply(
+            lambda x: f"{x.split(',')[1].strip()} {x.split(',')[0].strip()}"
+            if isinstance(x, str) and "," in x else x
+        )
+        p_match = pit[pit["name_flipped"].astype(str).str.lower() == str(opp_sp_name).lower()]
     if p_match.empty:
         raise RuntimeError(f"No pitcher row for {opp_sp_name}")
     PITCHER = row_to_pitcher_dict(p_match.iloc[0])
