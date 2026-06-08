@@ -100,8 +100,10 @@ def get_batter_season(year=None, min_pa="q"):
     return pd.read_csv(io.StringIO(r.text))
 
 
-def get_pitcher_season(year=None, min_pa="q"):
-    """Pitcher equivalent. type=pitcher; arsenal usage comes from a separate tap."""
+def get_pitcher_season(year=None, min_pa=50):
+    """Pitcher equivalent. type=pitcher; arsenal usage comes from a separate tap.
+    Uses min_pa=50 (not qualified) to include spot starters and recent call-ups.
+    """
     year = year or dt.date.today().year
     feats = ["xba", "xslg", "xwoba", "k_percent", "bb_percent",
              "barrel_batted_rate", "hard_hit_percent", "whiff_percent",

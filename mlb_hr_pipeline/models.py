@@ -31,14 +31,12 @@ def zscore(field, value):
     return (value - mu) / sd
 
 def shrink(raw_rate, bbe, k=150, prior=None):
-    """
-    Empirical-Bayes shrinkage toward a prior, weighted by sample size (BBE).
-    k is the 'regression constant' — the number of batted balls at which the
-    estimate is weighted 50/50 between the player's rate and the prior.
-    Low-BBE players get pulled hard toward the prior; high-BBE players barely move.
-    """
     if prior is None:
-        prior = mean([r for r in _pop("barrel")])  # default prior = pop mean barrel
+        prior = mean([r for r in _pop("barrel")]) if _pop("barrel") else 7.5
+    if raw_rate is None:
+        return prior
+    if bbe is None or bbe == 0:
+        return prior
     w = bbe / (bbe + k)
     return w * raw_rate + (1 - w) * prior
 
@@ -90,8 +88,7 @@ def model2_matchup(name):
     dmg_sink = barrel_z - 0.4 * topped_z
     dmg_soft = -0.6 * chase_z - 0.6 * whiff_z + 0.3 * barrel_z
 
-    # Pitcher vulnerability: higher barrel% allowed = more vulnerable everywhere.
-    pitcher_vuln = (PITCHER["barrel"] - LEAGUE["barrel"]) / LEAGUE["barrel"]  # signed
+    pitcher_vuln = ((PITCHER.get("barrel") or LEAGUE["barrel"]) - LEAGUE["barrel"]) / LEAGUE["barrel"]
     vuln_mult = 1.0 + pitcher_vuln  # ~1.41 here (10.6 vs 7.5 baseline)
 
     score = (usage["rise"] * dmg_rise +

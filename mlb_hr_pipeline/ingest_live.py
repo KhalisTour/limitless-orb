@@ -20,9 +20,12 @@ The column-name mapping happens here, in one place, so models.py stays clean.
 
 import io
 import json
+import re
 import sys
 import traceback
+import unicodedata
 import datetime as dt
+from difflib import SequenceMatcher
 from pathlib import Path
 
 import pandas as pd
@@ -72,6 +75,55 @@ PITCHER_KEY_CANDIDATES = {
 }
 
 
+def _normalize_name(name: str) -> str:
+    if not isinstance(name, str):
+        return ""
+    name = unicodedata.normalize("NFKD", name)
+    name = "".join(c for c in name if not unicodedata.combining(c))
+    name = re.sub(r"\b(jr|sr|ii|iii|iv)\b\.?", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"[.\-']", " ", name)
+    return " ".join(name.lower().split())
+
+
+def _flip_last_first(savant_name: str) -> str:
+    if not isinstance(savant_name, str) or "," not in savant_name:
+        return savant_name
+    parts = savant_name.split(",", 1)
+    return f"{parts[1].strip()} {parts[0].strip()}"
+
+
+def _build_name_index(df: pd.DataFrame, name_col: str) -> dict:
+    idx = {}
+    for i, row in df.iterrows():
+        raw = str(row[name_col])
+        flipped = _flip_last_first(raw)
+        norm = _normalize_name(flipped)
+        idx[norm] = i
+        norm_raw = _normalize_name(raw)
+        if norm_raw != norm:
+            idx[norm_raw] = i
+    return idx
+
+
+def _fuzzy_lookup(query: str, name_index: dict, threshold: float = 0.75) -> int | None:
+    norm_q = _normalize_name(query)
+    if norm_q in name_index:
+        return name_index[norm_q]
+    best_score, best_idx = 0.0, None
+    for norm_name, row_idx in name_index.items():
+        score = SequenceMatcher(None, norm_q, norm_name).ratio()
+        if score > best_score:
+            best_score, best_idx = score, row_idx
+    if best_score >= threshold:
+        return best_idx
+    q_tokens = set(norm_q.split())
+    for norm_name, row_idx in name_index.items():
+        n_tokens = set(norm_name.split())
+        if len(q_tokens) >= 2 and q_tokens.issubset(n_tokens) or n_tokens.issubset(q_tokens):
+            return row_idx
+    return None
+
+
 def first_present(row: pd.Series, candidates) -> float:
     for c in candidates:
         if c in row.index and pd.notna(row[c]):
@@ -91,6 +143,26 @@ def row_to_pitcher_dict(row: pd.Series, arsenal: dict = None) -> dict:
         change=0, curve=0, split=0, kn=0,
     )
     return base
+
+
+BATTER_DEFAULTS = {
+    "barrel": 7.5, "xslg": 0.400, "hardhit": 40.0, "la": 12.5, "ev": 89.0,
+    "whiff": 24.5, "k": 22.5, "bb": 8.5, "xwoba": 0.320, "xba": 0.250,
+    "chase": 28.0, "swing": 47.0, "zone": 45.0, "zonesw": 65.0,
+    "topped": 30.0, "under": 25.0, "flare": 22.0, "solid": 7.0, "weak": 4.0,
+    "bbe": 150, "sprint": 27.0,
+}
+
+PITCHER_DEFAULTS = {
+    "barrel": 7.5, "hardhit": 40.0, "xslg": 0.400, "xwoba": 0.320,
+    "k": 22.5, "whiff": 24.5,
+}
+
+
+def _fill_defaults(d: dict, defaults: dict):
+    for k, v in defaults.items():
+        if k in d and d[k] is None:
+            d[k] = v
 
 
 def find_id_col(df: pd.DataFrame, kind: str) -> str:
@@ -184,36 +256,35 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
         raise RuntimeError("Batter CSV has no name column")
     pname_col = find_name_col(pit)
 
+    bat_index = _build_name_index(bat, name_col)
+    pit_index = _build_name_index(pit, pname_col)
+
     HITTERS = {}
     LINEUP_ORDER = []
+    skipped = []
     for _, row in my_lineup.iterrows():
         nm = row["player_name"]
-        # Try exact match first
-        match = bat[bat[name_col].astype(str).str.lower() == str(nm).lower()]
-        # If no exact match and name_col is "Last, First", try flipping
-        if match.empty and name_col == "last_name, first_name":
-            bat["name_flipped"] = bat[name_col].apply(
-                lambda x: f"{x.split(',')[1].strip()} {x.split(',')[0].strip()}"
-                if isinstance(x, str) and "," in x else x
-            )
-            match = bat[bat["name_flipped"].astype(str).str.lower() == str(nm).lower()]
-        if match.empty:
+        row_idx = _fuzzy_lookup(nm, bat_index)
+        if row_idx is None:
             print(f"[bridge] WARN no batter row for {nm} — skipping")
+            skipped.append(nm)
             continue
-        HITTERS[nm] = row_to_hitter_dict(match.iloc[0])
+        hdict = row_to_hitter_dict(bat.loc[row_idx])
+        _fill_defaults(hdict, BATTER_DEFAULTS)
+        HITTERS[nm] = hdict
         LINEUP_ORDER.append(nm)
 
+    total = len(my_lineup)
+    if total > 0 and len(skipped) / total > 0.5:
+        print(f"[bridge] WARNING: skipped {len(skipped)}/{total} batters: {skipped}")
+
     # Opposing SP
-    p_match = pit[pit[pname_col].astype(str).str.lower() == str(opp_sp_name).lower()]
-    if p_match.empty and pname_col == "last_name, first_name":
-        pit["name_flipped"] = pit[pname_col].apply(
-            lambda x: f"{x.split(',')[1].strip()} {x.split(',')[0].strip()}"
-            if isinstance(x, str) and "," in x else x
-        )
-        p_match = pit[pit["name_flipped"].astype(str).str.lower() == str(opp_sp_name).lower()]
-    if p_match.empty:
+    p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
+    if p_idx is None:
         raise RuntimeError(f"No pitcher row for {opp_sp_name}")
-    PITCHER = row_to_pitcher_dict(p_match.iloc[0])
+    pdict = row_to_pitcher_dict(pit.loc[p_idx])
+    _fill_defaults(pdict, PITCHER_DEFAULTS)
+    PITCHER = pdict
     PITCHER["name"] = opp_sp_name
 
     # League baselines from base_rates.json if present, else sensible defaults.
