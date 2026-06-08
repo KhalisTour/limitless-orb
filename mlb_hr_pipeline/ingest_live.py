@@ -104,7 +104,7 @@ def find_id_col(df: pd.DataFrame, kind: str) -> str:
 
 
 def find_name_col(df: pd.DataFrame) -> str:
-    for c in ["player_name", "name", "full_name"]:
+    for c in ["player_name", "name", "full_name", "last_name, first_name"]:
         if c in df.columns:
             return c
         for col in df.columns:
