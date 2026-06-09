@@ -19,3 +19,6 @@ aion_terminal/.env
 
 # Editor
 .vscode/
+
+aion_terminal/
+logs/

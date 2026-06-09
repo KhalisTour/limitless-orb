@@ -75,18 +75,23 @@ def get_lineup(game_id):
 
 BATTER_FEATURES = [
     "xba", "xslg", "xobp", "xiso", "xwoba",
-    "avg_best_speed", "avg_hyper_speed",      # EV family
+    "exit_velocity_avg", "avg_best_speed", "avg_hyper_speed",   # EV family
     "barrel_batted_rate", "hard_hit_percent",
     "launch_angle_avg", "sweet_spot_percent",
     "k_percent", "bb_percent",
     "pull_percent", "straightaway_percent", "opposite_percent",
     "whiff_percent", "swing_percent",
+    "z_swing_percent", "oz_swing_percent",     # zone / chase swing rates
     "groundballs_percent", "flyballs_percent",
+    "weak_percent", "topped_percent", "under_percent",
+    "flare_burner_percent", "solid_contact_percent",
     "bat_speed", "attack_angle", "ideal_angle_rate",   # bat-tracking
 ]
 
-def get_batter_season(year=None, min_pa="q"):
-    """Pull season batter table as a DataFrame straight from Savant CSV."""
+def get_batter_season(year=None, min_pa=25):
+    """Pull season batter table as a DataFrame straight from Savant CSV.
+    Uses min_pa=25 (not qualified) to include platoon players and recent call-ups.
+    """
     year = year or dt.date.today().year
     sel = "%2C".join(BATTER_FEATURES)
     url = (f"https://baseballsavant.mlb.com/leaderboard/custom"
@@ -97,8 +102,10 @@ def get_batter_season(year=None, min_pa="q"):
     return pd.read_csv(io.StringIO(r.text))
 
 
-def get_pitcher_season(year=None, min_pa="q"):
-    """Pitcher equivalent. type=pitcher; arsenal usage comes from a separate tap."""
+def get_pitcher_season(year=None, min_pa=50):
+    """Pitcher equivalent. type=pitcher; arsenal usage comes from a separate tap.
+    Uses min_pa=50 (not qualified) to include spot starters and recent call-ups.
+    """
     year = year or dt.date.today().year
     feats = ["xba", "xslg", "xwoba", "k_percent", "bb_percent",
              "barrel_batted_rate", "hard_hit_percent", "whiff_percent",

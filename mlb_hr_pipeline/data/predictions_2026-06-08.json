@@ -1,0 +1,1579 @@
+{
+  "date": "2026-06-08",
+  "generated_at": "2026-06-09T00:04:31.205961Z",
+  "games": [
+    {
+      "game_id": 824829,
+      "away": "Seattle Mariners",
+      "home": "Baltimore Orioles",
+      "away_sp": "Emerson Hancock",
+      "home_sp": "Trey Gibson",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Trey Gibson"
+        },
+        "home": {
+          "per_hitter": {
+            "Taylor Ward": {
+              "p_per_pa": 0.026121570559888577,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.01817811386506426,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02276028628241983
+              },
+              "tto_mult": 1.16
+            },
+            "Gunnar Henderson": {
+              "p_per_pa": 0.03174784994632886,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.027301325011371474,
+                "matchup": 0.028827908334549696,
+                "linear": 0.029649303357817614
+              },
+              "tto_mult": 1.12
+            },
+            "Pete Alonso": {
+              "p_per_pa": 0.06750918557636996,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.061708457326706975,
+                "matchup": 0.028827908334549696,
+                "linear": 0.1043653074636898
+              },
+              "tto_mult": 1.08
+            },
+            "Colton Cowser": {
+              "p_per_pa": 0.032918368397837655,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.03824284213366914,
+                "matchup": 0.028827908334549696,
+                "linear": 0.023178503380388436
+              },
+              "tto_mult": 1.04
+            },
+            "Leody Taveras": {
+              "p_per_pa": 0.019490355901679534,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.017585109354029724,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01171473676800498
+              },
+              "tto_mult": 1.0
+            },
+            "Jackson Holliday": {
+              "p_per_pa": 0.03160304335815404,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.035812334386820265,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02735648153488008
+              },
+              "tto_mult": 1.0
+            },
+            "Coby Mayo": {
+              "p_per_pa": 0.033585963916776006,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.036264766698513314,
+                "matchup": 0.028827908334549696,
+                "linear": 0.034473785608320415
+              },
+              "tto_mult": 1.0
+            },
+            "Blaze Alexander": {
+              "p_per_pa": 0.02727546502547388,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.02745590492722877,
+                "matchup": 0.028827908334549696,
+                "linear": 0.025087741231424134
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.37,
+              "2": 0.239,
+              "3": 0.094,
+              "0": 0.263,
+              "5": 0.007,
+              "6": 0.002,
+              "4": 0.025
+            },
+            "p_at_least_one_hr": {
+              "Taylor Ward": 0.115,
+              "Gunnar Henderson": 0.142,
+              "Pete Alonso": 0.281,
+              "Colton Cowser": 0.16,
+              "Leody Taveras": 0.109,
+              "Jackson Holliday": 0.151,
+              "Coby Mayo": 0.132,
+              "Blaze Alexander": 0.102
+            },
+            "p_multi_hr": {
+              "Taylor Ward": 0.008,
+              "Gunnar Henderson": 0.007,
+              "Pete Alonso": 0.034,
+              "Colton Cowser": 0.01,
+              "Leody Taveras": 0.007,
+              "Jackson Holliday": 0.007,
+              "Coby Mayo": 0.006,
+              "Blaze Alexander": 0.004
+            },
+            "back_to_back_per_game": 0.04
+          },
+          "pitcher": "Emerson Hancock"
+        }
+      }
+    },
+    {
+      "game_id": 822972,
+      "away": "Boston Red Sox",
+      "home": "Tampa Bay Rays",
+      "away_sp": "Connelly Early",
+      "home_sp": "Ian Seymour",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Ian Seymour"
+        },
+        "home": {
+          "per_hitter": {
+            "Yandy D\u00edaz": {
+              "p_per_pa": 0.045900737924480746,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.03784158235445936,
+                "matchup": 0.028827908334549696,
+                "linear": 0.05557006839665402
+              },
+              "tto_mult": 1.16
+            },
+            "Austin Slater": {
+              "p_per_pa": 0.025979025452485222,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.025471400525022638,
+                "matchup": 0.028827908334549696,
+                "linear": 0.012340222812375382
+              },
+              "tto_mult": 1.12
+            },
+            "Junior Caminero": {
+              "p_per_pa": 0.05030220425623256,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.0490505418573962,
+                "matchup": 0.028827908334549696,
+                "linear": 0.06341999486349588
+              },
+              "tto_mult": 1.08
+            },
+            "Ryan Vilade": {
+              "p_per_pa": 0.03168421322019223,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.031064401287063545,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03135294622102685
+              },
+              "tto_mult": 1.04
+            },
+            "Jonathan Aranda": {
+              "p_per_pa": 0.047316658274670235,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.05474938076530535,
+                "matchup": 0.028827908334549696,
+                "linear": 0.056124257719671666
+              },
+              "tto_mult": 1.0
+            },
+            "Ben Williamson": {
+              "p_per_pa": 0.023898465842032115,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.021646696352560613,
+                "matchup": 0.028827908334549696,
+                "linear": 0.022036319932059716
+              },
+              "tto_mult": 1.0
+            },
+            "Taylor Walls": {
+              "p_per_pa": 0.021414269023849023,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.021429731591781256,
+                "matchup": 0.028827908334549696,
+                "linear": 0.012490069228730208
+              },
+              "tto_mult": 1.0
+            },
+            "Nick Fortes": {
+              "p_per_pa": 0.02387531251040725,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.02064360671868223,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02374926794654137
+              },
+              "tto_mult": 1.0
+            },
+            "Cedric Mullins": {
+              "p_per_pa": 0.028324091522439847,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.029152733099718116,
+                "matchup": 0.028827908334549696,
+                "linear": 0.026227956508807146
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.261,
+              "1": 0.385,
+              "2": 0.227,
+              "3": 0.09,
+              "5": 0.007,
+              "4": 0.028,
+              "6": 0.002
+            },
+            "p_at_least_one_hr": {
+              "Yandy D\u00edaz": 0.209,
+              "Austin Slater": 0.126,
+              "Junior Caminero": 0.191,
+              "Ryan Vilade": 0.133,
+              "Jonathan Aranda": 0.186,
+              "Ben Williamson": 0.095,
+              "Taylor Walls": 0.074,
+              "Nick Fortes": 0.077,
+              "Cedric Mullins": 0.107
+            },
+            "p_multi_hr": {
+              "Yandy D\u00edaz": 0.02,
+              "Austin Slater": 0.006,
+              "Junior Caminero": 0.007,
+              "Ryan Vilade": 0.01,
+              "Jonathan Aranda": 0.019,
+              "Ben Williamson": 0.001,
+              "Taylor Walls": 0.004,
+              "Nick Fortes": 0.001,
+              "Cedric Mullins": 0.002
+            },
+            "back_to_back_per_game": 0.046
+          },
+          "pitcher": "Connelly Early"
+        }
+      }
+    },
+    {
+      "game_id": 824427,
+      "away": "New York Yankees",
+      "home": "Cleveland Guardians",
+      "away_sp": "Will Warren",
+      "home_sp": "Gavin Williams",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "Trent Grisham": {
+              "p_per_pa": 0.04392123771008509,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.036275335132949754,
+                "matchup": 0.028827908334549696,
+                "linear": 0.0515634505871104
+              },
+              "tto_mult": 1.16
+            },
+            "Ben Rice": {
+              "p_per_pa": 0.05767388811675253,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.05532575959799649,
+                "matchup": 0.028827908334549696,
+                "linear": 0.07179831456769137
+              },
+              "tto_mult": 1.12
+            },
+            "Paul Goldschmidt": {
+              "p_per_pa": 0.04110832333386369,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.04197467886105647,
+                "matchup": 0.028827908334549696,
+                "linear": 0.042105137433319104
+              },
+              "tto_mult": 1.08
+            },
+            "Cody Bellinger": {
+              "p_per_pa": 0.038241533997699716,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.0371779684343296,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04556898988482292
+              },
+              "tto_mult": 1.04
+            },
+            "Jazz Chisholm Jr.": {
+              "p_per_pa": 0.02736967160514902,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02958533309249679,
+                "matchup": 0.028827908334549696,
+                "linear": 0.021631596852642185
+              },
+              "tto_mult": 1.0
+            },
+            "Spencer Jones": {
+              "p_per_pa": 0.022151803841948935,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.019947749675380728,
+                "matchup": 0.028827908334549696,
+                "linear": 0.018107775950650776
+              },
+              "tto_mult": 1.0
+            },
+            "Jos\u00e9 Caballero": {
+              "p_per_pa": 0.020142592294157657,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.018960132470589298,
+                "matchup": 0.028827908334549696,
+                "linear": 0.011848640728110246
+              },
+              "tto_mult": 1.0
+            },
+            "Ryan McMahon": {
+              "p_per_pa": 0.02886006621343844,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.030332522937317623,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02624823356512245
+              },
+              "tto_mult": 1.0
+            },
+            "J.C. Escarra": {
+              "p_per_pa": 0.02194265985257175,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.021126616362462602,
+                "matchup": 0.028827908334549696,
+                "linear": 0.015149239956394688
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.253,
+              "1": 0.369,
+              "2": 0.23,
+              "3": 0.108,
+              "5": 0.007,
+              "4": 0.03,
+              "6": 0.003
+            },
+            "p_at_least_one_hr": {
+              "Trent Grisham": 0.204,
+              "Ben Rice": 0.257,
+              "Paul Goldschmidt": 0.156,
+              "Cody Bellinger": 0.162,
+              "Jazz Chisholm Jr.": 0.122,
+              "Spencer Jones": 0.091,
+              "Jos\u00e9 Caballero": 0.069,
+              "Ryan McMahon": 0.098,
+              "J.C. Escarra": 0.078
+            },
+            "p_multi_hr": {
+              "Trent Grisham": 0.019,
+              "Ben Rice": 0.029,
+              "Paul Goldschmidt": 0.006,
+              "Cody Bellinger": 0.013,
+              "Jazz Chisholm Jr.": 0.009,
+              "Spencer Jones": 0.001,
+              "Jos\u00e9 Caballero": 0.003,
+              "Ryan McMahon": 0.004,
+              "J.C. Escarra": 0.001
+            },
+            "back_to_back_per_game": 0.043
+          },
+          "pitcher": "Gavin Williams"
+        },
+        "home": {
+          "per_hitter": {
+            "Travis Bazzana": {
+              "p_per_pa": 0.030927066992654188,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.02675467748872333,
+                "matchup": 0.028827908334549696,
+                "linear": 0.023893149114197668
+              },
+              "tto_mult": 1.16
+            },
+            "Jos\u00e9 Ram\u00edrez": {
+              "p_per_pa": 0.05760260859980735,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.05481399140039097,
+                "matchup": 0.028827908334549696,
+                "linear": 0.07246492762000574
+              },
+              "tto_mult": 1.12
+            },
+            "Chase DeLauter": {
+              "p_per_pa": 0.03799029004368669,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.034153315901095785,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04463531931614828
+              },
+              "tto_mult": 1.08
+            },
+            "Kyle Manzardo": {
+              "p_per_pa": 0.04818620360640825,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.05583384678025114,
+                "matchup": 0.028827908334549696,
+                "linear": 0.05023713812642768
+              },
+              "tto_mult": 1.04
+            },
+            "Daniel Schneemann": {
+              "p_per_pa": 0.02699659106325688,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02896915431940006,
+                "matchup": 0.028827908334549696,
+                "linear": 0.021248396476647786
+              },
+              "tto_mult": 1.0
+            },
+            "Angel Mart\u00ednez": {
+              "p_per_pa": 0.03165744094797288,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.03301798005167317,
+                "matchup": 0.028827908334549696,
+                "linear": 0.032603909697420226
+              },
+              "tto_mult": 1.0
+            },
+            "Steven Kwan": {
+              "p_per_pa": 0.016236149311654312,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.012036757304134947,
+                "matchup": 0.028827908334549696,
+                "linear": 0.008684944097714677
+              },
+              "tto_mult": 1.0
+            },
+            "Patrick Bailey": {
+              "p_per_pa": 0.028454402204810138,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.02878983749386059,
+                "matchup": 0.028827908334549696,
+                "linear": 0.027402411328831856
+              },
+              "tto_mult": 1.0
+            },
+            "Brayan Rocchio": {
+              "p_per_pa": 0.02459447964935946,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.024029415839669242,
+                "matchup": 0.028827908334549696,
+                "linear": 0.020531480084573592
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.375,
+              "0": 0.252,
+              "2": 0.234,
+              "3": 0.102,
+              "4": 0.026,
+              "5": 0.008,
+              "6": 0.003
+            },
+            "p_at_least_one_hr": {
+              "Travis Bazzana": 0.148,
+              "Jos\u00e9 Ram\u00edrez": 0.257,
+              "Chase DeLauter": 0.132,
+              "Kyle Manzardo": 0.196,
+              "Daniel Schneemann": 0.122,
+              "Angel Mart\u00ednez": 0.125,
+              "Steven Kwan": 0.059,
+              "Patrick Bailey": 0.098,
+              "Brayan Rocchio": 0.09
+            },
+            "p_multi_hr": {
+              "Travis Bazzana": 0.009,
+              "Jos\u00e9 Ram\u00edrez": 0.029,
+              "Chase DeLauter": 0.006,
+              "Kyle Manzardo": 0.019,
+              "Daniel Schneemann": 0.008,
+              "Angel Mart\u00ednez": 0.001,
+              "Steven Kwan": 0.003,
+              "Patrick Bailey": 0.004,
+              "Brayan Rocchio": 0.001
+            },
+            "back_to_back_per_game": 0.043
+          },
+          "pitcher": "Will Warren"
+        }
+      }
+    },
+    {
+      "game_id": 822806,
+      "away": "Philadelphia Phillies",
+      "home": "Toronto Blue Jays",
+      "away_sp": "Cristopher S\u00e1nchez",
+      "home_sp": "Patrick Corbin",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "Kyle Schwarber": {
+              "p_per_pa": 0.08185817987866043,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.08058944832858345,
+                "matchup": 0.028827908334549696,
+                "linear": 0.1026150887955744
+              },
+              "tto_mult": 1.16
+            },
+            "Trea Turner": {
+              "p_per_pa": 0.02449170380475536,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.020992934654807734,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01508959835115556
+              },
+              "tto_mult": 1.12
+            },
+            "Bryce Harper": {
+              "p_per_pa": 0.048991983724003096,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.053527035792968525,
+                "matchup": 0.028827908334549696,
+                "linear": 0.05050963714157884
+              },
+              "tto_mult": 1.08
+            },
+            "Brandon Marsh": {
+              "p_per_pa": 0.03338615247606808,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.032025191453296235,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03616944413671512
+              },
+              "tto_mult": 1.04
+            },
+            "Alec Bohm": {
+              "p_per_pa": 0.021479852802386602,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.017299698728329562,
+                "matchup": 0.028827908334549696,
+                "linear": 0.020186463497093552
+              },
+              "tto_mult": 1.0
+            },
+            "J.T. Realmuto": {
+              "p_per_pa": 0.022878458137509106,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.021426466653020868,
+                "matchup": 0.028827908334549696,
+                "linear": 0.018352702573139222
+              },
+              "tto_mult": 1.0
+            },
+            "Bryson Stott": {
+              "p_per_pa": 0.026297293379304518,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.024592430154747283,
+                "matchup": 0.028827908334549696,
+                "linear": 0.026329309237213334
+              },
+              "tto_mult": 1.0
+            },
+            "Adolis Garc\u00eda": {
+              "p_per_pa": 0.02846002150826589,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.029724861903830568,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02574184460470892
+              },
+              "tto_mult": 1.0
+            },
+            "Edmundo Sosa": {
+              "p_per_pa": 0.025825132746648726,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.02803173755174472,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01824991339199474
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.232,
+              "1": 0.38,
+              "2": 0.231,
+              "3": 0.115,
+              "4": 0.028,
+              "5": 0.009,
+              "6": 0.005
+            },
+            "p_at_least_one_hr": {
+              "Kyle Schwarber": 0.346,
+              "Trea Turner": 0.119,
+              "Bryce Harper": 0.185,
+              "Brandon Marsh": 0.138,
+              "Alec Bohm": 0.094,
+              "J.T. Realmuto": 0.091,
+              "Bryson Stott": 0.097,
+              "Adolis Garc\u00eda": 0.098,
+              "Edmundo Sosa": 0.101
+            },
+            "p_multi_hr": {
+              "Kyle Schwarber": 0.058,
+              "Trea Turner": 0.005,
+              "Bryce Harper": 0.007,
+              "Brandon Marsh": 0.01,
+              "Alec Bohm": 0.006,
+              "J.T. Realmuto": 0.001,
+              "Bryson Stott": 0.007,
+              "Adolis Garc\u00eda": 0.004,
+              "Edmundo Sosa": 0.001
+            },
+            "back_to_back_per_game": 0.042
+          },
+          "pitcher": "Patrick Corbin"
+        },
+        "home": {
+          "per_hitter": {
+            "George Springer": {
+              "p_per_pa": 0.03938873885253182,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.03656144707694665,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03541914268255991
+              },
+              "tto_mult": 1.16
+            },
+            "Nathan Lukes": {
+              "p_per_pa": 0.028685069210005017,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.02454202835580121,
+                "matchup": 0.028827908334549696,
+                "linear": 0.023677534708116094
+              },
+              "tto_mult": 1.12
+            },
+            "Vladimir Guerrero Jr.": {
+              "p_per_pa": 0.03909591967912195,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.03470564867703356,
+                "matchup": 0.028827908334549696,
+                "linear": 0.047736044895146434
+              },
+              "tto_mult": 1.08
+            },
+            "Kazuma Okamoto": {
+              "p_per_pa": 0.06413530175051786,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.07600844726635739,
+                "matchup": 0.028827908334549696,
+                "linear": 0.07526554242108886
+              },
+              "tto_mult": 1.04
+            },
+            "Ernie Clement": {
+              "p_per_pa": 0.025816395608181688,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02467683260614518,
+                "matchup": 0.028827908334549696,
+                "linear": 0.024253793740205806
+              },
+              "tto_mult": 1.0
+            },
+            "Andr\u00e9s Gim\u00e9nez": {
+              "p_per_pa": 0.0221664913726476,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.021327989772685817,
+                "matchup": 0.028827908334549696,
+                "linear": 0.015682093898296296
+              },
+              "tto_mult": 1.0
+            },
+            "Myles Straw": {
+              "p_per_pa": 0.028293323296210145,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.02796843716232109,
+                "matchup": 0.028827908334549696,
+                "linear": 0.028236616291203016
+              },
+              "tto_mult": 1.0
+            },
+            "Tyler Heineman": {
+              "p_per_pa": 0.01797161267018987,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.01544101817763869,
+                "matchup": 0.028827908334549696,
+                "linear": 0.009499127959550196
+              },
+              "tto_mult": 1.0
+            },
+            "Yohendrick Pi\u00f1ango": {
+              "p_per_pa": 0.0378706761009067,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.04120737517868624,
+                "matchup": 0.028827908334549696,
+                "linear": 0.042715939080531964
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "2": 0.235,
+              "1": 0.369,
+              "3": 0.101,
+              "0": 0.254,
+              "4": 0.028,
+              "5": 0.011,
+              "6": 0.002
+            },
+            "p_at_least_one_hr": {
+              "George Springer": 0.185,
+              "Nathan Lukes": 0.145,
+              "Vladimir Guerrero Jr.": 0.145,
+              "Kazuma Okamoto": 0.253,
+              "Ernie Clement": 0.113,
+              "Andr\u00e9s Gim\u00e9nez": 0.091,
+              "Myles Straw": 0.103,
+              "Tyler Heineman": 0.062,
+              "Yohendrick Pi\u00f1ango": 0.137
+            },
+            "p_multi_hr": {
+              "George Springer": 0.017,
+              "Nathan Lukes": 0.008,
+              "Vladimir Guerrero Jr.": 0.006,
+              "Kazuma Okamoto": 0.036,
+              "Ernie Clement": 0.008,
+              "Andr\u00e9s Gim\u00e9nez": 0.001,
+              "Myles Straw": 0.007,
+              "Tyler Heineman": 0.0,
+              "Yohendrick Pi\u00f1ango": 0.004
+            },
+            "back_to_back_per_game": 0.047
+          },
+          "pitcher": "Cristopher S\u00e1nchez"
+        }
+      }
+    },
+    {
+      "game_id": 824025,
+      "away": "Houston Astros",
+      "home": "Los Angeles Angels",
+      "away_sp": "Spencer Arrighetti",
+      "home_sp": "Grayson Rodriguez",
+      "sides": {
+        "away": {
+          "error": "No pitcher row for Grayson Rodriguez"
+        },
+        "home": {
+          "per_hitter": {
+            "Zach Neto": {
+              "p_per_pa": 0.03754752007042496,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.03655858812628074,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02907525851063141
+              },
+              "tto_mult": 1.16
+            },
+            "Mike Trout": {
+              "p_per_pa": 0.06937846054770479,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.06340162482980537,
+                "matchup": 0.028827908334549696,
+                "linear": 0.09906380154669346
+              },
+              "tto_mult": 1.12
+            },
+            "Wade Meckler": {
+              "p_per_pa": 0.03039511400876474,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.030479580706126854,
+                "matchup": 0.028827908334549696,
+                "linear": 0.023117761056270343
+              },
+              "tto_mult": 1.08
+            },
+            "Jo Adell": {
+              "p_per_pa": 0.035626455652686115,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.03580093576801235,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03798965504952625
+              },
+              "tto_mult": 1.04
+            },
+            "Nick Madrigal": {
+              "p_per_pa": 0.018854685729751162,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.013971308510827764,
+                "matchup": 0.028827908334549696,
+                "linear": 0.015676897598055035
+              },
+              "tto_mult": 1.0
+            },
+            "Donovan Walton": {
+              "p_per_pa": 0.02539065788793824,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.026075401015151902,
+                "matchup": 0.028827908334549696,
+                "linear": 0.0200334197230199
+              },
+              "tto_mult": 1.0
+            },
+            "Logan O'Hoppe": {
+              "p_per_pa": 0.025368711425178495,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.026120160330212104,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01986506710487257
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.361,
+              "0": 0.248,
+              "2": 0.238,
+              "3": 0.113,
+              "4": 0.028,
+              "5": 0.011,
+              "6": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Zach Neto": 0.214,
+              "Mike Trout": 0.354,
+              "Wade Meckler": 0.156,
+              "Jo Adell": 0.154,
+              "Nick Madrigal": 0.102,
+              "Donovan Walton": 0.126,
+              "Logan O'Hoppe": 0.13
+            },
+            "p_multi_hr": {
+              "Zach Neto": 0.018,
+              "Mike Trout": 0.05,
+              "Wade Meckler": 0.011,
+              "Jo Adell": 0.007,
+              "Nick Madrigal": 0.006,
+              "Donovan Walton": 0.008,
+              "Logan O'Hoppe": 0.006
+            },
+            "back_to_back_per_game": 0.05
+          },
+          "pitcher": "Spencer Arrighetti"
+        }
+      }
+    },
+    {
+      "game_id": 823289,
+      "away": "Cincinnati Reds",
+      "home": "San Diego Padres",
+      "away_sp": "Andrew Abbott",
+      "home_sp": "Walker Buehler",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "Blake Dunn": {
+              "p_per_pa": 0.027091518608119876,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.02178272211215588,
+                "matchup": 0.028827908334549696,
+                "linear": 0.019616639879831747
+              },
+              "tto_mult": 1.16
+            },
+            "JJ Bleday": {
+              "p_per_pa": 0.04866848646763161,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.04654612434959062,
+                "matchup": 0.028827908334549696,
+                "linear": 0.055439509267961574
+              },
+              "tto_mult": 1.12
+            },
+            "Sal Stewart": {
+              "p_per_pa": 0.04275505273348442,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.041809661987030206,
+                "matchup": 0.028827908334549696,
+                "linear": 0.048501165582939404
+              },
+              "tto_mult": 1.08
+            },
+            "Nathaniel Lowe": {
+              "p_per_pa": 0.040036407491990444,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.03920820629672717,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04881792132593316
+              },
+              "tto_mult": 1.04
+            },
+            "Eugenio Su\u00e1rez": {
+              "p_per_pa": 0.026925716287170626,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.03163000401987594,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01617536791144618
+              },
+              "tto_mult": 1.0
+            },
+            "Noelvi Marte": {
+              "p_per_pa": 0.01706643588723688,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.013278237674296383,
+                "matchup": 0.028827908334549696,
+                "linear": 0.009771425733754398
+              },
+              "tto_mult": 1.0
+            },
+            "Matt McLain": {
+              "p_per_pa": 0.028896523471452308,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.029108778071689233,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02859680335530898
+              },
+              "tto_mult": 1.0
+            },
+            "Tyler Stephenson": {
+              "p_per_pa": 0.03483012206043261,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.03626239424321246,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03945468860248838
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.274,
+              "1": 0.361,
+              "2": 0.238,
+              "3": 0.097,
+              "5": 0.007,
+              "4": 0.022,
+              "6": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Blake Dunn": 0.12,
+              "JJ Bleday": 0.204,
+              "Sal Stewart": 0.175,
+              "Nathaniel Lowe": 0.189,
+              "Eugenio Su\u00e1rez": 0.148,
+              "Noelvi Marte": 0.08,
+              "Matt McLain": 0.124,
+              "Tyler Stephenson": 0.129
+            },
+            "p_multi_hr": {
+              "Blake Dunn": 0.008,
+              "JJ Bleday": 0.021,
+              "Sal Stewart": 0.018,
+              "Nathaniel Lowe": 0.016,
+              "Eugenio Su\u00e1rez": 0.011,
+              "Noelvi Marte": 0.001,
+              "Matt McLain": 0.004,
+              "Tyler Stephenson": 0.006
+            },
+            "back_to_back_per_game": 0.039
+          },
+          "pitcher": "Walker Buehler"
+        },
+        "home": {
+          "per_hitter": {
+            "Fernando Tatis Jr.": {
+              "p_per_pa": 0.04081119769138591,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.036453225937410835,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04051897121253162
+              },
+              "tto_mult": 1.16
+            },
+            "Jackson Merrill": {
+              "p_per_pa": 0.04391994338516119,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.04623620863924957,
+                "matchup": 0.028827908334549696,
+                "linear": 0.039038275109181064
+              },
+              "tto_mult": 1.12
+            },
+            "Ty France": {
+              "p_per_pa": 0.04816681208288507,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.04960725144001384,
+                "matchup": 0.028827908334549696,
+                "linear": 0.054509057713497136
+              },
+              "tto_mult": 1.08
+            },
+            "Manny Machado": {
+              "p_per_pa": 0.03077640772972639,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.030526340384120897,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02882989626760886
+              },
+              "tto_mult": 1.04
+            },
+            "Xander Bogaerts": {
+              "p_per_pa": 0.026342373612722684,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02536841333748764,
+                "matchup": 0.028827908334549696,
+                "linear": 0.02511286044195332
+              },
+              "tto_mult": 1.0
+            },
+            "Gavin Sheets": {
+              "p_per_pa": 0.036047939005052015,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.03734856443044805,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04237085004394193
+              },
+              "tto_mult": 1.0
+            },
+            "Samad Taylor": {
+              "p_per_pa": 0.024411161016308237,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.021462145440513402,
+                "matchup": 0.028827908334549696,
+                "linear": 0.024419292270849182
+              },
+              "tto_mult": 1.0
+            },
+            "Freddy Fermin": {
+              "p_per_pa": 0.01681218939337506,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.014172625424778327,
+                "matchup": 0.028827908334549696,
+                "linear": 0.007144541807439621
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.384,
+              "2": 0.231,
+              "3": 0.103,
+              "0": 0.25,
+              "4": 0.023,
+              "5": 0.007,
+              "6": 0.002
+            },
+            "p_at_least_one_hr": {
+              "Fernando Tatis Jr.": 0.18,
+              "Jackson Merrill": 0.188,
+              "Ty France": 0.2,
+              "Manny Machado": 0.155,
+              "Xander Bogaerts": 0.145,
+              "Gavin Sheets": 0.18,
+              "Samad Taylor": 0.102,
+              "Freddy Fermin": 0.059
+            },
+            "p_multi_hr": {
+              "Fernando Tatis Jr.": 0.014,
+              "Jackson Merrill": 0.016,
+              "Ty France": 0.021,
+              "Manny Machado": 0.009,
+              "Xander Bogaerts": 0.011,
+              "Gavin Sheets": 0.008,
+              "Samad Taylor": 0.002,
+              "Freddy Fermin": 0.001
+            },
+            "back_to_back_per_game": 0.038
+          },
+          "pitcher": "Andrew Abbott"
+        }
+      }
+    },
+    {
+      "game_id": 823218,
+      "away": "Washington Nationals",
+      "home": "San Francisco Giants",
+      "away_sp": "Richard Lovelady",
+      "home_sp": "Logan Webb",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "James Wood": {
+              "p_per_pa": 0.0712444688872824,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.0746352554634409,
+                "matchup": 0.028827908334549696,
+                "linear": 0.07673363253428614
+              },
+              "tto_mult": 1.16
+            },
+            "Luis Garc\u00eda Jr.": {
+              "p_per_pa": 0.03311264362173906,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.02721743745057703,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03467456409371263
+              },
+              "tto_mult": 1.12
+            },
+            "Curtis Mead": {
+              "p_per_pa": 0.0371825845302711,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.034610896485856565,
+                "matchup": 0.028827908334549696,
+                "linear": 0.04082017236203967
+              },
+              "tto_mult": 1.08
+            },
+            "CJ Abrams": {
+              "p_per_pa": 0.03722393855087725,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.04154831767144759,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03378853261638563
+              },
+              "tto_mult": 1.04
+            },
+            "Dylan Crews": {
+              "p_per_pa": 0.032326271983228835,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.03362954341047427,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03417841979260205
+              },
+              "tto_mult": 1.0
+            },
+            "Daylen Lile": {
+              "p_per_pa": 0.030235002402599145,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.032970765423727975,
+                "matchup": 0.028827908334549696,
+                "linear": 0.026999141846226603
+              },
+              "tto_mult": 1.0
+            },
+            "Keibert Ruiz": {
+              "p_per_pa": 0.027309750120747753,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.024465724462892142,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03060720644832548
+              },
+              "tto_mult": 1.0
+            },
+            "Jorbit Vivas": {
+              "p_per_pa": 0.02049287581780307,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.018388673238306428,
+                "matchup": 0.028827908334549696,
+                "linear": 0.014278401440801076
+              },
+              "tto_mult": 1.0
+            },
+            "Nasim Nu\u00f1ez": {
+              "p_per_pa": 0.01771509206672059,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.015210914315370645,
+                "matchup": 0.028827908334549696,
+                "linear": 0.008887232497755564
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.242,
+              "1": 0.389,
+              "2": 0.217,
+              "4": 0.033,
+              "3": 0.107,
+              "5": 0.009,
+              "6": 0.003
+            },
+            "p_at_least_one_hr": {
+              "James Wood": 0.306,
+              "Luis Garc\u00eda Jr.": 0.155,
+              "Curtis Mead": 0.13,
+              "CJ Abrams": 0.158,
+              "Dylan Crews": 0.134,
+              "Daylen Lile": 0.119,
+              "Keibert Ruiz": 0.102,
+              "Jorbit Vivas": 0.067,
+              "Nasim Nu\u00f1ez": 0.066
+            },
+            "p_multi_hr": {
+              "James Wood": 0.05,
+              "Luis Garc\u00eda Jr.": 0.01,
+              "Curtis Mead": 0.006,
+              "CJ Abrams": 0.013,
+              "Dylan Crews": 0.012,
+              "Daylen Lile": 0.001,
+              "Keibert Ruiz": 0.007,
+              "Jorbit Vivas": 0.0,
+              "Nasim Nu\u00f1ez": 0.001
+            },
+            "back_to_back_per_game": 0.046
+          },
+          "pitcher": "Logan Webb"
+        },
+        "home": {
+          "error": "No pitcher row for Richard Lovelady"
+        }
+      }
+    },
+    {
+      "game_id": 824998,
+      "away": "Milwaukee Brewers",
+      "home": "Athletics",
+      "away_sp": "Kyle Harrison",
+      "home_sp": "Jeffrey Springs",
+      "sides": {
+        "away": {
+          "per_hitter": {
+            "Christian Yelich": {
+              "p_per_pa": 0.027279592040294516,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.024960632019425725,
+                "matchup": 0.028827908334549696,
+                "linear": 0.014544931123210345
+              },
+              "tto_mult": 1.16
+            },
+            "Jackson Chourio": {
+              "p_per_pa": 0.060099122271869136,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.06060205194610868,
+                "matchup": 0.028827908334549696,
+                "linear": 0.07096253889507727
+              },
+              "tto_mult": 1.12
+            },
+            "Brice Turang": {
+              "p_per_pa": 0.03650110644237791,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.03526575910580062,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03711742672801745
+              },
+              "tto_mult": 1.08
+            },
+            "William Contreras": {
+              "p_per_pa": 0.032510497678079314,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.03208440650603234,
+                "matchup": 0.028827908334549696,
+                "linear": 0.03269495397260261
+              },
+              "tto_mult": 1.04
+            },
+            "Jake Bauers": {
+              "p_per_pa": 0.04523548102049909,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.048263991381578004,
+                "matchup": 0.028827908334549696,
+                "linear": 0.05947324959369633
+              },
+              "tto_mult": 1.0
+            },
+            "Andrew Vaughn": {
+              "p_per_pa": 0.02570795362940532,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.02394532959787257,
+                "matchup": 0.028827908334549696,
+                "linear": 0.025136731239991026
+              },
+              "tto_mult": 1.0
+            },
+            "Garrett Mitchell": {
+              "p_per_pa": 0.03591672089987074,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.040667886650606555,
+                "matchup": 0.028827908334549696,
+                "linear": 0.0358711976269315
+              },
+              "tto_mult": 1.0
+            },
+            "Luis Rengifo": {
+              "p_per_pa": 0.020718517434127857,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.017948581939077005,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01597313224471317
+              },
+              "tto_mult": 1.0
+            },
+            "Joey Ortiz": {
+              "p_per_pa": 0.018639165695406076,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.015413810360387352,
+                "matchup": 0.028827908334549696,
+                "linear": 0.012218314131467407
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.261,
+              "2": 0.213,
+              "3": 0.1,
+              "1": 0.385,
+              "5": 0.006,
+              "4": 0.031,
+              "7": 0.001,
+              "6": 0.003
+            },
+            "p_at_least_one_hr": {
+              "Christian Yelich": 0.126,
+              "Jackson Chourio": 0.267,
+              "Brice Turang": 0.128,
+              "William Contreras": 0.135,
+              "Jake Bauers": 0.18,
+              "Andrew Vaughn": 0.103,
+              "Garrett Mitchell": 0.127,
+              "Luis Rengifo": 0.068,
+              "Joey Ortiz": 0.07
+            },
+            "p_multi_hr": {
+              "Christian Yelich": 0.006,
+              "Jackson Chourio": 0.032,
+              "Brice Turang": 0.006,
+              "William Contreras": 0.01,
+              "Jake Bauers": 0.018,
+              "Andrew Vaughn": 0.001,
+              "Garrett Mitchell": 0.008,
+              "Luis Rengifo": 0.0,
+              "Joey Ortiz": 0.001
+            },
+            "back_to_back_per_game": 0.043
+          },
+          "pitcher": "Jeffrey Springs"
+        },
+        "home": {
+          "per_hitter": {
+            "Shea Langeliers": {
+              "p_per_pa": 0.05004799978721377,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.044573998036068714,
+                "matchup": 0.028827908334549696,
+                "linear": 0.05775262314469868
+              },
+              "tto_mult": 1.16
+            },
+            "Nick Kurtz": {
+              "p_per_pa": 0.054297079114319226,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.049677614243550876,
+                "matchup": 0.028827908334549696,
+                "linear": 0.06990494405414598
+              },
+              "tto_mult": 1.12
+            },
+            "Colby Thomas": {
+              "p_per_pa": 0.036097068927739,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.03807009607637791,
+                "matchup": 0.028827908334549696,
+                "linear": 0.030573184941574922
+              },
+              "tto_mult": 1.08
+            },
+            "Brent Rooker": {
+              "p_per_pa": 0.035903105349801595,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.04208138344058635,
+                "matchup": 0.028827908334549696,
+                "linear": 0.027748886535491065
+              },
+              "tto_mult": 1.04
+            },
+            "Max Muncy": {
+              "p_per_pa": 0.028791841190048455,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02918885209207526,
+                "matchup": 0.028827908334549696,
+                "linear": 0.028033940992998732
+              },
+              "tto_mult": 1.0
+            },
+            "Tyler Soderstrom": {
+              "p_per_pa": 0.026780759237991673,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.02405710313217629,
+                "matchup": 0.028827908334549696,
+                "linear": 0.029226761312589736
+              },
+              "tto_mult": 1.0
+            },
+            "Henry Bolte": {
+              "p_per_pa": 0.01710172511827866,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.013132669954515282,
+                "matchup": 0.028827908334549696,
+                "linear": 0.010174604553527498
+              },
+              "tto_mult": 1.0
+            },
+            "Zack Gelof": {
+              "p_per_pa": 0.022751064394744537,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.022436809127187627,
+                "matchup": 0.028827908334549696,
+                "linear": 0.01602451114858081
+              },
+              "tto_mult": 1.0
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.372,
+              "0": 0.265,
+              "2": 0.224,
+              "3": 0.1,
+              "4": 0.031,
+              "5": 0.006,
+              "6": 0.002
+            },
+            "p_at_least_one_hr": {
+              "Shea Langeliers": 0.203,
+              "Nick Kurtz": 0.227,
+              "Colby Thomas": 0.147,
+              "Brent Rooker": 0.173,
+              "Max Muncy": 0.158,
+              "Tyler Soderstrom": 0.128,
+              "Henry Bolte": 0.073,
+              "Zack Gelof": 0.08
+            },
+            "p_multi_hr": {
+              "Shea Langeliers": 0.018,
+              "Nick Kurtz": 0.026,
+              "Colby Thomas": 0.014,
+              "Brent Rooker": 0.013,
+              "Max Muncy": 0.015,
+              "Tyler Soderstrom": 0.005,
+              "Henry Bolte": 0.002,
+              "Zack Gelof": 0.001
+            },
+            "back_to_back_per_game": 0.051
+          },
+          "pitcher": "Kyle Harrison"
+        }
+      }
+    }
+  ]
+}
