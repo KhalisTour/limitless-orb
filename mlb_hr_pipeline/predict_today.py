@@ -26,6 +26,39 @@ DATA_DIR = REPO / "data"
 MODELS_OUT = REPO / "models_out"
 
 
+def _load_park_factors():
+    p = DATA_DIR / "park_factors.json"
+    if p.exists():
+        return json.loads(p.read_text())
+    return {}
+
+
+def _load_platoon_factors():
+    p = DATA_DIR / "platoon_factors.json"
+    if p.exists():
+        return json.loads(p.read_text())
+    return {}
+
+
+TEAM_NAME_TO_ABBREV = {
+    "Arizona Diamondbacks": "AZ", "Atlanta Braves": "ATL",
+    "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
+    "Chicago Cubs": "CHC", "Chicago White Sox": "CWS",
+    "Cincinnati Reds": "CIN", "Cleveland Guardians": "CLE",
+    "Colorado Rockies": "COL", "Detroit Tigers": "DET",
+    "Houston Astros": "HOU", "Kansas City Royals": "KC",
+    "Los Angeles Angels": "LAA", "Los Angeles Dodgers": "LAD",
+    "Miami Marlins": "MIA", "Milwaukee Brewers": "MIL",
+    "Minnesota Twins": "MIN", "New York Mets": "NYM",
+    "New York Yankees": "NYY", "Oakland Athletics": "OAK",
+    "Philadelphia Phillies": "PHI", "Pittsburgh Pirates": "PIT",
+    "San Diego Padres": "SD", "San Francisco Giants": "SF",
+    "Seattle Mariners": "SEA", "St. Louis Cardinals": "STL",
+    "Tampa Bay Rays": "TB", "Texas Rangers": "TEX",
+    "Toronto Blue Jays": "TOR", "Washington Nationals": "WSH",
+}
+
+
 def _apply_fitted_coefs():
     """If fit_model.py has written coefficients, push them into models.M3."""
     p = MODELS_OUT / "fitted_coefficients.json"
@@ -55,15 +88,27 @@ def _inject_state(state: dict):
     sim.LINEUP_ORDER = state["LINEUP_ORDER"]
 
 
-def predict_side(state: dict, n_sims: int = 1000) -> dict:
+def predict_side(state: dict, n_sims: int = 1000,
+                  park_factor: float = 1.0, platoon_factors: dict = None,
+                  pitcher_throws: str = None) -> dict:
     _inject_state(state)
     import models, sim
+    pf_map = platoon_factors or {}
     per_hitter = {}
     for name in state["LINEUP_ORDER"]:
         try:
-            r = models.model5_ensemble(name, state["LINEUP_ORDER"])
+            h = state["HITTERS"].get(name, {})
+            stand = h.get("stand", "R") if isinstance(h.get("stand"), str) else "R"
+            pt = pitcher_throws or "R"
+            plat_key = f"{stand}_vs_{pt}"
+            plat_f = pf_map.get(plat_key, 1.0)
+            r = models.model5_ensemble(name, state["LINEUP_ORDER"],
+                                       park_factor=park_factor,
+                                       platoon_factor=plat_f)
             per_hitter[name] = {"p_per_pa": r["p_per_pa"], "exp_pa": r["exp_pa"],
-                                "components": r["components"], "tto_mult": r["tto_mult"]}
+                                "components": r["components"], "tto_mult": r["tto_mult"],
+                                "park_factor": r["park_factor"],
+                                "platoon_factor": r["platoon_factor"]}
         except Exception as e:
             per_hitter[name] = {"error": str(e)}
     sim_summary = None
@@ -94,18 +139,55 @@ def main(date: str = None):
 
     _apply_fitted_coefs()
 
+    park_factors = _load_park_factors()
+    platoon_factors_map = _load_platoon_factors()
+
     out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z", "games": []}
     for g in slate:
+        home_team_full = g.get("home", "")
+        home_abbrev = TEAM_NAME_TO_ABBREV.get(home_team_full, "")
+        pf = park_factors.get(home_abbrev, 1.0)
+
         game_rec = {"game_id": g["game_id"], "away": g["away"], "home": g["home"],
                     "away_sp": g.get("away_sp"), "home_sp": g.get("home_sp"),
-                    "sides": {}}
+                    "park_factor": pf, "sides": {}}
         for side in ("away", "home"):
             try:
+                opp = "home" if side == "away" else "away"
+                opp_sp = g.get(f"{opp}_sp", "")
                 state = ingest_live.build_inputs_for_game(g, snap, side=side)
-                game_rec["sides"][side] = predict_side(state)
+                p_throws = state["PITCHER"].get("p_throws", "R")
+                if not isinstance(p_throws, str) or p_throws not in ("L", "R"):
+                    p_throws = "R"
+                game_rec["sides"][side] = predict_side(
+                    state, park_factor=pf,
+                    platoon_factors=platoon_factors_map,
+                    pitcher_throws=p_throws)
             except Exception as e:
                 game_rec["sides"][side] = {"error": str(e)}
         out["games"].append(game_rec)
+
+    try:
+        from explain import explain_prediction
+        for g in out["games"]:
+            home_abbrev_g = TEAM_NAME_TO_ABBREV.get(g.get("home", ""), "")
+            pf_g = park_factors.get(home_abbrev_g, 1.0)
+            for side in ("away", "home"):
+                sb = g["sides"].get(side, {})
+                if not isinstance(sb, dict) or sb.get("error"):
+                    continue
+                for hitter, entry in sb.get("per_hitter", {}).items():
+                    if "error" in entry:
+                        continue
+                    try:
+                        plat_f = entry.get("platoon_factor", 1.0)
+                        ex = explain_prediction(hitter, list(sb["per_hitter"].keys()),
+                                                park_factor=pf_g, platoon_factor=plat_f)
+                        entry["explanation"] = ex
+                    except Exception:
+                        pass
+    except ImportError:
+        print("[predict] explain.py not available, skipping explanations")
 
     out_path = DATA_DIR / f"predictions_{date}.json"
     out_path.write_text(json.dumps(out, indent=2, default=str))
