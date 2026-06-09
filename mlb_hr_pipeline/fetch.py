@@ -88,8 +88,10 @@ BATTER_FEATURES = [
     "bat_speed", "attack_angle", "ideal_angle_rate",   # bat-tracking
 ]
 
-def get_batter_season(year=None, min_pa="q"):
-    """Pull season batter table as a DataFrame straight from Savant CSV."""
+def get_batter_season(year=None, min_pa=25):
+    """Pull season batter table as a DataFrame straight from Savant CSV.
+    Uses min_pa=25 (not qualified) to include platoon players and recent call-ups.
+    """
     year = year or dt.date.today().year
     sel = "%2C".join(BATTER_FEATURES)
     url = (f"https://baseballsavant.mlb.com/leaderboard/custom"
