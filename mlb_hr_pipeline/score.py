@@ -80,12 +80,28 @@ def score_for_date(date: str):
     preds = json.loads(preds_path.read_text())
 
     actuals = pull_actuals(date)
-    actual_lookup = {(int(r.game_pk), r.batter_name_norm): int(r.hr_count)
-                     for r in actuals.itertuples()}
 
+    # Debug: show what Statcast returned
+    if actuals.empty:
+        print(f"[score] WARNING: Statcast returned NO home runs for {date}")
+    else:
+        print(f"[score] Statcast HRs: {len(actuals)} rows")
+        for _, r in actuals.iterrows():
+            print(f"  game_pk={r['game_pk']}  {r['batter_name']}  -> norm='{r['batter_name_norm']}'")
+
+    # Build lookup by (game_pk, normalized_name)
+    actual_by_game = {(int(r.game_pk), r.batter_name_norm): int(r.hr_count)
+                      for r in actuals.itertuples()}
+    # Also build name-only lookup as fallback (handles game_pk/game_id mismatch)
+    actual_by_name = {}
+    for r in actuals.itertuples():
+        actual_by_name[r.batter_name_norm] = actual_by_name.get(r.batter_name_norm, 0) + int(r.hr_count)
+
+    pred_game_ids = set()
     rows = []
     for g in preds.get("games", []):
         gid = g["game_id"]
+        pred_game_ids.add(int(gid))
         for side in ("away", "home"):
             sb = g["sides"].get(side, {})
             if not isinstance(sb, dict) or sb.get("error"):
@@ -97,7 +113,10 @@ def score_for_date(date: str):
                 p_hr = _pred_p_hr_in_game(entry, sim_block, hitter)
                 if p_hr is None:
                     continue
-                actual = actual_lookup.get((int(gid), _normalize_name(hitter)), 0)
+                hn = _normalize_name(hitter)
+                actual = actual_by_game.get((int(gid), hn), None)
+                if actual is None:
+                    actual = actual_by_name.get(hn, 0)
                 rows.append(dict(
                     game_date=date, game_id=gid, side=side,
                     hitter=hitter, opp_pitcher=sb.get("pitcher"),
@@ -106,6 +125,13 @@ def score_for_date(date: str):
                     actual_hr=int(actual >= 1), actual_hr_count=actual,
                     residual=int(actual >= 1) - p_hr,
                 ))
+
+    # Debug: check for game_id overlap
+    actual_game_pks = set(int(r.game_pk) for r in actuals.itertuples()) if not actuals.empty else set()
+    overlap = pred_game_ids & actual_game_pks
+    print(f"[score] pred game_ids: {sorted(pred_game_ids)}")
+    print(f"[score] actual game_pks: {sorted(actual_game_pks)}")
+    print(f"[score] overlap: {len(overlap)} games  matched_hrs: {sum(1 for r in rows if r['actual_hr'] > 0)}")
 
     if not rows:
         print(f"[score] no scoreable predictions for {date}")
