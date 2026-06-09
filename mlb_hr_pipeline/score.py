@@ -13,8 +13,10 @@ in Game Y?"). If sim wasn't run, fall back to 1 - (1 - p_per_pa) ** exp_pa.
 
 import json
 import math
+import re
 import sys
 import traceback
+import unicodedata
 import datetime as dt
 from pathlib import Path
 
@@ -40,6 +42,20 @@ def _pred_p_hr_in_game(per_hitter_entry, sim_block, hitter):
     return 1.0 - (1.0 - float(ppa)) ** float(exp_pa)
 
 
+def _normalize_name(name: str) -> str:
+    if not isinstance(name, str):
+        return ""
+    name = unicodedata.normalize("NFKD", name)
+    name = "".join(c for c in name if not unicodedata.combining(c))
+    name = re.sub(r"\b(jr|sr|ii|iii|iv)\b\.?", "", name, flags=re.IGNORECASE)
+    name = re.sub(r"[.\-']", " ", name)
+    parts = name.lower().split()
+    if len(parts) >= 2 and "," in name:
+        comma_parts = name.split(",", 1)
+        parts = comma_parts[1].strip().lower().split() + comma_parts[0].strip().lower().split()
+    return " ".join(parts)
+
+
 def pull_actuals(date: str) -> pd.DataFrame:
     """Per-(game, batter_name) HR counts from Statcast for `date`."""
     from pybaseball import statcast
@@ -53,6 +69,7 @@ def pull_actuals(date: str) -> pd.DataFrame:
     agg = (df.groupby(["game_pk", name_col])
              .size().reset_index(name="hr_count")
              .rename(columns={name_col: "batter_name"}))
+    agg["batter_name_norm"] = agg["batter_name"].apply(_normalize_name)
     return agg
 
 
@@ -63,8 +80,7 @@ def score_for_date(date: str):
     preds = json.loads(preds_path.read_text())
 
     actuals = pull_actuals(date)
-    actuals["batter_name_lc"] = actuals["batter_name"].astype(str).str.lower()
-    actual_lookup = {(int(r.game_pk), r.batter_name_lc): int(r.hr_count)
+    actual_lookup = {(int(r.game_pk), r.batter_name_norm): int(r.hr_count)
                      for r in actuals.itertuples()}
 
     rows = []
@@ -81,7 +97,7 @@ def score_for_date(date: str):
                 p_hr = _pred_p_hr_in_game(entry, sim_block, hitter)
                 if p_hr is None:
                     continue
-                actual = actual_lookup.get((int(gid), hitter.lower()), 0)
+                actual = actual_lookup.get((int(gid), _normalize_name(hitter)), 0)
                 rows.append(dict(
                     game_date=date, game_id=gid, side=side,
                     hitter=hitter, opp_pitcher=sb.get("pitcher"),
@@ -116,13 +132,13 @@ def score_for_date(date: str):
         "rate_actual": float(y.mean()),
         "rate_pred": float(p.mean()),
         "brier": float(brier_score_loss(y, p)),
-        "log_loss": float(log_loss(y, p)),
+        "log_loss": float(log_loss(y, p, labels=[0, 1])),
     }
-    try:
+    if len(set(y)) >= 2:
         metrics["auc"] = float(roc_auc_score(y, p))
-    except Exception as e:
+    else:
         metrics["auc"] = None
-        metrics["auc_err"] = str(e)
+        metrics["auc_note"] = "need both classes in y_true"
     print(f"[score] running metrics: {json.dumps(metrics, indent=2)}")
     (DATA_DIR / "calibration_metrics.json").write_text(json.dumps(metrics, indent=2))
     return metrics
