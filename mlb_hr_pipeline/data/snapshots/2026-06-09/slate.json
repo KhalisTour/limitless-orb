@@ -1,0 +1,107 @@
+[
+  {
+    "game_id": 824830,
+    "away": "Seattle Mariners",
+    "home": "Baltimore Orioles",
+    "away_sp": "Logan Gilbert",
+    "home_sp": "Trevor Rogers"
+  },
+  {
+    "game_id": 823374,
+    "away": "Los Angeles Dodgers",
+    "home": "Pittsburgh Pirates",
+    "away_sp": "Eric Lauer",
+    "home_sp": "Paul Skenes"
+  },
+  {
+    "game_id": 822969,
+    "away": "Boston Red Sox",
+    "home": "Tampa Bay Rays",
+    "away_sp": "Payton Tolle",
+    "home_sp": "Nick Martinez"
+  },
+  {
+    "game_id": 824267,
+    "away": "Minnesota Twins",
+    "home": "Detroit Tigers",
+    "away_sp": "Taj Bradley",
+    "home_sp": "Troy Melton"
+  },
+  {
+    "game_id": 823858,
+    "away": "Arizona Diamondbacks",
+    "home": "Miami Marlins",
+    "away_sp": "Zac Gallen",
+    "home_sp": "Max Meyer"
+  },
+  {
+    "game_id": 824429,
+    "away": "New York Yankees",
+    "home": "Cleveland Guardians",
+    "away_sp": "Gerrit Cole",
+    "home_sp": "Slade Cecconi"
+  },
+  {
+    "game_id": 822805,
+    "away": "Philadelphia Phillies",
+    "home": "Toronto Blue Jays",
+    "away_sp": "Zack Wheeler",
+    "home_sp": "Dylan Cease"
+  },
+  {
+    "game_id": 823620,
+    "away": "St. Louis Cardinals",
+    "home": "New York Mets",
+    "away_sp": "Dustin May",
+    "home_sp": "Freddy Peralta"
+  },
+  {
+    "game_id": 824105,
+    "away": "Texas Rangers",
+    "home": "Kansas City Royals",
+    "away_sp": "Nathan Eovaldi",
+    "home_sp": "Stephen Kolek"
+  },
+  {
+    "game_id": 824591,
+    "away": "Atlanta Braves",
+    "home": "Chicago White Sox",
+    "away_sp": "Grant Holmes",
+    "home_sp": "Brandon Eisert"
+  },
+  {
+    "game_id": 824347,
+    "away": "Chicago Cubs",
+    "home": "Colorado Rockies",
+    "away_sp": "Colin Rea",
+    "home_sp": "Tomoyuki Sugano"
+  },
+  {
+    "game_id": 824023,
+    "away": "Houston Astros",
+    "home": "Los Angeles Angels",
+    "away_sp": "Kai-Wei Teng",
+    "home_sp": "Walbert Ure\u00f1a"
+  },
+  {
+    "game_id": 823290,
+    "away": "Cincinnati Reds",
+    "home": "San Diego Padres",
+    "away_sp": "Chase Burns",
+    "home_sp": "Lucas Giolito"
+  },
+  {
+    "game_id": 823214,
+    "away": "Washington Nationals",
+    "home": "San Francisco Giants",
+    "away_sp": "Andrew Alvarez",
+    "home_sp": "Adrian Houser"
+  },
+  {
+    "game_id": 824999,
+    "away": "Milwaukee Brewers",
+    "home": "Athletics",
+    "away_sp": "Robert Gasser",
+    "home_sp": "J.T. Ginn"
+  }
+]

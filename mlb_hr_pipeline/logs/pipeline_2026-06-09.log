@@ -1,0 +1,51 @@
+Pipeline date=2026-06-09 yesterday=2026-06-08 dow=2
+=== 2026-06-09T21:40:17Z  python score.py 2026-06-08 ===
+This is a large query, it may take a moment to complete
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  3.24it/s]100%|██████████| 1/1 [00:00<00:00,  3.24it/s]
+Traceback (most recent call last):
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/score.py", line 137, in <module>
+    score_for_date(d)
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/score.py", line 119, in score_for_date
+    "log_loss": float(log_loss(y, p)),
+                      ^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/.venv/lib/python3.12/site-packages/sklearn/utils/_param_validation.py", line 218, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py", line 3438, in log_loss
+    transformed_labels, y_proba = _validate_multiclass_probabilistic_prediction(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py", line 281, in _validate_multiclass_probabilistic_prediction
+    transformed_labels, lb_classes = _one_hot_encoding_multiclass_target(
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/.venv/lib/python3.12/site-packages/sklearn/metrics/_classification.py", line 211, in _one_hot_encoding_multiclass_target
+    raise ValueError(
+ValueError: y_true contains only one label (0). Please provide the list of all expected class labels explicitly through the labels argument.
+
+Rerun: python score.py [YYYY-MM-DD]
+[score] appended 102 rows to /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/calibration_log.csv  (total=102)
+FAILED: python score.py 2026-06-08  (see logs/pipeline_2026-06-09.log)
+=== 2026-06-09T21:40:20Z  python ingest_live.py 2026-06-09 ===
+[ingest] snapshot for 2026-06-09
+[ingest] games: 15
+[ingest] batters=470 pitchers=125
+[ingest] lineup rows: 198
+[ingest] wrote snapshot dir /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-09
+=== 2026-06-09T21:40:22Z  python predict_today.py 2026-06-09 ===
+/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/predict_today.py:97: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z", "games": []}
+[predict] applied fitted M3 coefficients from /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/models_out/fitted_coefficients.json
+[bridge] WARN no batter row for Ryan Bliss — skipping
+[bridge] WARN no batter row for Sam Huff — skipping
+[bridge] WARN no batter row for Ryan Ward — skipping
+[bridge] WARN no batter row for Davis Wendzel — skipping
+[bridge] WARN no batter row for Pavin Smith — skipping
+[bridge] WARN no batter row for LuJames Groover — skipping
+[bridge] WARN no batter row for Charles McAdoo — skipping
+[bridge] WARN no batter row for Lars Nootbaar — skipping
+[bridge] WARN no batter row for Jimmy Crooks — skipping
+[bridge] WARN no batter row for Jacob Gonzalez — skipping
+[bridge] WARN no batter row for Braden Montgomery — skipping
+[bridge] WARN no batter row for Cole Carrigg — skipping
+[bridge] WARN no batter row for Will Wagner — skipping
+[predict] wrote /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/predictions_2026-06-09.json  games=15
+=== done 2026-06-09T21:40:24Z ===

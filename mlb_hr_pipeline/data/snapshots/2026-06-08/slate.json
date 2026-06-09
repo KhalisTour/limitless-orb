@@ -1,0 +1,58 @@
+[
+  {
+    "game_id": 824829,
+    "away": "Seattle Mariners",
+    "home": "Baltimore Orioles",
+    "away_sp": "Emerson Hancock",
+    "home_sp": "Trey Gibson"
+  },
+  {
+    "game_id": 822972,
+    "away": "Boston Red Sox",
+    "home": "Tampa Bay Rays",
+    "away_sp": "Connelly Early",
+    "home_sp": "Ian Seymour"
+  },
+  {
+    "game_id": 824427,
+    "away": "New York Yankees",
+    "home": "Cleveland Guardians",
+    "away_sp": "Will Warren",
+    "home_sp": "Gavin Williams"
+  },
+  {
+    "game_id": 822806,
+    "away": "Philadelphia Phillies",
+    "home": "Toronto Blue Jays",
+    "away_sp": "Cristopher S\u00e1nchez",
+    "home_sp": "Patrick Corbin"
+  },
+  {
+    "game_id": 824025,
+    "away": "Houston Astros",
+    "home": "Los Angeles Angels",
+    "away_sp": "Spencer Arrighetti",
+    "home_sp": "Grayson Rodriguez"
+  },
+  {
+    "game_id": 823289,
+    "away": "Cincinnati Reds",
+    "home": "San Diego Padres",
+    "away_sp": "Andrew Abbott",
+    "home_sp": "Walker Buehler"
+  },
+  {
+    "game_id": 823218,
+    "away": "Washington Nationals",
+    "home": "San Francisco Giants",
+    "away_sp": "Richard Lovelady",
+    "home_sp": "Logan Webb"
+  },
+  {
+    "game_id": 824998,
+    "away": "Milwaukee Brewers",
+    "home": "Athletics",
+    "away_sp": "Kyle Harrison",
+    "home_sp": "Jeffrey Springs"
+  }
+]

@@ -1,0 +1,122 @@
+Pipeline date=2026-06-08 yesterday=2026-06-07 dow=1
+no predictions_2026-06-07.json — skipping scoring
+=== 2026-06-08T23:59:41Z  python ingest_live.py 2026-06-08 ===
+[ingest] snapshot for 2026-06-08
+[ingest] games: 8
+[ingest] batters=160 pitchers=124
+[ingest] lineup rows: 144
+[ingest] wrote snapshot dir /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-08
+=== 2026-06-08T23:59:44Z  python predict_today.py 2026-06-08 ===
+/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/predict_today.py:97: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z", "games": []}
+[predict] applied fitted M3 coefficients from /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/models_out/fitted_coefficients.json
+[bridge] WARN no batter row for Luke Raley — skipping
+[bridge] WARN no batter row for Dominic Canzone — skipping
+[bridge] WARN no batter row for Patrick Wisdom — skipping
+[bridge] WARN no batter row for Jhonny Pereda — skipping
+[bridge] WARN no batter row for Ryan Bliss — skipping
+[bridge] WARNING: skipped 5/9 batters: ['Luke Raley', 'Dominic Canzone', 'Patrick Wisdom', 'Jhonny Pereda', 'Ryan Bliss']
+[bridge] WARN no batter row for Colton Cowser — skipping
+[bridge] WARN no batter row for Leody Taveras — skipping
+[bridge] WARN no batter row for Jackson Holliday — skipping
+[bridge] WARN no batter row for Coby Mayo — skipping
+[bridge] WARN no batter row for Blaze Alexander — skipping
+[bridge] WARN no batter row for Sam Huff — skipping
+[bridge] WARNING: skipped 6/9 batters: ['Colton Cowser', 'Leody Taveras', 'Jackson Holliday', 'Coby Mayo', 'Blaze Alexander', 'Sam Huff']
+[bridge] WARN no batter row for Mickey Gasper — skipping
+[bridge] WARN no batter row for Caleb Durbin — skipping
+[bridge] WARN no batter row for Isiah Kiner-Falefa — skipping
+[bridge] WARN no batter row for Marcelo Mayer — skipping
+[bridge] WARN no batter row for Carlos Narváez — skipping
+[bridge] WARNING: skipped 5/9 batters: ['Mickey Gasper', 'Caleb Durbin', 'Isiah Kiner-Falefa', 'Marcelo Mayer', 'Carlos Narváez']
+[bridge] WARN no batter row for Austin Slater — skipping
+[bridge] WARN no batter row for Ryan Vilade — skipping
+[bridge] WARN no batter row for Ben Williamson — skipping
+[bridge] WARN no batter row for Nick Fortes — skipping
+[bridge] WARN no batter row for Paul Goldschmidt — skipping
+[bridge] WARN no batter row for Spencer Jones — skipping
+[bridge] WARN no batter row for José Caballero — skipping
+[bridge] WARN no batter row for Ryan McMahon — skipping
+[bridge] WARN no batter row for J.C. Escarra — skipping
+[bridge] WARNING: skipped 5/9 batters: ['Paul Goldschmidt', 'Spencer Jones', 'José Caballero', 'Ryan McMahon', 'J.C. Escarra']
+[bridge] WARN no batter row for Travis Bazzana — skipping
+[bridge] WARN no batter row for Kyle Manzardo — skipping
+[bridge] WARN no batter row for Daniel Schneemann — skipping
+[bridge] WARN no batter row for Patrick Bailey — skipping
+[bridge] WARN no batter row for J.T. Realmuto — skipping
+[bridge] WARN no batter row for Edmundo Sosa — skipping
+[bridge] WARN no batter row for George Springer — skipping
+[bridge] WARN no batter row for Nathan Lukes — skipping
+[bridge] WARN no batter row for Myles Straw — skipping
+[bridge] WARN no batter row for Tyler Heineman — skipping
+[bridge] WARN no batter row for Yohendrick Piñango — skipping
+[bridge] WARNING: skipped 5/9 batters: ['George Springer', 'Nathan Lukes', 'Myles Straw', 'Tyler Heineman', 'Yohendrick Piñango']
+[bridge] WARN no batter row for Jeremy Peña — skipping
+[bridge] WARN no batter row for Jose Altuve — skipping
+[bridge] WARN no batter row for LaMonte Wade Jr. — skipping
+[bridge] WARN no batter row for Taylor Trammell — skipping
+[bridge] WARN no batter row for Collin Price — skipping
+[bridge] WARNING: skipped 5/9 batters: ['Jeremy Peña', 'Jose Altuve', 'LaMonte Wade Jr.', 'Taylor Trammell', 'Collin Price']
+[bridge] WARN no batter row for Wade Meckler — skipping
+[bridge] WARN no batter row for Denzer Guzman — skipping
+[bridge] WARN no batter row for Nick Madrigal — skipping
+[bridge] WARN no batter row for Trey Mancini — skipping
+[bridge] WARN no batter row for Donovan Walton — skipping
+[bridge] WARN no batter row for Logan O'Hoppe — skipping
+[bridge] WARNING: skipped 6/9 batters: ['Wade Meckler', 'Denzer Guzman', 'Nick Madrigal', 'Trey Mancini', 'Donovan Walton', "Logan O'Hoppe"]
+[bridge] WARN no batter row for Blake Dunn — skipping
+[bridge] WARN no batter row for JJ Bleday — skipping
+[bridge] WARN no batter row for Nathaniel Lowe — skipping
+[bridge] WARN no batter row for Eugenio Suárez — skipping
+[bridge] WARN no batter row for Noelvi Marte — skipping
+[bridge] WARN no batter row for Tyler Stephenson — skipping
+[bridge] WARN no batter row for Edwin Arroyo — skipping
+[bridge] WARNING: skipped 7/9 batters: ['Blake Dunn', 'JJ Bleday', 'Nathaniel Lowe', 'Eugenio Suárez', 'Noelvi Marte', 'Tyler Stephenson', 'Edwin Arroyo']
+[bridge] WARN no batter row for Ty France — skipping
+[bridge] WARN no batter row for Jase Bowen — skipping
+[bridge] WARN no batter row for Freddy Fermin — skipping
+[bridge] WARN no batter row for Curtis Mead — skipping
+[bridge] WARN no batter row for Dylan Crews — skipping
+[bridge] WARN no batter row for Keibert Ruiz — skipping
+[bridge] WARN no batter row for Jorbit Vivas — skipping
+[bridge] WARN no batter row for Bryce Eldridge — skipping
+[bridge] WARN no batter row for Eric Haase — skipping
+[bridge] WARN no batter row for Drew Gilbert — skipping
+[bridge] WARN no batter row for Christian Yelich — skipping
+[bridge] WARN no batter row for Jackson Chourio — skipping
+[bridge] WARN no batter row for Andrew Vaughn — skipping
+[bridge] WARN no batter row for Garrett Mitchell — skipping
+[bridge] WARN no batter row for Luis Rengifo — skipping
+[bridge] WARN no batter row for Joey Ortiz — skipping
+[bridge] WARNING: skipped 6/9 batters: ['Christian Yelich', 'Jackson Chourio', 'Andrew Vaughn', 'Garrett Mitchell', 'Luis Rengifo', 'Joey Ortiz']
+[bridge] WARN no batter row for Colby Thomas — skipping
+[bridge] WARN no batter row for Brent Rooker — skipping
+[bridge] WARN no batter row for Henry Bolte — skipping
+[bridge] WARN no batter row for Zack Gelof — skipping
+[bridge] WARN no batter row for Alika Williams — skipping
+[bridge] WARNING: skipped 5/9 batters: ['Colby Thomas', 'Brent Rooker', 'Henry Bolte', 'Zack Gelof', 'Alika Williams']
+[predict] wrote /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/predictions_2026-06-08.json  games=8
+=== done 2026-06-08T23:59:45Z ===
+Pipeline date=2026-06-08 yesterday=2026-06-07 dow=2
+no predictions_2026-06-07.json — skipping scoring
+=== 2026-06-09T00:04:28Z  python ingest_live.py 2026-06-08 ===
+[ingest] snapshot for 2026-06-08
+[ingest] games: 8
+[ingest] batters=469 pitchers=124
+[ingest] lineup rows: 144
+[ingest] wrote snapshot dir /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-08
+=== 2026-06-09T00:04:30Z  python predict_today.py 2026-06-08 ===
+/Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/predict_today.py:97: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z", "games": []}
+[predict] applied fitted M3 coefficients from /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/models_out/fitted_coefficients.json
+[bridge] WARN no batter row for Ryan Bliss — skipping
+[bridge] WARN no batter row for Sam Huff — skipping
+[bridge] WARN no batter row for LaMonte Wade Jr. — skipping
+[bridge] WARN no batter row for Collin Price — skipping
+[bridge] WARN no batter row for Denzer Guzman — skipping
+[bridge] WARN no batter row for Trey Mancini — skipping
+[bridge] WARN no batter row for Edwin Arroyo — skipping
+[bridge] WARN no batter row for Jase Bowen — skipping
+[bridge] WARN no batter row for Alika Williams — skipping
+[predict] wrote /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/predictions_2026-06-08.json  games=8
+=== done 2026-06-09T00:04:32Z ===
