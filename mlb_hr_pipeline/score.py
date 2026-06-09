@@ -56,20 +56,62 @@ def _normalize_name(name: str) -> str:
     return " ".join(parts)
 
 
+def _load_batter_id_map(date: str) -> dict:
+    """Build batter MLBAM ID -> normalized name from the snapshot CSV."""
+    snap_dir = REPO / "data" / "snapshots" / date
+    bat_path = snap_dir / f"batters_{date}.csv"
+    if not bat_path.exists():
+        return {}
+    df = pd.read_csv(bat_path)
+    id_col = None
+    for c in ["player_id", "batter_id", "mlbam_id", "id"]:
+        if c in df.columns:
+            id_col = c
+            break
+        for col in df.columns:
+            if col.lower() == c.lower():
+                id_col = col
+                break
+        if id_col:
+            break
+    name_col = None
+    for c in ["player_name", "name", "full_name", "last_name, first_name"]:
+        if c in df.columns:
+            name_col = c
+            break
+    if not id_col or not name_col:
+        return {}
+    result = {}
+    for _, row in df.iterrows():
+        pid = row[id_col]
+        if pd.notna(pid):
+            raw = str(row[name_col])
+            if "," in raw:
+                parts = raw.split(",", 1)
+                flipped = f"{parts[1].strip()} {parts[0].strip()}"
+            else:
+                flipped = raw
+            result[int(pid)] = _normalize_name(flipped)
+    return result
+
+
 def pull_actuals(date: str) -> pd.DataFrame:
-    """Per-(game, batter_name) HR counts from Statcast for `date`."""
+    """Per-(game, batter_id) HR counts from Statcast for `date`.
+    NOTE: Statcast player_name is the PITCHER, not the batter.
+    We use the numeric `batter` column (MLBAM ID) instead.
+    """
     from pybaseball import statcast
     from pybaseball import cache
     cache.enable()
     df = statcast(start_dt=date, end_dt=date)
     if df.empty:
-        return pd.DataFrame(columns=["game_pk", "batter_name", "hr_count"])
+        return pd.DataFrame(columns=["game_pk", "batter_id", "hr_count"])
     df = df[df["events"] == "home_run"]
-    name_col = "player_name" if "player_name" in df.columns else "batter"
-    agg = (df.groupby(["game_pk", name_col])
+    if df.empty:
+        return pd.DataFrame(columns=["game_pk", "batter_id", "hr_count"])
+    agg = (df.groupby(["game_pk", "batter"])
              .size().reset_index(name="hr_count")
-             .rename(columns={name_col: "batter_name"}))
-    agg["batter_name_norm"] = agg["batter_name"].apply(_normalize_name)
+             .rename(columns={"batter": "batter_id"}))
     return agg
 
 
@@ -80,22 +122,27 @@ def score_for_date(date: str):
     preds = json.loads(preds_path.read_text())
 
     actuals = pull_actuals(date)
+    id_map = _load_batter_id_map(date)
 
-    # Debug: show what Statcast returned
+    # Resolve batter IDs to names and build lookups
     if actuals.empty:
         print(f"[score] WARNING: Statcast returned NO home runs for {date}")
     else:
-        print(f"[score] Statcast HRs: {len(actuals)} rows")
+        print(f"[score] Statcast HRs: {len(actuals)} batter-game rows")
         for _, r in actuals.iterrows():
-            print(f"  game_pk={r['game_pk']}  {r['batter_name']}  -> norm='{r['batter_name_norm']}'")
+            bid = int(r["batter_id"])
+            name = id_map.get(bid, f"?id={bid}")
+            print(f"  game_pk={r['game_pk']}  batter_id={bid}  -> {name}  (count={r['hr_count']})")
 
-    # Build lookup by (game_pk, normalized_name)
-    actual_by_game = {(int(r.game_pk), r.batter_name_norm): int(r.hr_count)
-                      for r in actuals.itertuples()}
-    # Also build name-only lookup as fallback (handles game_pk/game_id mismatch)
+    actual_by_game = {}
     actual_by_name = {}
     for r in actuals.itertuples():
-        actual_by_name[r.batter_name_norm] = actual_by_name.get(r.batter_name_norm, 0) + int(r.hr_count)
+        bid = int(r.batter_id)
+        name = id_map.get(bid)
+        if name is None:
+            continue
+        actual_by_game[(int(r.game_pk), name)] = int(r.hr_count)
+        actual_by_name[name] = actual_by_name.get(name, 0) + int(r.hr_count)
 
     pred_game_ids = set()
     rows = []
@@ -114,7 +161,7 @@ def score_for_date(date: str):
                 if p_hr is None:
                     continue
                 hn = _normalize_name(hitter)
-                actual = actual_by_game.get((int(gid), hn), None)
+                actual = actual_by_game.get((int(gid), hn))
                 if actual is None:
                     actual = actual_by_name.get(hn, 0)
                 rows.append(dict(
