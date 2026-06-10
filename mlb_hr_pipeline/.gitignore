@@ -1,6 +1,4 @@
 __pycache__/
 *.pyc
 data/snapshots/
-data/backtest_*.csv
-data/pitches_*.csv
 logs/
