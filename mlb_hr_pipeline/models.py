@@ -135,13 +135,15 @@ def model3_logistic(name):
 #   the-order decay (starter gets hit harder 3rd time) and lineup-slot PA volume.
 # --------------------------------------------------------------------------
 
-def model4_context(name, lineup_order):
+def model4_context(name, lineup_order, park_factor=1.0, platoon_factor=1.0):
     slot = lineup_order.index(name)  # 0-indexed
     # Top of order sees the starter more times and gets the 3rd-TTO penalty pitch.
     tto_bonus = 1.0 + max(0, (4 - slot)) * 0.04   # slots 1-4 get up to +12%
+    combined_mult = tto_bonus * park_factor * platoon_factor
     # Expected PAs by slot scales opportunity (used by sim, returned for transparency)
     exp_pa = 4.6 - slot * 0.12
-    return dict(tto_mult=tto_bonus, exp_pa=exp_pa)
+    return dict(tto_mult=combined_mult, exp_pa=exp_pa,
+                park_factor=park_factor, platoon_factor=platoon_factor)
 
 
 # --------------------------------------------------------------------------
@@ -170,7 +172,7 @@ def _score_to_prob(scores, this_score):
     base_logodds = math.log(LEAGUE["hr_per_pa"] / (1 - LEAGUE["hr_per_pa"]))
     return logistic(base_logodds + 0.6 * (this_score - mu) / sd)
 
-def model5_ensemble(name, lineup_order):
+def model5_ensemble(name, lineup_order, park_factor=1.0, platoon_factor=1.0):
     m1_all = {n: model1_linear(n) for n in HITTERS}
     m2_all = {n: model2_matchup(n) for n in HITTERS}
 
@@ -182,9 +184,12 @@ def model5_ensemble(name, lineup_order):
          ENSEMBLE_W["matchup"]  * p_mat +
          ENSEMBLE_W["linear"]   * p_lin)
 
-    ctx = model4_context(name, lineup_order)
+    ctx = model4_context(name, lineup_order, park_factor=park_factor,
+                         platoon_factor=platoon_factor)
     p_cal = _calibrate(p)
     p_adj = min(0.5, p_cal * ctx["tto_mult"])   # cap to keep probabilities sane
     return dict(p_per_pa=p_adj, exp_pa=ctx["exp_pa"],
                 components=dict(logistic=p_log, matchup=p_mat, linear=p_lin),
-                tto_mult=ctx["tto_mult"])
+                tto_mult=ctx["tto_mult"],
+                park_factor=ctx["park_factor"],
+                platoon_factor=ctx["platoon_factor"])

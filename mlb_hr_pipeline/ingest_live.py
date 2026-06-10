@@ -72,7 +72,10 @@ PITCHER_KEY_CANDIDATES = {
     "xwoba":   ["xwoba"],
     "k":       ["k_percent"],
     "whiff":   ["whiff_percent"],
+    "p_throws": ["p_throws", "throws"],
 }
+
+BATTER_HAND_CANDIDATES = ["stand", "batter_hand", "bat_side"]
 
 
 def _normalize_name(name: str) -> str:
@@ -133,6 +136,9 @@ def first_present(row: pd.Series, candidates) -> float:
 
 def row_to_hitter_dict(row: pd.Series) -> dict:
     out = {k: first_present(row, cands) for k, cands in BATTER_KEY_CANDIDATES.items()}
+    stand = first_present(row, BATTER_HAND_CANDIDATES)
+    if stand is not None:
+        out["stand"] = str(stand)
     return out
 
 
