@@ -1,0 +1,126 @@
+=== AION Morning Refresh Wed Jun 10 09:22:20 EDT 2026 ===
+Watchlist: GOOG,NVDA,SPY,LLY,BE
+[1/4] Refreshing bars...
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=GOOG timeframe=1D start=2026-03-12 end=2026-06-10 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=GOOG eligible=2 selected=['2026-06-12', '2026-06-18']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=GOOG ok=True expiries=2 grouped_expiries=['2026-06-12', '2026-06-18'] chain_rows=364 legacy_rows=296 bars=7 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=NVDA timeframe=1D start=2026-03-12 end=2026-06-10 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=NVDA eligible=6 selected=['2026-06-12', '2026-06-15', '2026-06-17', '2026-06-18', '2026-06-22', '2026-06-24']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=NVDA ok=True expiries=6 grouped_expiries=['2026-06-12', '2026-06-15', '2026-06-17', '2026-06-18', '2026-06-22', '2026-06-24'] chain_rows=1466 legacy_rows=644 bars=7 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=SPY timeframe=1D start=2026-03-12 end=2026-06-10 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=SPY eligible=6 selected=['2026-06-12', '2026-06-15', '2026-06-16', '2026-06-17', '2026-06-18', '2026-06-22']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=SPY ok=True expiries=6 grouped_expiries=['2026-06-12', '2026-06-15', '2026-06-16', '2026-06-17', '2026-06-18', '2026-06-22'] chain_rows=2298 legacy_rows=1303 bars=7 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=LLY timeframe=1D start=2026-03-12 end=2026-06-10 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=LLY eligible=2 selected=['2026-06-12', '2026-06-18']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=LLY ok=True expiries=2 grouped_expiries=['2026-06-12', '2026-06-18'] chain_rows=572 legacy_rows=348 bars=7 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=BE timeframe=1D start=2026-03-12 end=2026-06-10 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=BE eligible=2 selected=['2026-06-12', '2026-06-18']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=BE ok=True expiries=2 grouped_expiries=['2026-06-12', '2026-06-18'] chain_rows=430 legacy_rows=313 bars=7 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-12 end=2026-06-10; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-12 end=2026-06-10; treating as non-fatal
+Backfill summary: 5/5 symbols succeeded
+GOOG: ok=True bars=62 option_rows=0
+NVDA: ok=True bars=62 option_rows=0
+SPY: ok=True bars=62 option_rows=0
+LLY: ok=True bars=62 option_rows=0
+BE: ok=True bars=62 option_rows=0
+[2/4] Running chain snapshot...
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=GOOG cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=GOOG signals=0 contracts=73 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=NVDA cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=NVDA signals=0 contracts=241 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=SPY cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=SPY signals=2 contracts=579 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=LLY cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=LLY signals=0 contracts=162 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=BE cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=BE signals=0 contracts=135 regime=acceleration
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=SPY eligible=6 selected=['2026-06-12', '2026-06-15', '2026-06-16', '2026-06-17', '2026-06-18', '2026-06-22']
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 1/4 — backing off 5s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 2/4 — backing off 15s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 3/4 — backing off 45s
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=SPY expiry=2026-06-17 dte=7 error=rate_limited
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 1/4 — backing off 5s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 2/4 — backing off 15s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 3/4 — backing off 45s
+WARNING:aion_terminal.services.ingestion_service:ingestion chain failed symbol=SPY expiry=2026-06-18 dte=8 error=rate_limited
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 1/4 — backing off 5s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 2/4 — backing off 15s
+WARNING:aion_terminal.data_sources.marketdata:rate limited (429) on attempt 3/4 — backing off 45s
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/scripts/run_daily_snapshot.py", line 237, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/scripts/run_daily_snapshot.py", line 153, in main
+    refresh = refresh_one_symbol(
+              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/services/ingestion_service.py", line 152, in refresh_one_symbol
+    chain_fetch = client.fetch_options_chain(symbol, expiration=candidate.expiry)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/data_sources/marketdata.py", line 131, in fetch_options_chain
+    return self._request_json(f"/options/chain/{symbol}/", params=params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/data_sources/marketdata.py", line 55, in _request_json
+    with urlopen(req, timeout=self._timeout_seconds) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 1392, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/urllib/request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1430, in getresponse
+    response.begin()
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

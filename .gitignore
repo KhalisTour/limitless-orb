@@ -18,6 +18,8 @@ aion_terminal/.env
 .DS_Store
 
 # Other local project artifacts
+mlb_hr_pipeline/
+mlb_hr_pipeline.zip
 nba_prop_pipeline/
 README.nba.md
 requirements.nba.txt
