@@ -39,4 +39,7 @@ fi
 run python ingest_live.py "$DATE"
 run python predict_today.py "$DATE"
 
+# Best-effort: tell the local API to reload from disk. Never fails the pipeline.
+curl -s -X POST "${API_URL:-http://localhost:8000}/api/reload" >/dev/null 2>&1 || true
+
 echo "=== done $(date -u +%FT%TZ) ===" | tee -a "$LOG"
