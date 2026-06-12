@@ -79,6 +79,20 @@ def _sanitize(o: Any) -> Any:
 # helpers
 
 
+def _hydrate_batter(name: str) -> tuple[str | None, dict]:
+    """Return (batter_id, stats) for a hitter name, or (None, {}) if unknown."""
+    d = get_data()
+    idx = d.get("batter_index") or {}
+    entry = idx.get(name.lower())
+    if not entry:
+        # Try last-token fallback (handles "Julio Rodríguez" vs ascii variants).
+        return None, {k: None for k in (
+            "barrel_pct", "hardhit_pct", "xslg", "xba", "xwoba",
+            "ev", "la", "whiff_pct", "k_pct", "bb_pct",
+        )}
+    return entry.get("player_id"), entry.get("stats") or {}
+
+
 def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, str | None, bool]:
     """Flatten all hitters across all games on a date.
 
@@ -99,6 +113,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
             for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
                 if not isinstance(entry, dict) or "error" in entry:
                     continue
+                batter_id, stats = _hydrate_batter(name)
                 flat.append({
                     "game_id": g.get("game_id"),
                     "away_team": g.get("away"),
@@ -107,6 +122,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "home_sp": g.get("home_sp"),
                     "side": side_key,
                     "name": name,
+                    "batter_id": batter_id,
                     "lineup_slot": slot,
                     "p_per_pa": entry.get("p_per_pa"),
                     "exp_pa": entry.get("exp_pa"),
@@ -114,6 +130,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "tto_mult": entry.get("tto_mult"),
                     "explanation": entry.get("explanation"),
                     "opp_pitcher": opp_pitcher,
+                    "stats": stats,
                 })
     return flat, blob, served, stale
 
@@ -227,8 +244,10 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
                 hitters_out.append({"name": name, "lineup_slot": slot, "error": (entry or {}).get("error")})
                 continue
             p = entry.get("p_per_pa")
+            batter_id, stats = _hydrate_batter(name)
             hitters_out.append({
                 "name": name,
+                "batter_id": batter_id,
                 "lineup_slot": slot,
                 "p_per_pa": p,
                 "p_per_pa_pctile": _pctile_rank(all_p, p),
@@ -238,6 +257,7 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
                 "park_factor": entry.get("park_factor"),
                 "platoon_factor": entry.get("platoon_factor"),
                 "explanation": entry.get("explanation"),
+                "stats": stats,
             })
         out_sides[side_key] = {
             "pitcher": side.get("pitcher"),
@@ -277,6 +297,7 @@ def top_picks(
         picks.append({
             "rank": rank,
             "name": h["name"],
+            "batter_id": h.get("batter_id"),
             "side": h["side"],
             "game_id": h["game_id"],
             "away_team": h["away_team"],
@@ -287,6 +308,7 @@ def top_picks(
             "components": h["components"],
             "lineup_slot": h["lineup_slot"],
             "exp_pa": h["exp_pa"],
+            "stats": h.get("stats"),
         })
     return _sanitize({"date": served, "stale": stale, "picks": picks})
 

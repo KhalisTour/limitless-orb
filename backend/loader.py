@@ -110,9 +110,23 @@ def _build_pitcher_name_index() -> dict[str, str]:
     return idx
 
 
-def _build_batter_name_index() -> dict[str, str]:
-    """Map normalized batter name -> player_id, from latest snapshot."""
-    idx: dict[str, str] = {}
+BATTER_STAT_COLS = {
+    "barrel_pct": "barrel_batted_rate",
+    "hardhit_pct": "hard_hit_percent",
+    "xslg": "xslg",
+    "xba": "xba",
+    "xwoba": "xwoba",
+    "ev": "exit_velocity_avg",
+    "la": "launch_angle_avg",
+    "whiff_pct": "whiff_percent",
+    "k_pct": "k_percent",
+    "bb_pct": "bb_percent",
+}
+
+
+def _build_batter_index() -> dict[str, dict]:
+    """Map normalized batter name -> {player_id, stats:{...}} from latest snapshot."""
+    idx: dict[str, dict] = {}
     snap_root = DATA_DIR / "snapshots"
     if not snap_root.exists():
         return idx
@@ -134,7 +148,16 @@ def _build_batter_name_index() -> dict[str, str]:
                 if len(parts) != 2:
                     continue
                 full = f"{parts[1]} {parts[0]}".lower()
-                idx.setdefault(full, str(int(pid)))
+                if full in idx:
+                    continue
+                stats: dict[str, float | None] = {}
+                for out_key, csv_col in BATTER_STAT_COLS.items():
+                    if csv_col in df.columns:
+                        val = row[csv_col]
+                        stats[out_key] = None if pd.isna(val) else float(val)
+                    else:
+                        stats[out_key] = None
+                idx[full] = {"player_id": str(int(pid)), "stats": stats}
         if idx:
             break
     return idx
@@ -188,7 +211,8 @@ def load_all() -> None:
         pitcher_tend = _safe_json(DATA_DIR / "pitcher_zone_tendency.json")
 
         pitcher_name_idx = _build_pitcher_name_index()
-        batter_name_idx = _build_batter_name_index()
+        batter_idx = _build_batter_index()
+        batter_name_idx = {n: e["player_id"] for n, e in batter_idx.items()}
 
         _state.clear()
         _state.update({
@@ -210,6 +234,7 @@ def load_all() -> None:
             "pitcher_zone_tendency": pitcher_tend,
             "pitcher_name_index": pitcher_name_idx,
             "batter_name_index": batter_name_idx,
+            "batter_index": batter_idx,
         })
         log.info(
             "loaded: %d prediction days, latest=%s, stale=%s, cal_rows=%s",
