@@ -22,3 +22,9 @@ aion_terminal/.env
 
 aion_terminal/
 logs/
+
+# MLB pipeline: large CSV artifacts (commit JSON outputs only)
+mlb_hr_pipeline/data/backtest*.csv
+mlb_hr_pipeline/data/pitches*.csv
+data/backtest*.csv
+data/pitches*.csv
