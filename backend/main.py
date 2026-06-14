@@ -110,6 +110,9 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                 continue
             opp_pitcher = side.get("pitcher")
             per_hitter = side.get("per_hitter") or {}
+                        sim = side.get("sim") or {}
+            p_game_lookup = (sim.get("p_at_least_one_hr") or {}) if isinstance(sim, dict) else {}
+            p_multi_lookup = (sim.get("p_multi_hr") or {}) if isinstance(sim, dict) else {}
             for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
                 if not isinstance(entry, dict) or "error" in entry:
                     continue
@@ -120,11 +123,14 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "home_team": g.get("home"),
                     "away_sp": g.get("away_sp"),
                     "home_sp": g.get("home_sp"),
+                    "game_datetime": g.get("game_datetime"),
                     "side": side_key,
                     "name": name,
                     "batter_id": batter_id,
                     "lineup_slot": slot,
                     "p_per_pa": entry.get("p_per_pa"),
+                    "p_game_hr": p_game_lookup.get(name),
+                    "p_multi_hr": p_multi_lookup.get(name),
                     "exp_pa": entry.get("exp_pa"),
                     "components": entry.get("components"),
                     "tto_mult": entry.get("tto_mult"),
@@ -184,8 +190,23 @@ def health() -> dict:
         "stale_reason": d.get("stale_reason"),
         "data_dir": d.get("data_dir"),
     }
+# ---------------------------------------------------------------------------
+# dates list
 
 
+@app.get("/api/dates")
+def list_dates() -> dict:
+    """List dates for which predictions JSON exists, newest first."""
+    d = get_data()
+    preds = d.get("predictions_by_date") or {}
+    dates = sorted(preds.keys(), reverse=True)
+    return {
+        "dates": dates,
+        "latest": d.get("latest_date"),
+        "n": len(dates),
+    }
+
+    
 # ---------------------------------------------------------------------------
 # games list
 
@@ -197,12 +218,15 @@ def list_games(date: str | None = Query(default=None, description="YYYY-MM-DD"))
         raise HTTPException(status_code=503, detail="no predictions available")
     games_out = []
     for g in blob.get("games", []):
-        games_out.append({
+                games_out.append({
             "game_id": g.get("game_id"),
             "away_team": g.get("away"),
             "home_team": g.get("home"),
             "away_sp": g.get("away_sp"),
             "home_sp": g.get("home_sp"),
+            "game_datetime": g.get("game_datetime"),
+            "venue": g.get("venue"),
+            "park_factor": g.get("park_factor"),
             "top_pick": _top_pick_for_game(g),
         })
     return _sanitize({"date": served, "stale": stale, "games": games_out})
@@ -231,17 +255,25 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         if h.get("p_per_pa") is not None
     ]
 
-    out_sides: dict[str, Any] = {}
+        out_sides: dict[str, Any] = {}
     for side_key in ("away", "home"):
         side = (target.get("sides") or {}).get(side_key)
         if not isinstance(side, dict) or "error" in side:
-            out_sides[side_key] = {"error": (side or {}).get("error") if isinstance(side, dict) else "missing"}
+            out_sides[side_key] = {
+                "error": (side or {}).get("error") if isinstance(side, dict) else "missing"
+            }
             continue
         per_hitter = side.get("per_hitter") or {}
+        sim = side.get("sim") or {}
+        p_game_lookup = (sim.get("p_at_least_one_hr") or {}) if isinstance(sim, dict) else {}
+        p_multi_lookup = (sim.get("p_multi_hr") or {}) if isinstance(sim, dict) else {}
         hitters_out: list[dict] = []
         for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
             if not isinstance(entry, dict) or "error" in entry:
-                hitters_out.append({"name": name, "lineup_slot": slot, "error": (entry or {}).get("error")})
+                hitters_out.append({
+                    "name": name, "lineup_slot": slot,
+                    "error": (entry or {}).get("error"),
+                })
                 continue
             p = entry.get("p_per_pa")
             batter_id, stats = _hydrate_batter(name)
@@ -251,6 +283,8 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
                 "lineup_slot": slot,
                 "p_per_pa": p,
                 "p_per_pa_pctile": _pctile_rank(all_p, p),
+                "p_game_hr": p_game_lookup.get(name),
+                "p_multi_hr": p_multi_lookup.get(name),
                 "components": entry.get("components"),
                 "tto_mult": entry.get("tto_mult"),
                 "exp_pa": entry.get("exp_pa"),
@@ -262,7 +296,7 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         out_sides[side_key] = {
             "pitcher": side.get("pitcher"),
             "hitters": hitters_out,
-            "sim": side.get("sim"),
+            "sim": sim,
         }
 
     return _sanitize({
@@ -273,6 +307,8 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         "home_team": target.get("home"),
         "away_sp": target.get("away_sp"),
         "home_sp": target.get("home_sp"),
+        "game_datetime": target.get("game_datetime"),
+        "venue": target.get("venue"),
         "park_factor": target.get("park_factor"),
         "sides": out_sides,
     })
@@ -294,7 +330,7 @@ def top_picks(
     flat.sort(key=lambda h: (h.get("p_per_pa") or -1.0), reverse=True)
     picks = []
     for rank, h in enumerate(flat[:n], start=1):
-        picks.append({
+                picks.append({
             "rank": rank,
             "name": h["name"],
             "batter_id": h.get("batter_id"),
@@ -302,9 +338,12 @@ def top_picks(
             "game_id": h["game_id"],
             "away_team": h["away_team"],
             "home_team": h["home_team"],
+            "game_datetime": h.get("game_datetime"),
             "opp_pitcher": h["opp_pitcher"],
             "p_per_pa": h["p_per_pa"],
             "p_per_pa_pctile": _pctile_rank(all_p, h["p_per_pa"]),
+            "p_game_hr": h.get("p_game_hr"),
+            "p_multi_hr": h.get("p_multi_hr"),
             "components": h["components"],
             "lineup_slot": h["lineup_slot"],
             "exp_pa": h["exp_pa"],

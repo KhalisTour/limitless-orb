@@ -148,9 +148,15 @@ def main(date: str = None):
         home_abbrev = TEAM_NAME_TO_ABBREV.get(home_team_full, "")
         pf = park_factors.get(home_abbrev, 1.0)
 
-        game_rec = {"game_id": g["game_id"], "away": g["away"], "home": g["home"],
-                    "away_sp": g.get("away_sp"), "home_sp": g.get("home_sp"),
-                    "park_factor": pf, "sides": {}}
+        game_rec = {
+            "game_id": g["game_id"],
+            "away": g["away"], "home": g["home"],
+            "away_sp": g.get("away_sp"), "home_sp": g.get("home_sp"),
+            "game_datetime": g.get("game_datetime"),
+            "venue": g.get("venue"),
+            "park_factor": pf,
+            "sides": {},
+        }
         for side in ("away", "home"):
             try:
                 opp = "home" if side == "away" else "away"

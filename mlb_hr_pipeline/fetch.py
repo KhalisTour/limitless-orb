@@ -49,6 +49,11 @@ def get_slate(date=None):
             away=g["away_name"], home=g["home_name"],
             away_sp=g.get("away_probable_pitcher") or None,
             home_sp=g.get("home_probable_pitcher") or None,
+            # ISO-8601 UTC start time, e.g. "2026-06-14T23:05:00Z".
+            # Frontend converts to local TZ for display.
+            game_datetime=g.get("game_datetime") or None,
+            game_date=g.get("game_date") or date,
+            venue=g.get("venue_name") or None,
         ))
     return games
 
