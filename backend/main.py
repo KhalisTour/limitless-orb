@@ -20,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from loader import DATA_DIR, get_data, get_predictions_for, load_all
+from .loader import DATA_DIR, get_data, get_predictions_for, load_all
 
 log = logging.getLogger("api")
 
@@ -110,7 +110,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                 continue
             opp_pitcher = side.get("pitcher")
             per_hitter = side.get("per_hitter") or {}
-                        sim = side.get("sim") or {}
+            sim = side.get("sim") or {}
             p_game_lookup = (sim.get("p_at_least_one_hr") or {}) if isinstance(sim, dict) else {}
             p_multi_lookup = (sim.get("p_multi_hr") or {}) if isinstance(sim, dict) else {}
             for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
@@ -218,7 +218,7 @@ def list_games(date: str | None = Query(default=None, description="YYYY-MM-DD"))
         raise HTTPException(status_code=503, detail="no predictions available")
     games_out = []
     for g in blob.get("games", []):
-                games_out.append({
+        games_out.append({
             "game_id": g.get("game_id"),
             "away_team": g.get("away"),
             "home_team": g.get("home"),
@@ -255,7 +255,7 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         if h.get("p_per_pa") is not None
     ]
 
-        out_sides: dict[str, Any] = {}
+    out_sides: dict[str, Any] = {}
     for side_key in ("away", "home"):
         side = (target.get("sides") or {}).get(side_key)
         if not isinstance(side, dict) or "error" in side:
@@ -271,7 +271,8 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
             if not isinstance(entry, dict) or "error" in entry:
                 hitters_out.append({
-                    "name": name, "lineup_slot": slot,
+                    "name": name,
+                    "lineup_slot": slot,
                     "error": (entry or {}).get("error"),
                 })
                 continue
@@ -330,7 +331,7 @@ def top_picks(
     flat.sort(key=lambda h: (h.get("p_per_pa") or -1.0), reverse=True)
     picks = []
     for rank, h in enumerate(flat[:n], start=1):
-                picks.append({
+        picks.append({
             "rank": rank,
             "name": h["name"],
             "batter_id": h.get("batter_id"),
