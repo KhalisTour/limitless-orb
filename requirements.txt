@@ -1,0 +1,5 @@
+# Railway builds the FastAPI backend from the repo ROOT (Root Directory = "").
+# This file tells Nixpacks "this is a Python app" and installs the backend's
+# dependencies. Running from the root means the sibling mlb_hr_pipeline/data
+# folder ships with the deploy, so the API can actually read predictions.
+-r backend/requirements.txt

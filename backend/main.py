@@ -20,7 +20,12 @@ from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from loader import DATA_DIR, get_data, get_predictions_for, load_all
+try:
+    # When run as a package (uvicorn backend.main:app, Root Directory = repo root)
+    from .loader import DATA_DIR, get_data, get_predictions_for, load_all
+except ImportError:
+    # When run as a top-level module (uvicorn main:app, Root Directory = backend)
+    from loader import DATA_DIR, get_data, get_predictions_for, load_all
 
 log = logging.getLogger("api")
 
