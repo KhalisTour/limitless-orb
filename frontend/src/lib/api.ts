@@ -20,7 +20,9 @@ import * as mock from "./mock";
   renderable before Railway is wired). When set -> live API.
 */
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+// Trailing slashes are a common copy-paste mistake in the Vercel env var;
+// strip them so `${API_BASE}/api/...` never becomes `//api/...`.
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
 export const USE_MOCK = API_BASE === "";
 
 const DEFAULT_REVALIDATE = 300;
