@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/*
+  Orb AI — "video game scouting overlay" design system.
+  Tailwind v4 uses CSS-first config via @theme (no tailwind.config.ts).
+  All tokens from PROMPT PART 2 live here.
+*/
+@theme {
+  /* surfaces */
+  --color-base: #0a0e17;
+  --color-card: #111827;
+  --color-hover: #1a2235;
+
+  /* neon accents */
+  --color-neon-lime: #c8ff00;
+  --color-neon-cyan: #00e5ff;
+  --color-neon-hot: #ff2d6f;
+  --color-neon-amber: #ffa726;
+
+  /* text */
+  --color-text-pri: #e8eaed;
+  --color-text-muted: #9aa0a6;
+
+  /* fonts (wired to next/font variables in layout.tsx) */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--color-base);
+  color: var(--color-text-pri);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hottest-zone pulse — GPU-composited, no JS loop (PART 3 / PART 7) */
+@keyframes orb-pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+.orb-pulse {
+  animation: orb-pulse 2s ease-in-out infinite;
+}
+
+/* ProbabilityRing fill — CSS transition target set inline per-instance */
+.orb-ring-progress {
+  transition: stroke-dashoffset 0.8s ease-out;
+}
+
+/* Zone color swap transition (matchup mobile tab change) */
+.orb-zone-fill {
+  transition: fill 0.3s ease;
+}
+
+/* Trajectory arc reveal */
+.orb-arc {
+  transition: stroke-dashoffset 0.8s ease-out;
+}
