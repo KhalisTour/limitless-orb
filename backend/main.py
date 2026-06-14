@@ -20,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .loader import DATA_DIR, get_data, get_predictions_for, load_all
+from loader import DATA_DIR, get_data, get_predictions_for, load_all
 
 log = logging.getLogger("api")
 
