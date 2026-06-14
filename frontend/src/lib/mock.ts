@@ -1,0 +1,439 @@
+import type {
+  AccuracyResponse,
+  DatesResponse,
+  GameDetail,
+  GameListItem,
+  GamesList,
+  Hitter,
+  MatchupResponse,
+  RefreshResponse,
+  Sim,
+  TopPick,
+  TopPicksResponse,
+  TrajectoryResponse,
+  ZoneCell,
+  ZonesResponse,
+} from "./types";
+
+/*
+  Realistic mock data covering EVERY contract edge case (PART 5):
+  - 2 games full sides, 1 one-side-errored, 1 both-sides-errored
+  - rookie (batter_id null), stats-null hitter, partial-stats hitter
+  - game_datetime null (older prediction), stale:true response
+
+  Used whenever NEXT_PUBLIC_API_URL is unset so the whole UI renders
+  before Railway is wired.
+*/
+
+const MOCK_DATE = "2026-06-14";
+
+const ZONE_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "11", "12", "13", "14"];
+
+function makeStats(seed: number): Hitter["stats"] {
+  return {
+    barrel_pct: 4 + (seed % 13),
+    hardhit_pct: 28 + (seed % 22),
+    xslg: 0.32 + (seed % 25) / 100,
+    xba: 0.21 + (seed % 9) / 100,
+    xwoba: 0.28 + (seed % 12) / 100,
+    ev: 86 + (seed % 9),
+    la: 6 + (seed % 18),
+    whiff_pct: 18 + (seed % 14),
+    k_pct: 16 + (seed % 12),
+    bb_pct: 5 + (seed % 8),
+  };
+}
+
+let hitterSeed = 1;
+function makeHitter(
+  name: string,
+  slot: number,
+  pPerPa: number,
+  opts: Partial<Hitter> = {},
+): Hitter {
+  const seed = hitterSeed++;
+  const batterId = `6450${(seed + 10).toString().padStart(2, "0")}`;
+  return {
+    name,
+    batter_id: batterId,
+    lineup_slot: slot,
+    p_per_pa: pPerPa,
+    p_per_pa_pctile: Math.round(pPerPa / 0.001),
+    p_game_hr: Math.min(0.1, pPerPa * 4.4),
+    p_multi_hr: pPerPa * 0.04,
+    exp_pa: 4.4,
+    tto_mult: 1.1 + (seed % 5) / 50,
+    park_factor: 1.0 + ((seed % 7) - 3) / 20,
+    platoon_factor: 0.95 + (seed % 5) / 50,
+    components: {
+      logistic: pPerPa * 0.85,
+      matchup: pPerPa * 1.25,
+      linear: pPerPa * 0.55,
+    },
+    explanation: null,
+    stats: makeStats(seed),
+    ...opts,
+  };
+}
+
+function makeSim(names: string[]): Sim {
+  const p_at_least_one_hr: Record<string, number> = {};
+  const p_multi_hr: Record<string, number> = {};
+  names.forEach((n, i) => {
+    p_at_least_one_hr[n] = Math.min(0.1, 0.03 + i * 0.012);
+    p_multi_hr[n] = 0.001 + i * 0.0004;
+  });
+  return {
+    n_games: 1000,
+    team_hr_dist: {
+      "2": 0.23,
+      "0": 0.258,
+      "1": 0.384,
+      "4": 0.04,
+      "3": 0.078,
+      "5": 0.008,
+      "6": 0.002,
+    },
+    p_at_least_one_hr,
+    p_multi_hr,
+    back_to_back_per_game: 0.041,
+  };
+}
+
+/* ---- Games ---- */
+
+interface MockGame extends GameDetail {}
+
+function buildGames(): MockGame[] {
+  hitterSeed = 1;
+
+  // Game 1 — full both sides (Mariners @ Orioles)
+  const g1Away = [
+    makeHitter("Julio Rodríguez", 1, 0.0625),
+    makeHitter("Cal Raleigh", 3, 0.0775),
+    makeHitter("Eugenio Suárez", 4, 0.0512),
+    makeHitter("Mitch Garver", 6, 0.0331),
+  ];
+  const g1Home = [
+    makeHitter("Gunnar Henderson", 1, 0.0588),
+    makeHitter("Adley Rutschman", 2, 0.0426),
+    makeHitter("Anthony Santander", 4, 0.0701),
+    makeHitter("Ryan Mountcastle", 5, 0.0298),
+  ];
+
+  // Game 2 — full both sides (Yankees @ Red Sox) with special hitters
+  const g2Away = [
+    makeHitter("Aaron Judge", 2, 0.0772),
+    // rookie: batter_id null -> disabled matchup CTA
+    makeHitter("Jasson Domínguez", 7, 0.0388, { batter_id: null }),
+    // stats null entirely -> stat grid hidden
+    makeHitter("Anthony Volpe", 9, 0.0214, { stats: null }),
+    makeHitter("Juan Soto", 3, 0.0689),
+  ];
+  const g2Home = [
+    makeHitter("Rafael Devers", 3, 0.0644),
+    // partial stats: some fields null
+    makeHitter("Triston Casas", 5, 0.0455, {
+      stats: {
+        barrel_pct: 9.1,
+        hardhit_pct: 44.2,
+        xslg: 0.498,
+        xba: null,
+        xwoba: 0.351,
+        ev: 91.3,
+        la: null,
+        whiff_pct: 27.5,
+        k_pct: null,
+        bb_pct: 11.2,
+      },
+    }),
+    makeHitter("Jarren Duran", 1, 0.0402),
+    makeHitter("Wilyer Abreu", 6, 0.0277),
+  ];
+
+  const g1: MockGame = {
+    game_id: 824830,
+    date: MOCK_DATE,
+    stale: false,
+    away_team: "Seattle Mariners",
+    home_team: "Baltimore Orioles",
+    away_sp: "Logan Gilbert",
+    home_sp: "Trevor Rogers",
+    game_datetime: "2026-06-14T23:05:00Z",
+    venue: "Oriole Park at Camden Yards",
+    park_factor: 1.2304,
+    sides: {
+      // sides.away.pitcher = opposing pitcher = home_sp
+      away: { pitcher: "Trevor Rogers", hitters: g1Away, sim: makeSim(g1Away.map((h) => h.name)) },
+      home: { pitcher: "Logan Gilbert", hitters: g1Home, sim: makeSim(g1Home.map((h) => h.name)) },
+    },
+  };
+
+  const g2: MockGame = {
+    game_id: 824831,
+    date: MOCK_DATE,
+    stale: false,
+    away_team: "New York Yankees",
+    home_team: "Boston Red Sox",
+    away_sp: "Carlos Rodón",
+    home_sp: "Brayan Bello",
+    game_datetime: "2026-06-14T23:10:00Z",
+    venue: "Fenway Park",
+    park_factor: 1.0412,
+    sides: {
+      away: { pitcher: "Brayan Bello", hitters: g2Away, sim: makeSim(g2Away.map((h) => h.name)) },
+      home: { pitcher: "Carlos Rodón", hitters: g2Home, sim: makeSim(g2Home.map((h) => h.name)) },
+    },
+  };
+
+  // Game 3 — away errored, home ok, game_datetime null (older prediction)
+  const g3Home = [
+    makeHitter("Mookie Betts", 1, 0.0533),
+    makeHitter("Shohei Ohtani", 2, 0.0768),
+    makeHitter("Freddie Freeman", 3, 0.0491),
+    makeHitter("Will Smith", 5, 0.0356),
+  ];
+  const g3: MockGame = {
+    game_id: 824832,
+    date: MOCK_DATE,
+    stale: false,
+    away_team: "San Francisco Giants",
+    home_team: "Los Angeles Dodgers",
+    away_sp: "Logan Webb",
+    home_sp: "Tyler Glasnow",
+    game_datetime: null,
+    venue: "Dodger Stadium",
+    park_factor: 0.9231,
+    sides: {
+      away: { error: "No away lineup yet for game 824832" },
+      home: { pitcher: "Logan Webb", hitters: g3Home, sim: makeSim(g3Home.map((h) => h.name)) },
+    },
+  };
+
+  // Game 4 — both sides errored
+  const g4: MockGame = {
+    game_id: 824833,
+    date: MOCK_DATE,
+    stale: false,
+    away_team: "Chicago Cubs",
+    home_team: "St. Louis Cardinals",
+    away_sp: "Justin Steele",
+    home_sp: "Sonny Gray",
+    game_datetime: "2026-06-15T00:15:00Z",
+    venue: "Busch Stadium",
+    park_factor: 0.9912,
+    sides: {
+      away: { error: "No away lineup yet for game 824833" },
+      home: { error: "No home lineup yet for game 824833" },
+    },
+  };
+
+  return [g1, g2, g3, g4];
+}
+
+const GAMES = buildGames();
+
+function topPickTeaser(g: GameDetail): GameListItem["top_pick"] {
+  const cands: { name: string; side: "home" | "away"; p: number }[] = [];
+  (["away", "home"] as const).forEach((sideKey) => {
+    const side = g.sides[sideKey];
+    if ("hitters" in side) {
+      side.hitters.forEach((h) => cands.push({ name: h.name, side: sideKey, p: h.p_per_pa }));
+    }
+  });
+  if (cands.length === 0) return null;
+  const best = cands.reduce((a, b) => (b.p > a.p ? b : a));
+  return { name: best.name, side: best.side, p_per_pa: best.p };
+}
+
+export function mockDates(): DatesResponse {
+  return {
+    dates: ["2026-06-14", "2026-06-13", "2026-06-12", "2026-06-11"],
+    latest: "2026-06-14",
+    n: 4,
+  };
+}
+
+export function mockGames(date?: string): GamesList {
+  const stale = date !== undefined && date !== MOCK_DATE;
+  return {
+    date: MOCK_DATE,
+    stale,
+    games: GAMES.map((g) => ({
+      game_id: g.game_id,
+      away_team: g.away_team,
+      home_team: g.home_team,
+      away_sp: g.away_sp,
+      home_sp: g.home_sp,
+      game_datetime: g.game_datetime,
+      venue: g.venue,
+      park_factor: g.park_factor,
+      top_pick: topPickTeaser(g),
+    })),
+  };
+}
+
+export function mockGame(gameId: number | string): GameDetail | null {
+  const id = Number(gameId);
+  const g = GAMES.find((x) => x.game_id === id);
+  return g ?? null;
+}
+
+export function mockTopPicks(date?: string, n = 50): TopPicksResponse {
+  const stale = date !== undefined && date !== MOCK_DATE;
+  const picks: TopPick[] = [];
+  GAMES.forEach((g) => {
+    (["away", "home"] as const).forEach((sideKey) => {
+      const side = g.sides[sideKey];
+      if ("hitters" in side) {
+        side.hitters.forEach((h) => {
+          picks.push({
+            ...h,
+            rank: 0,
+            game_id: g.game_id,
+            away_team: g.away_team,
+            home_team: g.home_team,
+            game_datetime: g.game_datetime,
+            opp_pitcher: side.pitcher,
+          });
+        });
+      }
+    });
+  });
+  picks.sort((a, b) => b.p_per_pa - a.p_per_pa);
+  picks.forEach((p, i) => (p.rank = i + 1));
+  return { date: MOCK_DATE, stale, picks: picks.slice(0, n) };
+}
+
+function makeZoneCell(seed: number, base: number): ZoneCell {
+  return {
+    hr_pct: Math.max(0, base + (Math.sin(seed) * 0.025)),
+    avg_la: 12 + (seed % 20),
+    avg_ev: 88 + (seed % 10),
+    n: 12 + ((seed * 7) % 90),
+  };
+}
+
+export function mockZones(batterId: string, pitchFamily = "all"): ZonesResponse {
+  // Special-case one id to exercise player_found:false path.
+  const found = batterId !== "645099";
+  const zones: Record<string, ZoneCell> = {};
+  const league_baseline: Record<string, ZoneCell> = {};
+  ZONE_KEYS.forEach((k, i) => {
+    const hot = k === "5" || k === "6";
+    if (found) zones[k] = makeZoneCell(i + 3, hot ? 0.06 : 0.03);
+    league_baseline[k] = makeZoneCell(i + 1, 0.032);
+  });
+  return {
+    player_id: batterId,
+    name: "Mock, Hitter",
+    pitch_family: pitchFamily,
+    player_found: found,
+    zones: found ? zones : {},
+    league_baseline,
+  };
+}
+
+export function mockMatchup(
+  batterId: string,
+  pitcherName: string,
+  _pitchFamily = "all",
+): MatchupResponse {
+  // Special-case to exercise not_available path.
+  if (batterId === "645099" || pitcherName === "Unknown Pitcher") {
+    return { zones: {}, hottest_zone: null, hottest_pitch_family: null, narrative: "not_available" };
+  }
+  const zones: Record<string, MatchupResponse["zones"][string]> = {};
+  ZONE_KEYS.forEach((k, i) => {
+    const hot = k === "5";
+    const danger = hot ? 0.085 : Math.max(0.01, 0.03 + Math.sin(i) * 0.02);
+    zones[k] = {
+      danger_score: danger,
+      batter_hr_pct: hot ? 0.062 : 0.028 + (i % 4) * 0.005,
+      pitcher_tendency: 0.1 + (i % 5) * 0.04,
+      danger_pct: danger,
+    };
+  });
+  return {
+    zones,
+    hottest_zone: "5",
+    hottest_pitch_family: "fastball",
+    narrative: `${pitcherName} lives middle-in with the fastball, and this hitter does the most damage in zone 5. Watch for a mistake over the heart of the plate.`,
+  };
+}
+
+export function mockTrajectory(
+  batterId: string,
+  zone: string,
+  pitchFamily = "fastball",
+): TrajectoryResponse {
+  // batterId 645099 -> not found (hide panel)
+  if (batterId === "645099") {
+    return {
+      found: false,
+      used_key: "",
+      median_la: 0,
+      median_ev: 0,
+      apex_ft: 0,
+      distance_ft: 0,
+      trajectory: [],
+    };
+  }
+  const distance = 412;
+  const apex = 98;
+  const pts: [number, number][] = [];
+  const n = 24;
+  for (let i = 0; i <= n; i++) {
+    const x = (distance * i) / n;
+    const t = i / n;
+    const y = 3 + 4 * apex * t * (1 - t); // parabola from ~3ft to apex back to 0
+    pts.push([Math.round(x), Math.max(0, Math.round(y * 10) / 10)]);
+  }
+  return {
+    found: true,
+    used_key: `zone_${zone}_${pitchFamily}`,
+    median_la: 28.5,
+    median_ev: 104.2,
+    apex_ft: apex,
+    distance_ft: distance,
+    trajectory: pts,
+  };
+}
+
+export function mockAccuracy(): AccuracyResponse {
+  return {
+    status: "ok",
+    n_predictions: 360,
+    n_hrs: 53,
+    rate_predicted: 0.033,
+    rate_actual: 0.147,
+    brier: 0.137,
+    auc: 0.647,
+    log_loss: 0.401,
+    calibration_bins: [
+      { bin: "0-2%", predicted_avg: 0.015, actual_rate: 0.012, n: 40 },
+      { bin: "2-4%", predicted_avg: 0.03, actual_rate: 0.028, n: 120 },
+      { bin: "4-6%", predicted_avg: 0.049, actual_rate: 0.052, n: 95 },
+      { bin: "6-8%", predicted_avg: 0.068, actual_rate: 0.061, n: 70 },
+      { bin: "8%+", predicted_avg: 0.091, actual_rate: 0.103, n: 35 },
+    ],
+    best_calls: [
+      { date: "2026-06-12", hitter: "Aaron Judge", opp_pitcher: "Brayan Bello", p_per_pa: 0.078, actual_hr: 1 },
+      { date: "2026-06-11", hitter: "Shohei Ohtani", opp_pitcher: "Logan Webb", p_per_pa: 0.071, actual_hr: 1 },
+      { date: "2026-06-10", hitter: "Cal Raleigh", opp_pitcher: "Trevor Rogers", p_per_pa: 0.069, actual_hr: 1 },
+    ],
+    worst_misses: [
+      { date: "2026-06-12", hitter: "Anthony Volpe", opp_pitcher: "Bello", p_per_pa: 0.021, actual_hr: 1 },
+      { date: "2026-06-11", hitter: "Wilyer Abreu", opp_pitcher: "Rodón", p_per_pa: 0.027, actual_hr: 1 },
+    ],
+  };
+}
+
+export function mockRefresh(gameId: number | string): RefreshResponse {
+  const g = mockGame(gameId) ?? GAMES[0];
+  return {
+    refreshed: true,
+    refreshed_at: new Date().toISOString(),
+    game: g,
+  };
+}
