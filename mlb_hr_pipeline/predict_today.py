@@ -150,7 +150,7 @@ def main(date: str = None):
 
         game_rec = {"game_id": g["game_id"], "away": g["away"], "home": g["home"],
                     "away_sp": g.get("away_sp"), "home_sp": g.get("home_sp"),
-                    "park_factor": pf, "sides": {}}
+                    "game_datetime": g.get("game_datetime"), "park_factor": pf, "sides": {}}
         for side in ("away", "home"):
             try:
                 opp = "home" if side == "away" else "away"

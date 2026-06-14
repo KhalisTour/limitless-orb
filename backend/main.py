@@ -120,6 +120,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "home_team": g.get("home"),
                     "away_sp": g.get("away_sp"),
                     "home_sp": g.get("home_sp"),
+                    "game_datetime": g.get("game_datetime"),
                     "side": side_key,
                     "name": name,
                     "batter_id": batter_id,
@@ -186,6 +187,14 @@ def health() -> dict:
     }
 
 
+@app.get("/api/dates")
+def list_dates() -> dict:
+    d = get_data()
+    preds = d.get("predictions_by_date") or {}
+    dates = sorted(preds.keys(), reverse=True)
+    return _sanitize({"dates": dates})
+
+
 # ---------------------------------------------------------------------------
 # games list
 
@@ -203,6 +212,7 @@ def list_games(date: str | None = Query(default=None, description="YYYY-MM-DD"))
             "home_team": g.get("home"),
             "away_sp": g.get("away_sp"),
             "home_sp": g.get("home_sp"),
+            "game_datetime": g.get("game_datetime"),
             "top_pick": _top_pick_for_game(g),
         })
     return _sanitize({"date": served, "stale": stale, "games": games_out})
@@ -273,6 +283,7 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         "home_team": target.get("home"),
         "away_sp": target.get("away_sp"),
         "home_sp": target.get("home_sp"),
+        "game_datetime": target.get("game_datetime"),
         "park_factor": target.get("park_factor"),
         "sides": out_sides,
     })
@@ -302,6 +313,7 @@ def top_picks(
             "game_id": h["game_id"],
             "away_team": h["away_team"],
             "home_team": h["home_team"],
+            "game_datetime": h.get("game_datetime"),
             "opp_pitcher": h["opp_pitcher"],
             "p_per_pa": h["p_per_pa"],
             "p_per_pa_pctile": _pctile_rank(all_p, h["p_per_pa"]),
