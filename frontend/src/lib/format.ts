@@ -15,6 +15,22 @@ export function formatGameTime(iso: string | null): string | null {
   }).format(d);
 }
 
+/** ISO UTC -> compact Eastern time, e.g. "6:45p ET". null-safe. */
+export function formatGameTimeET(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/New_York",
+  }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  const period = get("dayPeriod").toLowerCase().startsWith("p") ? "p" : "a";
+  return `${get("hour")}:${get("minute")}${period} ET`;
+}
+
 /** Pretty date for headers, e.g. "Sat, Jun 14". null-safe. */
 export function formatDate(dateStr: string | null): string | null {
   if (!dateStr) return null;

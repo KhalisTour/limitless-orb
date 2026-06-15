@@ -197,6 +197,25 @@ export interface AccuracyResponse {
   worst_misses: AccuracyCall[];
 }
 
+/* Betting edge — from /api/odds/{date}. */
+export interface OddsLine {
+  batter_id: string | null;
+  name: string;
+  american: number | null;
+  implied: number | null;
+  model_p: number | null;
+  edge: number | null;
+  ev: number | null;
+}
+
+export interface OddsResponse {
+  date: string;
+  available: boolean;
+  book: string | null;
+  pulled_at: string | null;
+  odds: OddsLine[];
+}
+
 /* Pick'em grading source. hr_by_batter_id maps batter_id -> HRs hit that day. */
 export interface ResultsResponse {
   date: string;

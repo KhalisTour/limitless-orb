@@ -5,6 +5,7 @@ import type {
   GameDetail,
   GamesList,
   MatchupResponse,
+  OddsResponse,
   RefreshResponse,
   ResultsResponse,
   TopPicksResponse,
@@ -136,6 +137,17 @@ export async function getAccuracy(days = 30): Promise<ApiResult<AccuracyResponse
 export async function getResults(date: string): Promise<ApiResult<ResultsResponse>> {
   if (USE_MOCK) return ok(mock.mockResults(date));
   return liveFetch<ResultsResponse>(`/api/results/${date}`, { revalidate: 3600 });
+}
+
+/* Betting edge. We deliberately do NOT mock odds — without a real feed the
+   edge UI stays empty rather than showing fabricated lines. Live calls
+   /api/odds/{date}, which returns available:false until the pipeline's odds
+   fetch has written a file. */
+export async function getOdds(date: string): Promise<ApiResult<OddsResponse>> {
+  if (USE_MOCK) {
+    return ok({ date, available: false, book: null, pulled_at: null, odds: [] });
+  }
+  return liveFetch<OddsResponse>(`/api/odds/${date}`, { revalidate: 300 });
 }
 
 /* Client-side POST — refresh a game's lineup/prediction (error #17). */

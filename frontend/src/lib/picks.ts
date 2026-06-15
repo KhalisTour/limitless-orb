@@ -17,6 +17,36 @@ export interface Pick {
   gameDatetime: string | null;
 }
 
+/* A selectable hitter in the pool (richer than a stored Pick). */
+export interface PoolHitter {
+  batterId: string;
+  name: string;
+  gameId: number;
+  oppPitcher: string;
+  pGameHr: number;
+  pPerPa: number;
+  gameDatetime: string | null;
+}
+
+/* One game's collapsible column in the Pick'em nav. */
+export interface GameGroup {
+  gameId: number;
+  label: string; // "MIN @ SF"
+  timeET: string | null; // "6:45p ET"
+  hitters: PoolHitter[]; // sorted Elite -> Low (pPerPa desc)
+}
+
+export function poolToPick(h: PoolHitter): Pick {
+  return {
+    batterId: h.batterId,
+    name: h.name,
+    gameId: h.gameId,
+    oppPitcher: h.oppPitcher,
+    pGameHr: h.pGameHr,
+    gameDatetime: h.gameDatetime,
+  };
+}
+
 export interface DayGrade {
   correct: number;
   total: number;

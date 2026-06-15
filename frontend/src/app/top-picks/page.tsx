@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getTopPicks } from "@/lib/api";
+import { getOdds, getTopPicks } from "@/lib/api";
 import { formatDate, formatPct } from "@/lib/format";
+import type { OddsLine } from "@/lib/types";
 import TopPickRow from "@/components/TopPickRow";
 import StaleBanner from "@/components/StaleBanner";
 import OfflineShell from "@/components/OfflineShell";
@@ -32,6 +33,18 @@ export default async function TopPicksPage() {
 
   const { picks, stale, date } = res.data;
 
+  // Edge odds (when a feed exists). Joined by batter_id; absent until the
+  // pipeline writes an odds file — the UI just omits edges, never fakes them.
+  const oddsRes = await getOdds(date);
+  const oddsBook = oddsRes.ok ? oddsRes.data.book : null;
+  const oddsByBatter = new Map<string, OddsLine>();
+  if (oddsRes.ok && oddsRes.data.available) {
+    for (const line of oddsRes.data.odds) {
+      if (line.batter_id) oddsByBatter.set(line.batter_id, line);
+    }
+  }
+  const hasEdge = oddsByBatter.size > 0;
+
   return (
     <div>
       {stale && <StaleBanner date={date} />}
@@ -40,6 +53,7 @@ export default async function TopPicksPage() {
         <h1 className="font-sans text-xl font-semibold text-text-pri">Today&apos;s Best Bets</h1>
         <p className="mt-0.5 font-mono text-xs text-text-muted">
           {formatDate(date) ?? date} · {picks.length} hitters predicted
+          {hasEdge && oddsBook ? ` · edge vs ${oddsBook}` : ""}
         </p>
       </header>
 
@@ -50,7 +64,12 @@ export default async function TopPicksPage() {
       ) : (
         <div className="space-y-2">
           {picks.map((p) => (
-            <TopPickRow key={`${p.rank}-${p.batter_id ?? p.name}`} pick={p} />
+            <TopPickRow
+              key={`${p.rank}-${p.batter_id ?? p.name}`}
+              pick={p}
+              odds={p.batter_id ? oddsByBatter.get(p.batter_id) : undefined}
+              oddsBook={oddsBook}
+            />
           ))}
         </div>
       )}
