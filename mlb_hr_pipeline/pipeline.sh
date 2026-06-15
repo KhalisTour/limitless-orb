@@ -39,6 +39,10 @@ fi
 run python ingest_live.py "$DATE"
 run python predict_today.py "$DATE"
 
+# 4. Free HR-prop odds (best-effort; DK may block from datacenter IPs). The
+#    script never raises, so this can't fail the pipeline.
+run python fetch_odds.py "$DATE" || true
+
 # Best-effort: tell the local API to reload from disk. Never fails the pipeline.
 curl -s -X POST "${API_URL:-http://localhost:8000}/api/reload" >/dev/null 2>&1 || true
 

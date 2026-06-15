@@ -820,6 +820,117 @@ def refresh_log() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# results (pick'em grading) + odds (betting edge)
+
+
+@app.get("/api/results/{date}")
+def get_results(date: str) -> dict:
+    """Who actually homered on `date`, keyed by batter_id.
+
+    Derived from the scored calibration_log already in memory — no network.
+    batter_id is resolved via the same _hydrate_batter mapping the rest of
+    the API uses, so ids line up with the frontend's picks. `final` is True
+    once the date has been scored (rows exist).
+    """
+    d = get_data()
+    cal = d.get("calibration_log")
+    hr_by_batter_id: dict[str, int] = {}
+    final = False
+    if cal is not None and len(cal) and "game_date" in cal.columns:
+        rows = cal[cal["game_date"].astype(str) == date]
+        final = len(rows) > 0
+        for r in rows.itertuples(index=False):
+            try:
+                cnt = int(getattr(r, "actual_hr_count", 0) or 0)
+            except (TypeError, ValueError):
+                cnt = 0
+            if cnt < 1:
+                continue
+            bid, _ = _hydrate_batter(str(getattr(r, "hitter", "")))
+            if bid is not None:
+                hr_by_batter_id[str(bid)] = cnt
+    return _sanitize({"date": date, "final": final, "hr_by_batter_id": hr_by_batter_id})
+
+
+def _american_to_implied(american: Any) -> float | None:
+    try:
+        a = float(american)
+    except (TypeError, ValueError):
+        return None
+    return 100.0 / (a + 100.0) if a >= 0 else (-a) / ((-a) + 100.0)
+
+
+def _american_profit(american: Any) -> float | None:
+    """Profit per 1 unit staked at the given American odds."""
+    try:
+        a = float(american)
+    except (TypeError, ValueError):
+        return None
+    return a / 100.0 if a >= 0 else 100.0 / (-a)
+
+
+@app.get("/api/odds/{date}")
+def get_odds(date: str) -> dict:
+    """HR-prop odds for `date` (written by the pipeline's odds fetch), joined
+    with the model's p_game_hr to compute edge and EV per hitter.
+
+    available:false when no odds file exists yet (e.g. the fetch was blocked).
+    """
+    d = get_data()
+    odds_blob = (d.get("odds_by_date") or {}).get(date)
+
+    hitters, _, _, _ = _gather_hitters_for_date(date)
+    p_by_id: dict[str, float] = {}
+    p_by_name: dict[str, float] = {}
+    for h in hitters:
+        pg = h.get("p_game_hr")
+        if pg is None:
+            continue
+        if h.get("batter_id") is not None:
+            p_by_id[str(h["batter_id"])] = pg
+        if h.get("name"):
+            p_by_name[str(h["name"]).lower()] = pg
+
+    if not odds_blob:
+        return _sanitize({"date": date, "available": False, "book": None, "odds": []})
+
+    out: list[dict] = []
+    for ln in odds_blob.get("lines") or []:
+        bid = ln.get("batter_id")
+        name = ln.get("name")
+        american = ln.get("american")
+        implied = _american_to_implied(american)
+        model = None
+        if bid is not None and str(bid) in p_by_id:
+            model = p_by_id[str(bid)]
+        elif name and name.lower() in p_by_name:
+            model = p_by_name[name.lower()]
+        edge = ev = None
+        profit = _american_profit(american)
+        if model is not None and implied is not None and profit is not None:
+            edge = model - implied
+            ev = model * profit - (1.0 - model)
+        out.append({
+            "batter_id": str(bid) if bid is not None else None,
+            "name": name,
+            "american": american,
+            "implied": implied,
+            "model_p": model,
+            "edge": edge,
+            "ev": ev,
+        })
+
+    out.sort(key=lambda x: (x["edge"] is not None, x["edge"] or 0.0), reverse=True)
+    return _sanitize({
+        "date": date,
+        "available": True,
+        "book": odds_blob.get("book"),
+        "pulled_at": odds_blob.get("pulled_at"),
+        "odds": out,
+    })
+
+
+# ---------------------------------------------------------------------------
 # error handling
 
 

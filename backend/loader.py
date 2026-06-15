@@ -45,6 +45,7 @@ _lock = threading.Lock()
 
 
 PRED_RE = re.compile(r"predictions_(\d{4}-\d{2}-\d{2})\.json$")
+ODDS_RE = re.compile(r"odds_(\d{4}-\d{2}-\d{2})\.json$")
 
 
 def _find_predictions() -> dict[str, Path]:
@@ -53,6 +54,17 @@ def _find_predictions() -> dict[str, Path]:
         return out
     for p in DATA_DIR.glob("predictions_*.json"):
         m = PRED_RE.search(p.name)
+        if m:
+            out[m.group(1)] = p
+    return out
+
+
+def _find_odds() -> dict[str, Path]:
+    out: dict[str, Path] = {}
+    if not DATA_DIR.exists():
+        return out
+    for p in DATA_DIR.glob("odds_*.json"):
+        m = ODDS_RE.search(p.name)
         if m:
             out[m.group(1)] = p
     return out
@@ -193,6 +205,12 @@ def load_all() -> None:
             if blob:
                 predictions[d] = blob
 
+        odds_by_date: dict[str, Any] = {}
+        for d, p in _find_odds().items():
+            blob = _safe_json(p)
+            if blob:
+                odds_by_date[d] = blob
+
         stale, stale_reason = _compute_stale(latest_date)
         if stale_reason.startswith("very_stale"):
             log.error("predictions are %s old", stale_reason)
@@ -218,6 +236,7 @@ def load_all() -> None:
         _state.update({
             "data_dir": str(DATA_DIR),
             "predictions_by_date": predictions,
+            "odds_by_date": odds_by_date,
             "latest_date": latest_date,
             "stale": stale,
             "stale_reason": stale_reason,
