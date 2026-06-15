@@ -6,6 +6,7 @@ import type {
   GamesList,
   MatchupResponse,
   RefreshResponse,
+  ResultsResponse,
   TopPicksResponse,
   TrajectoryResponse,
   ZonesResponse,
@@ -128,6 +129,13 @@ export async function getAccuracy(days = 30): Promise<ApiResult<AccuracyResponse
   return liveFetch<AccuracyResponse>(`/api/accuracy?days=${days}`, {
     revalidate: 3600,
   });
+}
+
+/* Pick'em grading source. Backend endpoint TBD (pipeline writes results_<date>);
+   until it ships live calls 404 and the minigame shows "results pending". */
+export async function getResults(date: string): Promise<ApiResult<ResultsResponse>> {
+  if (USE_MOCK) return ok(mock.mockResults(date));
+  return liveFetch<ResultsResponse>(`/api/results/${date}`, { revalidate: 3600 });
 }
 
 /* Client-side POST — refresh a game's lineup/prediction (error #17). */
