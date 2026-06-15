@@ -12,6 +12,7 @@ import Logo from "./Logo";
 const LINKS = [
   { href: "/", label: "Games", match: (p: string) => p === "/" || p.startsWith("/game") || p.startsWith("/matchup") },
   { href: "/top-picks", label: "Top Picks", match: (p: string) => p.startsWith("/top-picks") },
+  { href: "/play", label: "Pick'em", match: (p: string) => p.startsWith("/play") },
   { href: "/accuracy", label: "Accuracy", match: (p: string) => p.startsWith("/accuracy") },
 ];
 

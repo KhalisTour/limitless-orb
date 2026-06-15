@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTopPicks } from "@/lib/api";
 import { formatDate, formatPct } from "@/lib/format";
-import HitterCard from "@/components/HitterCard";
+import TopPickRow from "@/components/TopPickRow";
 import StaleBanner from "@/components/StaleBanner";
 import OfflineShell from "@/components/OfflineShell";
 
@@ -50,15 +50,7 @@ export default async function TopPicksPage() {
       ) : (
         <div className="space-y-2">
           {picks.map((p) => (
-            <HitterCard
-              key={`${p.rank}-${p.batter_id ?? p.name}`}
-              hitter={p}
-              variant="compact"
-              gameId={p.game_id}
-              oppPitcher={p.opp_pitcher}
-              gameDatetime={p.game_datetime}
-              rank={p.rank}
-            />
+            <TopPickRow key={`${p.rank}-${p.batter_id ?? p.name}`} pick={p} />
           ))}
         </div>
       )}

@@ -7,6 +7,7 @@ import type {
   Hitter,
   MatchupResponse,
   RefreshResponse,
+  ResultsResponse,
   Sim,
   TopPick,
   TopPicksResponse,
@@ -427,6 +428,23 @@ export function mockAccuracy(): AccuracyResponse {
       { date: "2026-06-11", hitter: "Wilyer Abreu", opp_pitcher: "Rodón", p_per_pa: 0.027, actual_hr: 1 },
     ],
   };
+}
+
+export function mockResults(date: string): ResultsResponse {
+  // Today (and future) = not final yet. Past dates = a few batters homered,
+  // so the minigame's grading/streak loop is demoable offline.
+  const isPastOrToday = date <= MOCK_DATE;
+  const final = date < MOCK_DATE;
+  const hr_by_batter_id: Record<string, number> = {};
+  if (final && isPastOrToday) {
+    // deterministic-ish: every 3rd mock batter_id "homered"
+    for (let seed = 1; seed <= 40; seed++) {
+      const id = `6450${(seed + 10).toString().padStart(2, "0")}`;
+      if (seed % 3 === 0) hr_by_batter_id[id] = 1;
+      if (seed % 7 === 0) hr_by_batter_id[id] = 2;
+    }
+  }
+  return { date, final, hr_by_batter_id };
 }
 
 export function mockRefresh(gameId: number | string): RefreshResponse {

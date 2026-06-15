@@ -197,6 +197,13 @@ export interface AccuracyResponse {
   worst_misses: AccuracyCall[];
 }
 
+/* Pick'em grading source. hr_by_batter_id maps batter_id -> HRs hit that day. */
+export interface ResultsResponse {
+  date: string;
+  final: boolean;
+  hr_by_batter_id: Record<string, number>;
+}
+
 export interface RefreshResponse {
   refreshed: boolean;
   refreshed_at?: string;

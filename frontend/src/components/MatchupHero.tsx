@@ -2,6 +2,7 @@
 
 import { useSlate } from "@/lib/slate";
 import { formatPct } from "@/lib/format";
+import Headshot from "./Headshot";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
 
@@ -36,10 +37,11 @@ export default function MatchupHero({
       className="relative overflow-hidden rounded-xl border border-white/5 p-5"
       style={{ background: bg }}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Headshot batterId={batterId} name={name} size={72} />
         <ProbabilityRing value={pPerPa} size={100} />
         <div className="min-w-0">
-          <h1 className="font-mono text-3xl font-bold leading-tight text-text-pri">{name}</h1>
+          <h1 className="font-mono text-2xl font-bold leading-tight text-text-pri sm:text-3xl">{name}</h1>
           <p className="mt-0.5 font-sans text-sm text-text-muted">vs {pitcher}</p>
           <div className="mt-2 flex items-center gap-2">
             <LabelBadge label={slate.labelFor(pPerPa)} />

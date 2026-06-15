@@ -6,6 +6,7 @@ import type {
   GamesList,
   MatchupResponse,
   RefreshResponse,
+  ResultsResponse,
   TopPicksResponse,
   TrajectoryResponse,
   ZonesResponse,
@@ -20,7 +21,9 @@ import * as mock from "./mock";
   renderable before Railway is wired). When set -> live API.
 */
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+// Trailing slashes are a common copy-paste mistake in the Vercel env var;
+// strip them so `${API_BASE}/api/...` never becomes `//api/...`.
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
 export const USE_MOCK = API_BASE === "";
 
 const DEFAULT_REVALIDATE = 300;
@@ -126,6 +129,13 @@ export async function getAccuracy(days = 30): Promise<ApiResult<AccuracyResponse
   return liveFetch<AccuracyResponse>(`/api/accuracy?days=${days}`, {
     revalidate: 3600,
   });
+}
+
+/* Pick'em grading source. Backend endpoint TBD (pipeline writes results_<date>);
+   until it ships live calls 404 and the minigame shows "results pending". */
+export async function getResults(date: string): Promise<ApiResult<ResultsResponse>> {
+  if (USE_MOCK) return ok(mock.mockResults(date));
+  return liveFetch<ResultsResponse>(`/api/results/${date}`, { revalidate: 3600 });
 }
 
 /* Client-side POST — refresh a game's lineup/prediction (error #17). */

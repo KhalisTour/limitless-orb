@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Hitter } from "@/lib/types";
 import { useSlate } from "@/lib/slate";
 import { formatGameTime, formatPct } from "@/lib/format";
+import Headshot from "./Headshot";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
 
@@ -44,6 +45,7 @@ export default function HitterCard({
   if (variant === "game") {
     const inner = (
       <div className="flex items-center gap-3 rounded-lg border border-white/5 bg-card p-3 transition-colors hover:bg-hover">
+        <Headshot batterId={hitter.batter_id} name={hitter.name} size={48} />
         <ProbabilityRing value={hitter.p_per_pa} size={60} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
