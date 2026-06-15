@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import type { TopPick } from "@/lib/types";
+import type { OddsLine, TopPick } from "@/lib/types";
 import { useSlate } from "@/lib/slate";
 import { formatGameTime, formatPct } from "@/lib/format";
 import Headshot from "./Headshot";
@@ -11,6 +11,7 @@ import LabelBadge from "./LabelBadge";
 import ModelViews from "./ModelViews";
 import StatGrid from "./StatGrid";
 import PlayerDistribution from "./PlayerDistribution";
+import { EdgeBadge, EdgeDetail } from "./EdgeBadge";
 
 /*
   Top Picks row with an inline mini-breakdown. Tap the row to expand: shows
@@ -18,7 +19,15 @@ import PlayerDistribution from "./PlayerDistribution";
   grid — without leaving the page. "Full matchup" link goes to the deep page.
 */
 
-export default function TopPickRow({ pick }: { pick: TopPick }) {
+export default function TopPickRow({
+  pick,
+  odds,
+  oddsBook = null,
+}: {
+  pick: TopPick;
+  odds?: OddsLine;
+  oddsBook?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const slate = useSlate();
   const label = slate.labelFor(pick.p_per_pa);
@@ -45,6 +54,7 @@ export default function TopPickRow({ pick }: { pick: TopPick }) {
           <div className="truncate font-sans font-semibold text-text-pri">{pick.name}</div>
           <div className="truncate font-mono text-[11px] text-text-muted">vs {pick.opp_pitcher}</div>
         </div>
+        <EdgeBadge line={odds} />
         <LabelBadge label={label} size="sm" />
         {time && <span className="hidden shrink-0 font-mono text-[11px] text-text-muted sm:inline">{time}</span>}
         <span
@@ -68,6 +78,8 @@ export default function TopPickRow({ pick }: { pick: TopPick }) {
               <span className="text-text-pri">{pick.exp_pa.toFixed(1)}</span> exp PA
             </span>
           </div>
+
+          <EdgeDetail line={odds} book={oddsBook} />
 
           <div>
             <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-text-muted">
