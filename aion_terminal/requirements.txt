@@ -1,0 +1,26 @@
+fastapi
+   uvicorn
+   SQLAlchemy
+   python-dotenv
+   # AION Terminal — Python dependencies
+# Only packages actually imported by aion_terminal/ are listed.
+
+# Web Framework
+fastapi>=0.110
+uvicorn[standard]>=0.27
+
+# Configuration
+python-dotenv>=1.0
+
+# HTTP / data validation (HTTP traffic uses stdlib urllib)
+pydantic>=2.5
+
+# AI/LLM APIs
+openai>=1.30
+anthropic>=0.34
+
+# Data Processing
+pandas>=2.0
+
+# Testing
+pytest>=8.0
