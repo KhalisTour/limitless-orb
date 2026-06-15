@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { getGame, getMatchup, getTrajectory, getZones } from "@/lib/api";
+import { getGame, getMatchup, getOdds, getTrajectory, getZones } from "@/lib/api";
 import { isSideError, type Hitter } from "@/lib/types";
 import MatchupHero from "@/components/MatchupHero";
+import { EdgeDetail } from "@/components/EdgeBadge";
 import MatchupZones from "@/components/MatchupZones";
 import TrajectoryArc from "@/components/TrajectoryArc";
 import { isTrajectoryVisible } from "@/lib/trajectory";
@@ -28,8 +29,14 @@ export default async function MatchupPage({
   params: Promise<{ game_id: string; batter_id: string; pitcher_name: string }>;
 }) {
   const { game_id, batter_id, pitcher_name } = await params;
-  // Next.js delivers route params already decoded.
-  const pitcher = pitcher_name;
+  // Next 16 does NOT auto-decode the route segment, so decode it ourselves
+  // (error #16). Guard against a stray literal % that isn't an escape.
+  let pitcher = pitcher_name;
+  try {
+    pitcher = decodeURIComponent(pitcher_name);
+  } catch {
+    pitcher = pitcher_name;
+  }
 
   // game + zones + matchup in parallel; trajectory depends on hottest_zone.
   const [gameRes, zonesRes, matchupRes] = await Promise.all([
@@ -69,6 +76,14 @@ export default async function MatchupPage({
   const pPerPa = hitter?.p_per_pa ?? 0;
   const pGameHr = hitter?.p_game_hr ?? 0;
 
+  // Betting edge for this hitter (omitted until a real odds feed exists).
+  const oddsRes = await getOdds(game.date);
+  const oddsBook = oddsRes.ok ? oddsRes.data.book : null;
+  const oddsLine =
+    oddsRes.ok && oddsRes.data.available
+      ? oddsRes.data.odds.find((o) => o.batter_id === batter_id)
+      : undefined;
+
   return (
     <div>
       {game.stale && <StaleBanner date={game.date} />}
@@ -88,6 +103,12 @@ export default async function MatchupPage({
         pPerPa={pPerPa}
         pGameHr={pGameHr}
       />
+
+      {oddsLine && (
+        <div className="mt-3">
+          <EdgeDetail line={oddsLine} book={oddsBook} />
+        </div>
+      )}
 
       {/* §2 TARGETING RETICLE */}
       <Section title="Targeting">

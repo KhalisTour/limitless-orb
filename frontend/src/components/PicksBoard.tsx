@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getResults } from "@/lib/api";
+import { useSlate } from "@/lib/slate";
 import { formatPct } from "@/lib/format";
 import {
   MAX_PICKS,
@@ -10,27 +11,31 @@ import {
   isSlateLocked,
   loadStore,
   poissonBinomial,
+  poolToPick,
   saveStore,
   scoreDay,
   type DaySlate,
-  type Pick,
+  type GameGroup,
   type PicksStore,
+  type PoolHitter,
 } from "@/lib/picks";
 import Headshot from "./Headshot";
+import LabelBadge from "./LabelBadge";
 
 /*
-  Daily HR Pick'em (points + streaks, anonymous/on-device). Pick up to 5
-  hitters to homer; lock the slate; it grades against /api/results/{date}
-  once finals are in. All state in localStorage.
+  Daily HR Pick'em (points + streaks, anonymous/on-device).
+  Selection is organized as a horizontal game nav: each game is a collapsible
+  column ([AWAY @ HOME  time ET]); tapping it reveals that game's hitters,
+  sorted Elite -> Low, as minimal cards (photo + name + label + select bubble).
 */
 
-export default function PicksBoard({ pool, today }: { pool: Pick[]; today: string }) {
+export default function PicksBoard({ games, today }: { games: GameGroup[]; today: string }) {
   const [store, setStore] = useState<PicksStore>({});
   const [hydrated, setHydrated] = useState(false);
-  const [search, setSearch] = useState("");
+  const [openGame, setOpenGame] = useState<number | null>(null);
+  const slate = useSlate();
   const now = Date.now();
 
-  // hydrate + grade any past ungraded days
   useEffect(() => {
     const s = loadStore();
     setStore(s);
@@ -57,13 +62,12 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
   }, [today]);
 
   const todaySlate = store[today];
-  const selected = useMemo<Pick[]>(() => todaySlate?.picks ?? [], [todaySlate]);
+  const selected = useMemo(() => todaySlate?.picks ?? [], [todaySlate]);
   const locked = isSlateLocked(todaySlate, now);
   const stats = useMemo(() => computeStats(store), [store]);
-
   const selectedIds = new Set(selected.map((p) => p.batterId));
 
-  function persist(picks: Pick[], lockedAt: string | null) {
+  function persist(picks: typeof selected, lockedAt: string | null) {
     const next: PicksStore = {
       ...store,
       [today]: { date: today, picks, lockedAt, graded: todaySlate?.graded ?? null },
@@ -72,12 +76,12 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
     saveStore(next);
   }
 
-  function toggle(p: Pick) {
+  function toggle(h: PoolHitter) {
     if (locked) return;
-    if (selectedIds.has(p.batterId)) {
-      persist(selected.filter((x) => x.batterId !== p.batterId), todaySlate?.lockedAt ?? null);
+    if (selectedIds.has(h.batterId)) {
+      persist(selected.filter((x) => x.batterId !== h.batterId), todaySlate?.lockedAt ?? null);
     } else if (selected.length < MAX_PICKS) {
-      persist([...selected, p], todaySlate?.lockedAt ?? null);
+      persist([...selected, poolToPick(h)], todaySlate?.lockedAt ?? null);
     }
   }
 
@@ -85,8 +89,6 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
     if (selected.length === 0) return;
     persist(selected, new Date().toISOString());
   }
-
-  const filtered = pool.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
 
   // slate math
   const ps = selected.map((p) => p.pGameHr);
@@ -102,6 +104,8 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
   if (!hydrated) {
     return <div className="py-16 text-center font-mono text-sm text-text-muted">Loading your slate…</div>;
   }
+
+  const activeGame = games.find((g) => g.gameId === openGame) ?? null;
 
   return (
     <div className="space-y-5">
@@ -134,36 +138,35 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
 
         {selected.length === 0 ? (
           <p className="rounded-lg border border-dashed border-white/10 bg-card/50 p-4 text-center font-sans text-sm text-text-muted">
-            Pick up to {MAX_PICKS} hitters below to homer tonight.
+            Tap a game below and pick up to {MAX_PICKS} hitters to homer tonight.
           </p>
         ) : (
           <>
             <div className="space-y-1.5">
-              {selected.map((p) => {
-                return (
-                  <div key={p.batterId} className="flex items-center gap-2 rounded-lg border border-white/5 bg-card px-2.5 py-2">
-                    <Headshot batterId={p.batterId} name={p.name} size={32} />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-sans text-sm text-text-pri">{p.name}</div>
-                      <div className="truncate font-mono text-[10px] text-text-muted">vs {p.oppPitcher}</div>
-                    </div>
-                    <span className="font-mono text-xs text-neon-lime">{formatPct(p.pGameHr)}</span>
-                    {!locked && (
-                      <button
-                        type="button"
-                        onClick={() => toggle(p)}
-                        aria-label={`Remove ${p.name}`}
-                        className="ml-1 rounded px-1.5 font-mono text-text-muted hover:text-neon-hot"
-                      >
-                        ✕
-                      </button>
-                    )}
+              {selected.map((p) => (
+                <div key={p.batterId} className="flex items-center gap-2 rounded-lg border border-white/5 bg-card px-2.5 py-2">
+                  <Headshot batterId={p.batterId} name={p.name} size={32} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-sans text-sm text-text-pri">{p.name}</div>
+                    <div className="truncate font-mono text-[10px] text-text-muted">vs {p.oppPitcher}</div>
                   </div>
-                );
-              })}
+                  <LabelBadge label={slate.labelFor(p.pGameHr)} size="sm" />
+                  {!locked && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        persist(selected.filter((x) => x.batterId !== p.batterId), todaySlate?.lockedAt ?? null)
+                      }
+                      aria-label={`Remove ${p.name}`}
+                      className="ml-1 rounded px-1.5 font-mono text-text-muted hover:text-neon-hot"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* slate odds */}
             <div className="mt-3 rounded-lg border border-white/5 bg-card p-3">
               <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs">
                 <span className="text-text-muted">≥1 homers <span className="text-text-pri">{formatPct(pAtLeast1)}</span></span>
@@ -184,43 +187,78 @@ export default function PicksBoard({ pool, today }: { pool: Pick[]; today: strin
         )}
       </section>
 
-      {/* pool */}
+      {/* game nav + selection (hidden once the slate is locked) */}
       {!locked && (
         <section>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search hitters…"
-            className="mb-2 w-full rounded-lg border border-white/10 bg-card px-3 py-2 font-sans text-sm text-text-pri placeholder:text-text-muted focus:border-neon-lime/50 focus:outline-none"
-          />
-          <div className="max-h-[28rem] space-y-1 overflow-y-auto pr-1">
-            {filtered.map((p) => {
-              const on = selectedIds.has(p.batterId);
-              const full = !on && selected.length >= MAX_PICKS;
-              return (
-                <button
-                  key={p.batterId}
-                  type="button"
-                  onClick={() => toggle(p)}
-                  disabled={full}
-                  className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors ${
-                    on ? "border-neon-lime/50 bg-neon-lime/10" : "border-white/5 bg-card hover:bg-hover"
-                  } ${full ? "opacity-40" : ""}`}
-                >
-                  <Headshot batterId={p.batterId} name={p.name} size={28} />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-sans text-sm text-text-pri">{p.name}</div>
-                    <div className="truncate font-mono text-[10px] text-text-muted">vs {p.oppPitcher}</div>
-                  </div>
-                  <span className="font-mono text-xs text-text-muted">{formatPct(p.pGameHr)}</span>
-                  <span className={`w-5 text-center font-mono ${on ? "text-neon-lime" : "text-text-muted"}`}>
-                    {on ? "✓" : "+"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <h2 className="mb-2 font-sans font-semibold text-text-pri">Tonight&apos;s games</h2>
+          {games.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-white/10 bg-card/50 p-4 text-center font-sans text-sm text-text-muted">
+              No games with posted lineups yet.
+            </p>
+          ) : (
+            <>
+              {/* horizontal game nav — each game is a collapsible column */}
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
+                {games.map((g) => {
+                  const active = g.gameId === openGame;
+                  const inThis = selected.filter((p) => p.gameId === g.gameId).length;
+                  return (
+                    <button
+                      key={g.gameId}
+                      type="button"
+                      data-testid="game-chip"
+                      onClick={() => setOpenGame(active ? null : g.gameId)}
+                      className={`shrink-0 rounded-lg border px-3 py-2 text-left transition-colors ${
+                        active
+                          ? "border-neon-lime/60 bg-neon-lime/10"
+                          : "border-white/10 bg-card hover:bg-hover"
+                      }`}
+                    >
+                      <div className={`font-mono text-sm font-bold ${active ? "text-neon-lime" : "text-text-pri"}`}>
+                        {g.label}
+                        {inThis > 0 && <span className="ml-1 text-neon-lime">·{inThis}</span>}
+                      </div>
+                      <div className="font-mono text-[10px] text-text-muted">{g.timeET ?? "—"}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* opened game's hitters, Elite -> Low */}
+              {activeGame && (
+                <div className="mt-1 space-y-1.5">
+                  {activeGame.hitters.map((h) => {
+                    const on = selectedIds.has(h.batterId);
+                    const full = !on && selected.length >= MAX_PICKS;
+                    return (
+                      <button
+                        key={h.batterId}
+                        type="button"
+                        data-testid="pick-card"
+                        onClick={() => toggle(h)}
+                        disabled={full}
+                        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
+                          on ? "border-neon-lime/50 bg-neon-lime/10" : "border-white/5 bg-card hover:bg-hover"
+                        } ${full ? "opacity-40" : ""}`}
+                      >
+                        <Headshot batterId={h.batterId} name={h.name} size={40} />
+                        <span className="min-w-0 flex-1 truncate font-sans text-sm text-text-pri">{h.name}</span>
+                        <LabelBadge label={slate.labelFor(h.pPerPa)} size="sm" />
+                        <span
+                          aria-hidden
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                            on ? "border-neon-lime bg-neon-lime text-base" : "border-text-muted bg-transparent"
+                          }`}
+                        >
+                          {on && <span className="font-mono text-xs font-bold">✓</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </section>
       )}
 
