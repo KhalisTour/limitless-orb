@@ -6,7 +6,8 @@ import Logo from "./Logo";
 
 /*
   Navigation (PART 6). Desktop: top nav with links. Mobile: fixed bottom
-  tab bar [ Games | Top Picks | Accuracy ]. usePathname drives active state.
+  tab bar [ Games | Top Picks | Pick'em | Accuracy ]. usePathname drives
+  active state.
 */
 
 const LINKS = [

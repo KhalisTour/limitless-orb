@@ -4,15 +4,19 @@ import Link from "next/link";
 import type { GameListItem } from "@/lib/types";
 import { useSlate } from "@/lib/slate";
 import { formatGameTime } from "@/lib/format";
+import { emblemsFor } from "@/lib/emblems";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
 import ParkBadge from "./ParkBadge";
+import EmblemRow from "./EmblemBadge";
 
 /* Level 1 game card (Page 1). Compact single-block row. Tap -> game detail. */
 export default function GameCard({ game }: { game: GameListItem }) {
   const slate = useSlate();
   const time = formatGameTime(game.game_datetime);
   const pick = game.top_pick;
+  // Only park is known at the slate-list level (teaser carries no hitter stats).
+  const emblems = emblemsFor({ parkFactor: game.park_factor });
 
   return (
     <Link
@@ -27,6 +31,7 @@ export default function GameCard({ game }: { game: GameListItem }) {
             {game.home_team}
           </span>
           <ParkBadge factor={game.park_factor} onlyExtremes />
+          <EmblemRow emblems={emblems} compact />
         </div>
         <div className="mt-0.5 truncate font-mono text-[11px] text-text-muted">
           {time && <span className="text-text-muted/90">{time} · </span>}

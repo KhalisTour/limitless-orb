@@ -1,30 +1,18 @@
 import { formatPct } from "@/lib/format";
 
 /*
-  Per-player HR outcome distribution for tonight, derived from the model's
-  cumulative probabilities:
-    P(0 HR)  = 1 - p_game_hr
-    P(1 HR)  = p_game_hr - p_multi_hr
-    P(2+ HR) = p_multi_hr
-  Rendered as a 100% stacked bar so you can see where the probability mass
-  sits at a glance.
+  Tonight's HR odds for one hitter: a simple two-way split of the model's
+  game-level homer probability. We don't try to call multi-HR games, so this
+  is just P(homers) vs P(no HR) — the read fans actually want.
 */
 
-export default function PlayerDistribution({
-  pGameHr,
-  pMultiHr,
-}: {
-  pGameHr: number;
-  pMultiHr: number;
-}) {
-  const p2 = Math.max(0, Math.min(1, pMultiHr));
-  const p1 = Math.max(0, Math.min(1, pGameHr - pMultiHr));
-  const p0 = Math.max(0, 1 - pGameHr);
+export default function PlayerDistribution({ pGameHr }: { pGameHr: number }) {
+  const pHr = Math.max(0, Math.min(1, pGameHr));
+  const pNo = 1 - pHr;
 
   const segs = [
-    { key: "0", label: "0 HR", pct: p0, color: "#1a2235" },
-    { key: "1", label: "1 HR", pct: p1, color: "#c8ff00" },
-    { key: "2", label: "2+ HR", pct: p2, color: "#ff2d6f" },
+    { key: "hr", label: "Homers", pct: pHr, color: "#c8ff00" },
+    { key: "no", label: "No HR", pct: pNo, color: "#1a2235" },
   ];
 
   return (
