@@ -5,9 +5,11 @@ import Link from "next/link";
 import type { OddsLine, TopPick } from "@/lib/types";
 import { useSlate } from "@/lib/slate";
 import { formatGameTime, formatPct } from "@/lib/format";
+import { emblemsFor } from "@/lib/emblems";
 import Headshot from "./Headshot";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
+import EmblemRow from "./EmblemBadge";
 import ModelViews from "./ModelViews";
 import StatGrid from "./StatGrid";
 import PlayerDistribution from "./PlayerDistribution";
@@ -32,6 +34,11 @@ export default function TopPickRow({
   const slate = useSlate();
   const label = slate.labelFor(pick.p_per_pa);
   const time = formatGameTime(pick.game_datetime);
+  const emblems = emblemsFor({
+    parkFactor: pick.park_factor,
+    platoonFactor: pick.platoon_factor,
+    barrelPctile: slate.pctileFor("barrel_pct", pick.stats?.barrel_pct ?? null),
+  });
   const matchupHref =
     pick.batter_id !== null
       ? `/matchup/${pick.game_id}/${pick.batter_id}/${encodeURIComponent(pick.opp_pitcher)}`
@@ -52,7 +59,10 @@ export default function TopPickRow({
         <ProbabilityRing value={pick.p_per_pa} size={40} />
         <div className="min-w-0 flex-1">
           <div className="truncate font-sans font-semibold text-text-pri">{pick.name}</div>
-          <div className="truncate font-mono text-[11px] text-text-muted">vs {pick.opp_pitcher}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="truncate font-mono text-[11px] text-text-muted">vs {pick.opp_pitcher}</span>
+            <EmblemRow emblems={emblems} compact />
+          </div>
         </div>
         <EdgeBadge line={odds} />
         <LabelBadge label={label} size="sm" />
@@ -83,9 +93,9 @@ export default function TopPickRow({
 
           <div>
             <div className="mb-2 font-mono text-[11px] uppercase tracking-wide text-text-muted">
-              Tonight&apos;s outcome odds
+              Tonight&apos;s HR odds
             </div>
-            <PlayerDistribution pGameHr={pick.p_game_hr} pMultiHr={pick.p_multi_hr} />
+            <PlayerDistribution pGameHr={pick.p_game_hr} />
           </div>
 
           <div>

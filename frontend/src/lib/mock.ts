@@ -105,7 +105,48 @@ function makeSim(names: string[]): Sim {
 
 interface MockGame extends GameDetail {}
 
+function buildMinimalGames(): MockGame[] {
+  // Screenshot/demo slate: exactly 1 game, 3 batters, with values that light
+  // up each emblem (hitter-friendly park, a platoon edge, a barrel leader).
+  hitterSeed = 1;
+  const hitters = [
+    makeHitter("Cal Raleigh", 3, 0.0775, {
+      park_factor: 1.23,
+      platoon_factor: 1.12,
+      stats: { ...makeStats(2)!, barrel_pct: 17.4, hardhit_pct: 51.2 },
+    }),
+    makeHitter("Julio Rodríguez", 1, 0.0625, {
+      park_factor: 1.23,
+      platoon_factor: 0.98,
+      stats: { ...makeStats(5)!, barrel_pct: 11.2 },
+    }),
+    makeHitter("Eugenio Suárez", 4, 0.0512, {
+      park_factor: 1.23,
+      platoon_factor: 1.07,
+      stats: { ...makeStats(8)!, barrel_pct: 8.1 },
+    }),
+  ];
+  const g: MockGame = {
+    game_id: 824830,
+    date: MOCK_DATE,
+    stale: false,
+    away_team: "Seattle Mariners",
+    home_team: "Baltimore Orioles",
+    away_sp: "Logan Gilbert",
+    home_sp: "Trevor Rogers",
+    game_datetime: "2026-06-14T23:05:00Z",
+    venue: "Oriole Park at Camden Yards",
+    park_factor: 1.23,
+    sides: {
+      away: { pitcher: "Trevor Rogers", hitters, sim: makeSim(hitters.map((h) => h.name)) },
+      home: { error: "No home lineup yet for game 824830" },
+    },
+  };
+  return [g];
+}
+
 function buildGames(): MockGame[] {
+  if (process.env.NEXT_PUBLIC_MOCK_MINIMAL === "1") return buildMinimalGames();
   hitterSeed = 1;
 
   // Game 1 — full both sides (Mariners @ Orioles)

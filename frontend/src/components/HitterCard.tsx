@@ -4,9 +4,11 @@ import Link from "next/link";
 import type { Hitter } from "@/lib/types";
 import { useSlate } from "@/lib/slate";
 import { formatGameTime, formatPct } from "@/lib/format";
+import { emblemsFor } from "@/lib/emblems";
 import Headshot from "./Headshot";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
+import EmblemRow from "./EmblemBadge";
 
 /*
   HitterCard (PART 3 widget hierarchy).
@@ -39,6 +41,11 @@ export default function HitterCard({
 }: Props) {
   const slate = useSlate();
   const label = slate.labelFor(hitter.p_per_pa);
+  const emblems = emblemsFor({
+    parkFactor: hitter.park_factor,
+    platoonFactor: hitter.platoon_factor,
+    barrelPctile: slate.pctileFor("barrel_pct", hitter.stats?.barrel_pct ?? null),
+  });
   const disabled = hitter.batter_id === null;
   const href = disabled ? "#" : matchupHref(gameId, hitter.batter_id!, oppPitcher);
 
@@ -52,11 +59,12 @@ export default function HitterCard({
             <span className="truncate font-sans font-semibold text-text-pri">{hitter.name}</span>
             <span className="font-mono text-xs text-text-muted">#{hitter.lineup_slot}</span>
           </div>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <LabelBadge label={label} size="sm" />
             <span className="font-mono text-xs text-text-muted">
               {formatPct(hitter.p_game_hr)} game HR
             </span>
+            <EmblemRow emblems={emblems} />
           </div>
           <div className="mt-1.5 flex gap-3 font-mono text-[11px] text-text-muted">
             <span>BRL {hitter.stats?.barrel_pct != null ? `${hitter.stats.barrel_pct.toFixed(1)}%` : "—"}</span>
