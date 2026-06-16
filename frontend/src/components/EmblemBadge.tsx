@@ -1,30 +1,27 @@
 import type { Emblem } from "@/lib/emblems";
+import EmblemGlyph from "./EmblemGlyph";
 
 /*
-  Video-game emblem chip: a glyph in a colored, shadowed pill with a gradient
-  fill, neon glow and an inset top highlight so it reads like a game crest.
-  `compact` drops the text label to just the glyph (for crowded rows); the
-  full title still rides on the tooltip for accessibility.
+  Perk crest: a circular medallion (Call-of-Duty-style) with the themed glyph
+  in line art, a colored ring, a dark domed fill, and a neon glow. `compact`
+  shows just the medallion (for crowded rows); the full form adds the label.
 */
 
-function EmblemChip({ emblem, compact }: { emblem: Emblem; compact?: boolean }) {
+function Medallion({ emblem, px }: { emblem: Emblem; px: number }) {
   const c = emblem.color;
   return (
     <span
-      title={emblem.title}
-      className={`inline-flex shrink-0 items-center gap-1 rounded-md border font-mono font-bold uppercase tracking-wide ${
-        compact ? "px-1 py-0.5 text-[11px]" : "px-1.5 py-0.5 text-[10px]"
-      }`}
+      className="inline-flex shrink-0 items-center justify-center rounded-full border"
       style={{
+        width: px,
+        height: px,
         color: c,
-        borderColor: `${c}66`,
-        background: `linear-gradient(180deg, ${c}26, ${c}0d)`,
-        boxShadow: `0 0 8px ${c}40, inset 0 1px 0 ${c}33`,
-        textShadow: `0 0 6px ${c}80`,
+        borderColor: `${c}aa`,
+        background: `radial-gradient(circle at 50% 35%, ${c}26, #0a0e17 78%)`,
+        boxShadow: `0 0 6px ${c}66, inset 0 1px 1px ${c}40`,
       }}
     >
-      <span aria-hidden>{emblem.glyph}</span>
-      {!compact && <span>{emblem.label}</span>}
+      <EmblemGlyph kind={emblem.kind} size={Math.round(px * 0.66)} />
     </span>
   );
 }
@@ -39,10 +36,36 @@ export default function EmblemRow({
   className?: string;
 }) {
   if (emblems.length === 0) return null;
+
+  if (compact) {
+    return (
+      <span className={`inline-flex shrink-0 items-center gap-1.5 ${className}`}>
+        {emblems.map((e) => (
+          <span key={e.kind} title={e.title}>
+            <Medallion emblem={e} px={27} />
+          </span>
+        ))}
+      </span>
+    );
+  }
+
   return (
-    <span className={`inline-flex flex-wrap items-center gap-1 ${className}`}>
+    <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
       {emblems.map((e) => (
-        <EmblemChip key={e.kind} emblem={e} compact={compact} />
+        <span
+          key={e.kind}
+          title={e.title}
+          className="inline-flex items-center gap-1 rounded-full border py-0.5 pl-0.5 pr-2 font-mono text-[10px] font-bold uppercase tracking-wide"
+          style={{
+            color: e.color,
+            borderColor: `${e.color}66`,
+            background: `linear-gradient(180deg, ${e.color}1f, ${e.color}0a)`,
+            boxShadow: `0 0 5px ${e.color}33`,
+          }}
+        >
+          <Medallion emblem={e} px={18} />
+          <span style={{ textShadow: `0 0 5px ${e.color}66` }}>{e.label}</span>
+        </span>
       ))}
     </span>
   );
