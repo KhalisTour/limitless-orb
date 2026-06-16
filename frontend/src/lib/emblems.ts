@@ -10,14 +10,20 @@ export type EmblemKind = "launch_pad" | "platoon" | "barrel";
 
 export interface Emblem {
   kind: EmblemKind;
-  glyph: string;
   /** short uppercase label shown when there's room */
   label: string;
   /** full text for the title/tooltip */
   title: string;
-  /** accent hex, used for the gradient + glow */
+  /** accent hex, used for the crest glyph, ring + glow */
   color: string;
 }
+
+/* Perk-crest accent colors (Call-of-Duty-style emblems). */
+const COLOR = {
+  park: "#c8ff00", // yellow-green — the stadium crest
+  platoon: "#3b6fe6", // navy blue — the mitt-and-ball crest
+  barrel: "#e0203a", // crimson — the cannon-and-bat crest
+} as const;
 
 /* Thresholds tuned so emblems stay rare enough to feel earned. */
 const LAUNCH_PAD_MIN = 1.08; // park HR factor — clearly hitter-friendly
@@ -34,30 +40,27 @@ export function emblemsFor(opts: {
   if (opts.parkFactor != null && opts.parkFactor >= LAUNCH_PAD_MIN) {
     out.push({
       kind: "launch_pad",
-      glyph: "🚀",
       label: "LAUNCH PAD",
       title: `Hitter-friendly park (HR factor ${opts.parkFactor.toFixed(2)})`,
-      color: "#ff2d6f", // neon-hot
+      color: COLOR.park,
     });
   }
 
   if (opts.platoonFactor != null && opts.platoonFactor >= PLATOON_MIN) {
     out.push({
       kind: "platoon",
-      glyph: "⚔️",
       label: "PLATOON EDGE",
       title: `Favorable platoon matchup (x${opts.platoonFactor.toFixed(2)})`,
-      color: "#00e5ff", // neon-cyan
+      color: COLOR.platoon,
     });
   }
 
   if (opts.barrelPctile != null && opts.barrelPctile >= BARREL_PCTILE_MIN) {
     out.push({
       kind: "barrel",
-      glyph: "🔥",
       label: "BARREL HAWK",
       title: `Elite barrel rate — top ${100 - opts.barrelPctile}% of tonight's slate`,
-      color: "#ffa726", // neon-amber
+      color: COLOR.barrel,
     });
   }
 

@@ -64,7 +64,7 @@ export default function HitterCard({
             <span className="font-mono text-xs text-text-muted">
               {formatPct(hitter.p_game_hr)} game HR
             </span>
-            <EmblemRow emblems={emblems} />
+            <EmblemRow emblems={emblems} compact />
           </div>
           <div className="mt-1.5 flex gap-3 font-mono text-[11px] text-text-muted">
             <span>BRL {hitter.stats?.barrel_pct != null ? `${hitter.stats.barrel_pct.toFixed(1)}%` : "—"}</span>
