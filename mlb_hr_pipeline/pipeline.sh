@@ -39,6 +39,9 @@ fi
 run python ingest_live.py "$DATE"
 run python predict_today.py "$DATE"
 
+# 4. Best-effort: fetch HR-prop odds for top picks (ODDS_API_KEY env var or embedded fallback).
+python fetch_odds.py "$DATE" 2>&1 | tee -a "$LOG" || true
+
 # Best-effort: tell the local API to reload from disk. Never fails the pipeline.
 curl -s -X POST "${API_URL:-http://localhost:8000}/api/reload" >/dev/null 2>&1 || true
 
