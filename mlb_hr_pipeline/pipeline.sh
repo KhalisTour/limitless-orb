@@ -39,8 +39,7 @@ fi
 run python ingest_live.py "$DATE"
 run python predict_today.py "$DATE"
 
-# 4. Free HR-prop odds (best-effort; DK may block from datacenter IPs). The
-#    script never raises, so this can't fail the pipeline.
+# 4. Free HR-prop odds via The-Odds-API (best-effort; never fails the pipeline).
 run python fetch_odds.py "$DATE" || true
 
 # Best-effort: tell the local API to reload from disk. Never fails the pipeline.

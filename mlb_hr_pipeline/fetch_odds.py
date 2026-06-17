@@ -1,29 +1,27 @@
 """
-Phase 5b — pull free HR-prop odds and write data/odds_<date>.json.
+Phase 5b — pull HR-prop odds via The-Odds-API and write data/odds_<date>.json.
 
-Source: DraftKings' public sportsbook offering JSON (no API key, no login).
-We read the MLB event group, find the "home runs" prop subcategory, and
-record each hitter's American odds "to hit a home run". Names are matched to
-batter_id via the latest daily snapshot so the API can join odds to the model.
+Source: the-odds-api.com free tier (500 req/month).
+API key reads from env var ODDS_API_KEY; falls back to embedded default.
 
-IMPORTANT (read before relying on this):
-  * DraftKings endpoints are geo-fenced and bot-protected. From datacenter
-    IPs (Railway / GitHub Actions) this frequently returns 403. This script
-    therefore NEVER raises on failure — it logs, writes nothing, and exits 0
-    so the daily pipeline keeps going. The API serves `available:false` when
-    no odds file exists.
-  * The exact category/subcategory naming and offer shape can change. The
-    parser below is intentionally permissive and has a --debug mode that dumps
-    the raw structure so the first live run can be verified/adjusted.
+Only fetches events that contain today's top N picks, so the free quota goes
+toward actionable lines rather than the full slate (~3-8 requests vs ~15).
+Output filters to those same players, so the EdgeBadge only shows lines for
+picks that actually appear on the Top Picks screen.
+
+Never raises — exits 0 so the pipeline keeps running even if odds fail.
 
 Usage:
-  python fetch_odds.py [YYYY-MM-DD] [--debug]
+  python fetch_odds.py [YYYY-MM-DD] [--debug] [--top=N]
 """
 
 from __future__ import annotations
 
+import csv
 import json
+import os
 import sys
+import unicodedata
 import datetime as dt
 from pathlib import Path
 
@@ -33,40 +31,115 @@ REPO = Path(__file__).resolve().parent
 DATA_DIR = REPO / "data"
 SNAP_DIR = DATA_DIR / "snapshots"
 
-MLB_EVENT_GROUP = 84240  # DraftKings MLB
-BASE = "https://sportsbook.draftkings.com/sites/US-SB/api/v5/eventgroups"
-HEADERS = {
-    # A realistic UA reduces (does not eliminate) bot blocking.
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-    ),
-    "Accept": "application/json",
-}
-TIMEOUT = 20
+# Env var takes precedence; embedded key is the fallback for local runs.
+_EMBEDDED_KEY = "a114608bb9ca00aa6e3013a7bdd370e0"
+API_KEY = os.environ.get("ODDS_API_KEY") or _EMBEDDED_KEY
+
+BASE = "https://api.the-odds-api.com/v4"
+SPORT = "baseball_mlb"
+# HR-prop market key on The-Odds-API. If this ever 404s run --debug to see
+# available markets and update this constant.
+HR_MARKET = "batter_home_runs"
+# Preferred bookmakers in priority order; first one present wins.
+BOOK_PRIORITY = ["draftkings", "fanduel", "betmgm", "pointsbetus", "williamhill_us"]
+TIMEOUT = 15
+DEFAULT_TOP_N = 10
 
 
-def _get(url: str) -> dict | None:
+# ---------------------------------------------------------------------------
+# HTTP
+
+def _get(url: str, params: dict) -> dict | list | None:
     try:
-        r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        r = requests.get(url, params=params, timeout=TIMEOUT)
+        remaining = r.headers.get("x-requests-remaining", "?")
+        used = r.headers.get("x-requests-used", "?")
         if r.status_code != 200:
-            print(f"[odds] {url} -> HTTP {r.status_code} (likely geo/bot block)", file=sys.stderr)
+            print(f"[odds] HTTP {r.status_code} — {url.split(BASE)[-1]} (used={used} remaining={remaining})", file=sys.stderr)
             return None
+        print(f"[odds] ok — {url.split(BASE)[-1]}  quota used={used} remaining={remaining}")
         return r.json()
-    except Exception as e:  # noqa: BLE001 — never fail the pipeline
-        print(f"[odds] request failed: {e}", file=sys.stderr)
+    except Exception as e:
+        print(f"[odds] request error: {e}", file=sys.stderr)
         return None
 
 
-def _name_to_id_map(date: str) -> dict[str, str]:
-    """Latest snapshot batters_*.csv -> {normalized 'first last': player_id}."""
+# ---------------------------------------------------------------------------
+# Name normalization (handles accents, punctuation differences)
+
+def _norm(name: str) -> str:
+    n = unicodedata.normalize("NFD", name)
+    n = "".join(c for c in n if unicodedata.category(c) != "Mn")
+    return n.lower().strip()
+
+
+# ---------------------------------------------------------------------------
+# Read top picks from today's predictions
+
+def _top_picks(date: str, n: int) -> list[dict]:
+    pred_path = DATA_DIR / f"predictions_{date}.json"
+    if not pred_path.exists():
+        print(f"[odds] no predictions_{date}.json — skipping odds fetch", file=sys.stderr)
+        return []
+    try:
+        blob = json.loads(pred_path.read_text())
+    except Exception as e:
+        print(f"[odds] failed to read predictions: {e}", file=sys.stderr)
+        return []
+
+    picks: list[dict] = []
+    for game in blob.get("games") or []:
+        away = game.get("away", "")
+        home = game.get("home", "")
+        for side in (game.get("sides") or {}).values():
+            if not isinstance(side, dict) or "per_hitter" not in side:
+                continue
+            for name, h in (side.get("per_hitter") or {}).items():
+                if not isinstance(h, dict) or h.get("p_per_pa") is None:
+                    continue
+                picks.append({"name": name, "p_per_pa": h["p_per_pa"], "away": away, "home": home})
+
+    picks.sort(key=lambda x: x["p_per_pa"], reverse=True)
+    top = picks[:n]
+    print(f"[odds] top {n} picks: {[p['name'] for p in top]}")
+    return top
+
+
+# ---------------------------------------------------------------------------
+# Team matching (The-Odds-API uses full franchise names like "Minnesota Twins")
+
+def _team_match(our: str, api: str) -> bool:
+    a, b = _norm(our), _norm(api)
+    if a == b:
+        return True
+    a_words, b_words = set(a.replace(".", "").split()), set(b.replace(".", "").split())
+    if not a_words or not b_words:
+        return False
+    # Match if nickname word matches and ≥1 city word is shared
+    return a.split()[-1] == b.split()[-1] and len(a_words & b_words) >= 2
+
+
+def _match_events(events: list[dict], games: list[dict]) -> list[str]:
+    """Return The-Odds-API event IDs whose matchups overlap our top-picks games."""
+    ids: list[str] = []
+    for ev in events:
+        eh, ea = ev.get("home_team", ""), ev.get("away_team", "")
+        for g in games:
+            if (_team_match(g["home"], eh) and _team_match(g["away"], ea)) or \
+               (_team_match(g["home"], ea) and _team_match(g["away"], eh)):
+                ids.append(ev["id"])
+                break
+    return ids
+
+
+# ---------------------------------------------------------------------------
+# Snapshot name → batter_id index
+
+def _name_to_id() -> dict[str, str]:
     idx: dict[str, str] = {}
     if not SNAP_DIR.exists():
         return idx
-    import csv
-
-    days = sorted([d for d in SNAP_DIR.iterdir() if d.is_dir()], reverse=True)
-    for d in days:
+    for d in sorted((x for x in SNAP_DIR.iterdir() if x.is_dir()), reverse=True):
         for csvp in d.glob("batters_*.csv"):
             try:
                 with csvp.open() as fh:
@@ -78,108 +151,129 @@ def _name_to_id_map(date: str) -> dict[str, str]:
                         parts = [p.strip() for p in raw.split(",")]
                         if len(parts) != 2:
                             continue
-                        full = f"{parts[1]} {parts[0]}".lower()
-                        idx.setdefault(full, str(pid).split(".")[0])
-            except Exception:  # noqa: BLE001
+                        idx.setdefault(_norm(f"{parts[1]} {parts[0]}"), str(pid).split(".")[0])
+            except Exception:
                 continue
         if idx:
             break
     return idx
 
 
-def _find_hr_subcategory(group: dict) -> tuple[int, int] | None:
-    """Return (category_id, subcategory_id) for the home-run prop market."""
-    eg = group.get("eventGroup") or {}
-    for cat in eg.get("offerCategories") or []:
-        for desc in cat.get("offerSubcategoryDescriptors") or []:
-            name = (desc.get("name") or "").lower()
-            if "home run" in name and "first" not in name and "last" not in name:
-                return cat.get("offerCategoryId"), desc.get("subcategoryId")
-    return None
+# ---------------------------------------------------------------------------
+# Bookmaker selection
 
-
-def _parse_offers(sub_group: dict) -> list[dict]:
-    """Walk the subcategory offering and pull (name, american) for HR=Yes."""
-    lines: list[dict] = []
-    eg = sub_group.get("eventGroup") or {}
-    for cat in eg.get("offerCategories") or []:
-        for desc in cat.get("offerSubcategoryDescriptors") or []:
-            sub = desc.get("offerSubcategory") or {}
-            for offer_set in sub.get("offers") or []:
-                for offer in offer_set or []:
-                    for oc in offer.get("outcomes") or []:
-                        label = (oc.get("label") or "").strip()
-                        american = oc.get("oddsAmerican")
-                        # "to hit a HR" markets list the player as the participant
-                        # or label; skip the "No" side.
-                        if label.lower() in ("no", "under"):
-                            continue
-                        player = oc.get("participant") or (
-                            label if label.lower() not in ("yes", "over") else offer.get("label")
-                        )
-                        if not player or american is None:
-                            continue
-                        try:
-                            american = int(str(american).replace("−", "-"))
-                        except ValueError:
-                            continue
-                        lines.append({"name": str(player).strip(), "american": american})
-    # dedupe by name, keep first
-    seen: set[str] = set()
-    deduped: list[dict] = []
-    for ln in lines:
-        key = ln["name"].lower()
-        if key in seen:
+def _pick_book(bookmakers: list[dict]) -> tuple[str | None, list[dict]]:
+    bm_map = {b["key"]: b for b in bookmakers}
+    candidates = list(BOOK_PRIORITY) + [k for k in bm_map if k not in BOOK_PRIORITY]
+    for key in candidates:
+        bm = bm_map.get(key)
+        if not bm:
             continue
-        seen.add(key)
-        deduped.append(ln)
-    return deduped
+        for mkt in bm.get("markets") or []:
+            if mkt.get("key") == HR_MARKET:
+                return bm["key"], mkt.get("outcomes") or []
+    return None, []
 
 
-def main(date: str, debug: bool = False) -> None:
-    group = _get(f"{BASE}/{MLB_EVENT_GROUP}?format=json")
-    if not group:
-        print("[odds] no event group; writing nothing.", file=sys.stderr)
+# ---------------------------------------------------------------------------
+# Main
+
+def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
+    picks = _top_picks(date, top_n)
+    if not picks:
+        return
+
+    target_names = {_norm(p["name"]) for p in picks}
+    unique_games = list({(p["away"], p["home"]) for p in picks})
+    our_games = [{"away": a, "home": h} for a, h in unique_games]
+    print(f"[odds] top-picks span {len(our_games)} game(s)")
+
+    # Fetch today's event list
+    next_day = (dt.date.fromisoformat(date) + dt.timedelta(days=1)).isoformat()
+    events = _get(f"{BASE}/sports/{SPORT}/events", {
+        "apiKey": API_KEY,
+        "dateFormat": "iso",
+        "commenceTimeFrom": f"{date}T00:00:00Z",
+        "commenceTimeTo": f"{next_day}T00:00:00Z",
+    })
+    if not isinstance(events, list):
+        print("[odds] no events list returned; writing nothing.", file=sys.stderr)
         return
     if debug:
-        Path("/tmp/dk_eventgroup.json").write_text(json.dumps(group, indent=2))
-        print("[odds] dumped event group to /tmp/dk_eventgroup.json", file=sys.stderr)
+        Path("/tmp/odds_events.json").write_text(json.dumps(events, indent=2))
+        print(f"[odds] dumped {len(events)} events to /tmp/odds_events.json")
 
-    found = _find_hr_subcategory(group)
-    if not found:
-        print("[odds] no home-run subcategory found.", file=sys.stderr)
+    matched_ids = _match_events(events, our_games)
+    if not matched_ids:
+        print(f"[odds] matched 0 of {len(events)} events to top-picks games; writing nothing.", file=sys.stderr)
         return
-    cat_id, sub_id = found
-    sub = _get(f"{BASE}/{MLB_EVENT_GROUP}/categories/{cat_id}/subcategories/{sub_id}?format=json")
-    if not sub:
+    print(f"[odds] matched {len(matched_ids)}/{len(events)} event(s)")
+
+    all_lines: list[dict] = []
+    used_book: str | None = None
+
+    for event_id in matched_ids:
+        data = _get(f"{BASE}/sports/{SPORT}/events/{event_id}/odds", {
+            "apiKey": API_KEY,
+            "regions": "us",
+            "markets": HR_MARKET,
+            "oddsFormat": "american",
+        })
+        if not isinstance(data, dict):
+            continue
+        if debug:
+            Path(f"/tmp/odds_event_{event_id}.json").write_text(json.dumps(data, indent=2))
+            avail = {mkt.get("key") for bm in data.get("bookmakers") or [] for mkt in bm.get("markets") or []}
+            print(f"[odds] event {event_id} available markets: {avail}")
+
+        book_key, outcomes = _pick_book(data.get("bookmakers") or [])
+        if not outcomes:
+            print(f"[odds] event {event_id}: no {HR_MARKET} market in any bookmaker", file=sys.stderr)
+            continue
+        used_book = used_book or book_key
+
+        for oc in outcomes:
+            name = str(oc.get("name") or oc.get("description") or "").strip()
+            price = oc.get("price")
+            if not name or price is None or _norm(name) not in target_names:
+                continue
+            try:
+                all_lines.append({"name": name, "american": int(price)})
+            except (TypeError, ValueError):
+                continue
+
+    if not all_lines:
+        print("[odds] 0 matching lines for top picks; writing nothing.", file=sys.stderr)
         return
 
-    lines = _parse_offers(sub)
-    if not lines:
-        print("[odds] parsed 0 lines (shape may have changed; run --debug).", file=sys.stderr)
-        return
+    name_idx = _name_to_id()
+    for ln in all_lines:
+        ln["batter_id"] = name_idx.get(_norm(ln["name"]))
 
-    name_idx = _name_to_id_map(date)
-    for ln in lines:
-        ln["batter_id"] = name_idx.get(ln["name"].lower())
-
-    out = {
-        "date": date,
-        "book": "draftkings",
-        "pulled_at": dt.datetime.utcnow().isoformat() + "Z",
-        "lines": lines,
-    }
     out_path = DATA_DIR / f"odds_{date}.json"
-    out_path.write_text(json.dumps(out, indent=2))
-    matched = sum(1 for ln in lines if ln.get("batter_id"))
-    print(f"[odds] wrote {out_path.name}: {len(lines)} lines, {matched} matched to batter_id")
+    out_path.write_text(json.dumps({
+        "date": date,
+        "book": used_book or "unknown",
+        "pulled_at": dt.datetime.utcnow().isoformat() + "Z",
+        "lines": all_lines,
+    }, indent=2))
+    matched = sum(1 for ln in all_lines if ln.get("batter_id"))
+    print(f"[odds] wrote {out_path.name}: {len(all_lines)} lines, {matched} batter_ids resolved, book={used_book}")
 
 
 if __name__ == "__main__":
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    pos = [a for a in sys.argv[1:] if not a.startswith("--")]
     debug_flag = "--debug" in sys.argv
-    date_arg = args[0] if args else dt.date.today().isoformat()
+    top_n_arg = DEFAULT_TOP_N
+    for a in sys.argv[1:]:
+        if a.startswith("--top="):
+            try:
+                top_n_arg = int(a.split("=", 1)[1])
+            except ValueError:
+                pass
+    date_arg = pos[0] if pos else dt.date.today().isoformat()
     try:
-        main(date_arg, debug=debug_flag)
-    except Exception as e:  # noqa: BLE001 — never break the pipeline
-        print(f"[odds] unexpected error (ignored): {e}", file=sys.stderr)
+        main(date_arg, debug=debug_flag, top_n=top_n_arg)
+    except Exception as e:
+        print(f"[odds] unhandled error (pipeline continues): {e}", file=sys.stderr)
+        sys.exit(0)

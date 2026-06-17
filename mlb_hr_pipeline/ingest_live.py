@@ -287,8 +287,10 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     # Opposing SP
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
     if p_idx is None:
-        raise RuntimeError(f"No pitcher row for {opp_sp_name}")
-    pdict = row_to_pitcher_dict(pit.loc[p_idx])
+        print(f"[bridge] WARN no stats row for {opp_sp_name} — using league-average pitcher fallback")
+        pdict = {"arsenal": dict(four_seam=0, sinker=0, cutter=0, slider=0, change=0, curve=0, split=0, kn=0)}
+    else:
+        pdict = row_to_pitcher_dict(pit.loc[p_idx])
     _fill_defaults(pdict, PITCHER_DEFAULTS)
     PITCHER = pdict
     PITCHER["name"] = opp_sp_name
