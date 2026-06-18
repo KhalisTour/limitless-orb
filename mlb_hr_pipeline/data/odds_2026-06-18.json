@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-18",
+  "book": "betonlineag",
+  "pulled_at": "2026-06-18T22:35:01.978360Z",
+  "lines": [
+    {
+      "name": "Juan Soto",
+      "american": 250,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 200,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Bryce Harper",
+      "american": 375,
+      "batter_id": "547180"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 250,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Randal Grichuk",
+      "american": 275,
+      "batter_id": "545341"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 210,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Paul Goldschmidt",
+      "american": 275,
+      "batter_id": "502671"
+    }
+  ]
+}
