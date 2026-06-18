@@ -233,12 +233,15 @@ def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
         used_book = used_book or book_key
 
         for oc in outcomes:
-            name = str(oc.get("name") or oc.get("description") or "").strip()
+            # The-Odds-API HR props shape: name="Over"/"Under", description=player, point=0.5
+            if oc.get("name") != "Over":
+                continue
+            player = str(oc.get("description") or "").strip()
             price = oc.get("price")
-            if not name or price is None or _norm(name) not in target_names:
+            if not player or price is None or _norm(player) not in target_names:
                 continue
             try:
-                all_lines.append({"name": name, "american": int(price)})
+                all_lines.append({"name": player, "american": int(price)})
             except (TypeError, ValueError):
                 continue
 
