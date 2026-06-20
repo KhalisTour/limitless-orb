@@ -1,0 +1,157 @@
+{
+  "date": "2026-06-20",
+  "book": "betrivers",
+  "pulled_at": "2026-06-20T15:19:44.323282Z",
+  "lines": [
+    {
+      "name": "Randal Grichuk",
+      "american": 19900,
+      "batter_id": "545341"
+    },
+    {
+      "name": "Randal Grichuk",
+      "american": 4500,
+      "batter_id": "545341"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 6600,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 18000,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 3400,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 4000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 19900,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 19900,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 6000,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 19900,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 390,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 540,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 500,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 310,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Randal Grichuk",
+      "american": 425,
+      "batter_id": "545341"
+    },
+    {
+      "name": "Sal Stewart",
+      "american": 3000,
+      "batter_id": "701398"
+    },
+    {
+      "name": "Sal Stewart",
+      "american": 16000,
+      "batter_id": "701398"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 2200,
+      "batter_id": "700250"
+    },
+    {
+      "name": "JJ Bleday",
+      "american": 18000,
+      "batter_id": "668709"
+    },
+    {
+      "name": "JJ Bleday",
+      "american": 3400,
+      "batter_id": "668709"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 13000,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Sal Stewart",
+      "american": 325,
+      "batter_id": "701398"
+    },
+    {
+      "name": "JJ Bleday",
+      "american": 330,
+      "batter_id": "668709"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 240,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ian Happ",
+      "american": 4500,
+      "batter_id": "664023"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 5500,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 19900,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Ian Happ",
+      "american": 19900,
+      "batter_id": "664023"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 440,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Ian Happ",
+      "american": 380,
+      "batter_id": "664023"
+    }
+  ]
+}
