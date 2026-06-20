@@ -1,42 +1,12 @@
 {
   "date": "2026-06-20",
   "book": "betrivers",
-  "pulled_at": "2026-06-20T15:19:44.323282Z",
+  "pulled_at": "2026-06-20T17:10:24.824320Z",
   "lines": [
-    {
-      "name": "Randal Grichuk",
-      "american": 19900,
-      "batter_id": "545341"
-    },
-    {
-      "name": "Randal Grichuk",
-      "american": 4500,
-      "batter_id": "545341"
-    },
-    {
-      "name": "Riley Greene",
-      "american": 6600,
-      "batter_id": "682985"
-    },
-    {
-      "name": "Colson Montgomery",
-      "american": 18000,
-      "batter_id": "695657"
-    },
-    {
-      "name": "Colson Montgomery",
-      "american": 3400,
-      "batter_id": "695657"
-    },
     {
       "name": "Miguel Vargas",
       "american": 4000,
       "batter_id": "678246"
-    },
-    {
-      "name": "Riley Greene",
-      "american": 19900,
-      "batter_id": "682985"
     },
     {
       "name": "Miguel Vargas",
@@ -55,67 +25,37 @@
     },
     {
       "name": "Miguel Vargas",
-      "american": 390,
+      "american": 420,
       "batter_id": "678246"
     },
     {
-      "name": "Riley Greene",
-      "american": 540,
-      "batter_id": "682985"
-    },
-    {
       "name": "Dillon Dingler",
-      "american": 500,
+      "american": 525,
       "batter_id": "693307"
     },
     {
-      "name": "Colson Montgomery",
-      "american": 310,
-      "batter_id": "695657"
-    },
-    {
-      "name": "Randal Grichuk",
-      "american": 425,
-      "batter_id": "545341"
-    },
-    {
-      "name": "Sal Stewart",
-      "american": 3000,
-      "batter_id": "701398"
-    },
-    {
-      "name": "Sal Stewart",
-      "american": 16000,
-      "batter_id": "701398"
-    },
-    {
       "name": "Ben Rice",
-      "american": 2200,
+      "american": 2000,
       "batter_id": "700250"
     },
     {
       "name": "JJ Bleday",
-      "american": 18000,
+      "american": 15000,
       "batter_id": "668709"
     },
     {
       "name": "JJ Bleday",
-      "american": 3400,
+      "american": 2900,
       "batter_id": "668709"
     },
     {
       "name": "Ben Rice",
-      "american": 13000,
+      "american": 12500,
       "batter_id": "700250"
     },
     {
-      "name": "Sal Stewart",
-      "american": 325,
-      "batter_id": "701398"
-    },
-    {
       "name": "JJ Bleday",
-      "american": 330,
+      "american": 300,
       "batter_id": "668709"
     },
     {
@@ -124,13 +64,8 @@
       "batter_id": "700250"
     },
     {
-      "name": "Ian Happ",
+      "name": "Pete Crow-Armstrong",
       "american": 4500,
-      "batter_id": "664023"
-    },
-    {
-      "name": "Pete Crow-Armstrong",
-      "american": 5500,
       "batter_id": "691718"
     },
     {
@@ -139,19 +74,84 @@
       "batter_id": "691718"
     },
     {
-      "name": "Ian Happ",
+      "name": "Kazuma Okamoto",
       "american": 19900,
-      "batter_id": "664023"
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 4000,
+      "batter_id": "672960"
     },
     {
       "name": "Pete Crow-Armstrong",
-      "american": 440,
+      "american": 410,
       "batter_id": "691718"
     },
     {
-      "name": "Ian Happ",
-      "american": 380,
-      "batter_id": "664023"
+      "name": "Kazuma Okamoto",
+      "american": 375,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 4000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Drake Baldwin",
+      "american": 3500,
+      "batter_id": "686948"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 19900,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Drake Baldwin",
+      "american": 19900,
+      "batter_id": "686948"
+    },
+    {
+      "name": "Drake Baldwin",
+      "american": 335,
+      "batter_id": "686948"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 340,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 19900,
+      "batter_id": "666018"
+    },
+    {
+      "name": "James Wood",
+      "american": 18000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 3300,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 7500,
+      "batter_id": "666018"
+    },
+    {
+      "name": "James Wood",
+      "american": 330,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 600,
+      "batter_id": "666018"
     }
   ]
 }
