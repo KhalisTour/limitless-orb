@@ -1,6 +1,6 @@
 {
   "date": "2026-06-21",
-  "generated_at": "2026-06-21T16:59:47.913748Z",
+  "generated_at": "2026-06-21T17:05:15.421379Z",
   "games": [
     {
       "game_id": 823531,
@@ -3025,7 +3025,138 @@
           "error": "No away lineup yet for game 823934"
         },
         "home": {
-          "error": "No home lineup yet for game 823934"
+          "per_hitter": {
+            "Shohei Ohtani": {
+              "p_per_pa": 0.10134660636241756,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.08066938867090069,
+                "matchup": 0.031191148775894535,
+                "linear": 0.08796755706237401
+              },
+              "tto_mult": 1.4980919295999997,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Andy Pages": {
+              "p_per_pa": 0.04535736987681672,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.03080318503637018,
+                "matchup": 0.031191148775894535,
+                "linear": 0.03255718001560211
+              },
+              "tto_mult": 1.4464335872,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Freddie Freeman": {
+              "p_per_pa": 0.04749188339431498,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.03164772575943467,
+                "matchup": 0.031191148775894535,
+                "linear": 0.04180410226879903
+              },
+              "tto_mult": 1.3947752448,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Mookie Betts": {
+              "p_per_pa": 0.03560093083746832,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.020391249148862076,
+                "matchup": 0.031191148775894535,
+                "linear": 0.0318911896758404
+              },
+              "tto_mult": 1.3431169024,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Max Muncy": {
+              "p_per_pa": 0.0581711245694029,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.05198166305317358,
+                "matchup": 0.031191148775894535,
+                "linear": 0.049175493710517874
+              },
+              "tto_mult": 1.29145856,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Kyle Tucker": {
+              "p_per_pa": 0.025485889025064563,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.013816484734282918,
+                "matchup": 0.031191148775894535,
+                "linear": 0.016637710263243007
+              },
+              "tto_mult": 1.29145856,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Ryan Ward": {
+              "p_per_pa": 0.036464891116248246,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.03052005676399069,
+                "matchup": 0.031191148775894535,
+                "linear": 0.020576249661764582
+              },
+              "tto_mult": 1.29145856,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            },
+            "Alex Freeland": {
+              "p_per_pa": 0.021968203709947683,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.009627745055433996,
+                "matchup": 0.031191148775894535,
+                "linear": 0.013282209196667874
+              },
+              "tto_mult": 1.29145856,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9632
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.39,
+              "2": 0.241,
+              "0": 0.215,
+              "3": 0.112,
+              "5": 0.009,
+              "4": 0.03,
+              "6": 0.003
+            },
+            "p_at_least_one_hr": {
+              "Shohei Ohtani": 0.325,
+              "Andy Pages": 0.157,
+              "Freddie Freeman": 0.148,
+              "Mookie Betts": 0.136,
+              "Max Muncy": 0.244,
+              "Kyle Tucker": 0.089,
+              "Ryan Ward": 0.121,
+              "Alex Freeland": 0.059
+            },
+            "p_multi_hr": {
+              "Shohei Ohtani": 0.044,
+              "Andy Pages": 0.009,
+              "Freddie Freeman": 0.014,
+              "Mookie Betts": 0.005,
+              "Max Muncy": 0.03,
+              "Kyle Tucker": 0.003,
+              "Ryan Ward": 0.003,
+              "Alex Freeland": 0.001
+            },
+            "back_to_back_per_game": 0.045
+          },
+          "pitcher": "Brandon Young"
         }
       }
     },
