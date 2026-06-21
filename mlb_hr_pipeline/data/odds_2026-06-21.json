@@ -1,0 +1,157 @@
+{
+  "date": "2026-06-21",
+  "book": "betrivers",
+  "pulled_at": "2026-06-21T16:13:01.824184Z",
+  "lines": [
+    {
+      "name": "Jackson Chourio",
+      "american": 19900,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 5000,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 450,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 15000,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 2500,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 255,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 5000,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 19900,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 16000,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 3000,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 450,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Colson Montgomery",
+      "american": 310,
+      "batter_id": "695657"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 19900,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 9000,
+      "batter_id": "666018"
+    },
+    {
+      "name": "James Wood",
+      "american": 16000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 2800,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 3500,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 19900,
+      "batter_id": "666018"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 330,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 750,
+      "batter_id": "666018"
+    },
+    {
+      "name": "James Wood",
+      "american": 285,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 11000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 1800,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 205,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 19900,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 4000,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 370,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 2800,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 14000,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 285,
+      "batter_id": "621439"
+    }
+  ]
+}
