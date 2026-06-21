@@ -110,11 +110,12 @@ def get_batter_season(year=None, min_pa=25):
 def get_pitcher_season(year=None, min_pa=50):
     """Pitcher equivalent. type=pitcher; arsenal usage comes from a separate tap.
     Uses min_pa=50 (not qualified) to include spot starters and recent call-ups.
+    Requests 'pa' (batters faced) so callers can regress small samples toward priors.
     """
     year = year or dt.date.today().year
     feats = ["xba", "xslg", "xwoba", "k_percent", "bb_percent",
              "barrel_batted_rate", "hard_hit_percent", "whiff_percent",
-             "groundballs_percent", "flyballs_percent"]
+             "groundballs_percent", "flyballs_percent", "pa"]
     sel = "%2C".join(feats)
     url = (f"https://baseballsavant.mlb.com/leaderboard/custom"
            f"?year={year}&type=pitcher&filter=&min={min_pa}"

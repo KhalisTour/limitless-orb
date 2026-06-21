@@ -164,6 +164,42 @@ PITCHER_DEFAULTS = {
     "k": 22.5, "whiff": 24.5,
 }
 
+# Handedness-split priors. LHP misses more bats; RHP allows slightly more power on average.
+RHP_PITCHER_DEFAULTS = {
+    "barrel": 7.8, "hardhit": 40.5, "xslg": 0.406, "xwoba": 0.323,
+    "k": 22.0, "whiff": 23.5,
+}
+LHP_PITCHER_DEFAULTS = {
+    "barrel": 7.1, "hardhit": 39.3, "xslg": 0.392, "xwoba": 0.315,
+    "k": 23.5, "whiff": 25.5,
+}
+
+_REGRESSION_K = 150  # PA weight of the prior; a pitcher with 150 PA is ~50/50 obs vs prior
+
+
+def _get_pa_count(row: pd.Series) -> float:
+    """Extract PA-faced count from a pitcher row; 0 if absent."""
+    for c in ["pa", "total_pa", "b_total_pa", "abs"]:
+        if c in row.index and pd.notna(row[c]):
+            return float(row[c])
+    return 0.0
+
+
+def _pitcher_defaults_by_hand(throws) -> dict:
+    if str(throws).strip().upper() == "L":
+        return LHP_PITCHER_DEFAULTS
+    return RHP_PITCHER_DEFAULTS
+
+
+def _regress_pitcher(pdict: dict, n_pa: float, defaults: dict) -> dict:
+    """Blend observed pitcher stats toward `defaults` weighted by sample size."""
+    w = n_pa / (n_pa + _REGRESSION_K)
+    result = dict(pdict)
+    for key, prior_val in defaults.items():
+        obs = pdict.get(key)
+        result[key] = w * float(obs) + (1 - w) * prior_val if obs is not None else prior_val
+    return result
+
 
 def _fill_defaults(d: dict, defaults: dict):
     for k, v in defaults.items():
@@ -207,6 +243,26 @@ def snapshot(date: str = None):
     print(f"[ingest] batters={len(bat)} pitchers={len(pit)}")
     bat.to_csv(out_dir / f"batters_{date}.csv", index=False)
     pit.to_csv(out_dir / f"pitchers_{date}.csv", index=False)
+
+    # Low-min board (min_pa=1): captures early-season / low-sample starters for regression fallback
+    try:
+        pit_allpa = fetch.get_pitcher_season(year=year, min_pa=1)
+        pit_allpa.to_csv(out_dir / f"pitchers_{date}_allpa.csv", index=False)
+        print(f"[ingest] pitchers_allpa={len(pit_allpa)}")
+    except Exception as e:
+        print(f"[ingest] low-min pitcher pull failed (continuing): {e}")
+
+    # Prior-year board: stable full-season reference; fetched once and cached in data/
+    prev_year = year - 1
+    prev_pit_path = DATA_DIR / f"pitchers_{prev_year}.csv"
+    if not prev_pit_path.exists():
+        try:
+            prev_pit = fetch.get_pitcher_season(year=prev_year, min_pa=25)
+            prev_pit.to_csv(prev_pit_path, index=False)
+            print(f"[ingest] cached {prev_pit_path.name} ({len(prev_pit)} rows)")
+        except Exception as e:
+            print(f"[ingest] prior-year pitcher fetch failed (continuing): {e}")
+
     try:
         ars = fetch.get_pitch_arsenal(year=year)
         ars.to_csv(out_dir / f"arsenals_{date}.csv", index=False)
@@ -284,13 +340,58 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     if total > 0 and len(skipped) / total > 0.5:
         print(f"[bridge] WARNING: skipped {len(skipped)}/{total} batters: {skipped}")
 
-    # Opposing SP
+    # Opposing SP — four-level cascade so we always have something real
+    # Pre-load fallback boards once; they're small CSVs
+    _allpa_path = snapshot_dir / f"pitchers_{date}_allpa.csv"
+    _pit_allpa = pd.read_csv(_allpa_path) if _allpa_path.exists() else None
+    _allpa_nc = find_name_col(_pit_allpa) if _pit_allpa is not None else None
+    _allpa_index = _build_name_index(_pit_allpa, _allpa_nc) if _allpa_nc else {}
+
+    _prev_year = int(date.split("-")[0]) - 1
+    _prev_pit_path = DATA_DIR / f"pitchers_{_prev_year}.csv"
+    _pit_prev = pd.read_csv(_prev_pit_path) if _prev_pit_path.exists() else None
+    _prev_nc = find_name_col(_pit_prev) if _pit_prev is not None else None
+    _prev_index = _build_name_index(_pit_prev, _prev_nc) if _prev_nc else {}
+
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
-    if p_idx is None:
-        print(f"[bridge] WARN no stats row for {opp_sp_name} — using league-average pitcher fallback")
-        pdict = {"arsenal": dict(four_seam=0, sinker=0, cutter=0, slider=0, change=0, curve=0, split=0, kn=0)}
-    else:
+    if p_idx is not None:
+        # Level 1: primary board (min_pa=50, current year) — normal path
         pdict = row_to_pitcher_dict(pit.loc[p_idx])
+    else:
+        pdict = None
+
+        # Level 2: low-sample current year, regressed toward handedness prior
+        if _pit_allpa is not None:
+            p_idx2 = _fuzzy_lookup(opp_sp_name, _allpa_index)
+            if p_idx2 is not None:
+                row2 = _pit_allpa.loc[p_idx2]
+                n_pa = _get_pa_count(row2)
+                throws = str(row2.get("p_throws", "") or "").strip() or None
+                defaults = _pitcher_defaults_by_hand(throws)
+                pdict = _regress_pitcher(row_to_pitcher_dict(row2), n_pa, defaults)
+                hand_label = "LHP" if throws == "L" else "RHP"
+                print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, regressed → {hand_label} prior)")
+
+        # Level 3: prior-year full-season stats
+        if pdict is None and _pit_prev is not None:
+            p_idx3 = _fuzzy_lookup(opp_sp_name, _prev_index)
+            if p_idx3 is not None:
+                pdict = row_to_pitcher_dict(_pit_prev.loc[p_idx3])
+                print(f"[bridge] pitcher {opp_sp_name}: {_prev_year} prior-year stats")
+
+        # Level 4: handedness-aware league-average floor (true rookie / no data anywhere)
+        if pdict is None:
+            throws = None
+            if _pit_allpa is not None and _allpa_index:
+                p_idx4 = _fuzzy_lookup(opp_sp_name, _allpa_index)
+                if p_idx4 is not None:
+                    throws = str(_pit_allpa.loc[p_idx4].get("p_throws", "") or "").strip() or None
+            defaults = _pitcher_defaults_by_hand(throws)
+            pdict = dict(defaults)
+            pdict["arsenal"] = dict(four_seam=0, sinker=0, cutter=0, slider=0, change=0, curve=0, split=0, kn=0)
+            hand_label = "LHP" if throws == "L" else ("RHP" if throws else "unknown")
+            print(f"[bridge] pitcher {opp_sp_name}: {hand_label} league-average floor (no data found)")
+
     _fill_defaults(pdict, PITCHER_DEFAULTS)
     PITCHER = pdict
     PITCHER["name"] = opp_sp_name

@@ -123,6 +123,30 @@ def main():
     pit_join_pct = df[list(pit_map.keys())[0]].notna().mean() if pit_map else 0
     print(f"[fit] join success: batter={bat_join_pct:.1%}  pitcher={pit_join_pct:.1%}")
 
+    # Prior-year pitcher cascade: fill unmatched pitcher PAs from the previous season board
+    if pit_map:
+        first_pit_col = list(pit_map.keys())[0]
+        pit_miss = df[first_pit_col].isna()
+        if pit_miss.any():
+            prev_season = season - 1
+            prev_pit_path = DATA_DIR / f"pitchers_{prev_season}.csv"
+            if prev_pit_path.exists():
+                print(f"[fit] trying {prev_season} pitcher cascade for {pit_miss.sum():,} unmatched PAs")
+                pit_prev = pd.read_csv(prev_pit_path)
+                pit_map_prev = resolve(pit_prev, PITCHER_COL_MAP, f"pitcher_{prev_season}")
+                if pit_map_prev:
+                    prev_pit_id = find_id_col(pit_prev, "pitcher")
+                    pit_feats_prev = pit_prev[[prev_pit_id] + list(pit_map_prev.values())].rename(
+                        columns={prev_pit_id: "pitcher", **{v: k for k, v in pit_map_prev.items()}}
+                    ).set_index("pitcher")
+                    for col in pit_map.keys():
+                        if col in pit_feats_prev.columns:
+                            df.loc[pit_miss, col] = df.loc[pit_miss, "pitcher"].map(pit_feats_prev[col])
+                    pit_join_pct2 = df[first_pit_col].notna().mean()
+                    print(f"[fit] after {prev_season} cascade: pitcher join={pit_join_pct2:.1%}")
+            else:
+                print(f"[fit] {prev_pit_path.name} not found — run ingest_live.py once to cache it")
+
     feature_cols = list(bat_map.keys()) + list(pit_map.keys())
     complete = df.dropna(subset=feature_cols).copy()
     print(f"[fit] complete-case PAs: {len(complete):,} / {len(df):,} "
