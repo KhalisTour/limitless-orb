@@ -1,0 +1,248 @@
+=== AION Morning Refresh Mon Jun 22 09:12:43 EDT 2026 ===
+Watchlist: IONQ,RKLB,IREN,PLTR,NBIS,BE,TE,TSLA,INTC,AMD
+[1/4] Refreshing bars...
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IONQ timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=256 legacy_rows=189 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=RKLB timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=RKLB eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=RKLB ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=382 legacy_rows=310 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IREN timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=276 legacy_rows=227 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=PLTR timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=PLTR eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=PLTR ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=340 legacy_rows=261 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=NBIS timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=NBIS eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=NBIS ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=380 legacy_rows=339 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=BE timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=BE eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=BE ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=394 legacy_rows=299 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=TE timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TE eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TE ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=146 legacy_rows=112 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=TSLA timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=5 selected=['2026-06-24', '2026-06-26', '2026-06-29', '2026-07-01', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=5 grouped_expiries=['2026-06-24', '2026-06-26', '2026-06-29', '2026-07-01', '2026-07-02'] chain_rows=1310 legacy_rows=764 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=INTC timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=INTC eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=INTC ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=336 legacy_rows=271 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=AMD timeframe=1D start=2026-03-24 end=2026-06-22 upserted=61
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AMD eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AMD ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=856 legacy_rows=568 bars=5 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-24 end=2026-06-22; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-24 end=2026-06-22; treating as non-fatal
+Backfill summary: 10/10 symbols succeeded
+IONQ: ok=True bars=61 option_rows=0
+RKLB: ok=True bars=61 option_rows=0
+IREN: ok=True bars=61 option_rows=0
+PLTR: ok=True bars=61 option_rows=0
+NBIS: ok=True bars=61 option_rows=0
+BE: ok=True bars=61 option_rows=0
+TE: ok=True bars=61 option_rows=0
+TSLA: ok=True bars=61 option_rows=0
+INTC: ok=True bars=61 option_rows=0
+AMD: ok=True bars=61 option_rows=0
+[2/4] Running chain snapshot...
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IONQ cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IONQ signals=0 contracts=209 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=RKLB cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=RKLB signals=0 contracts=251 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IREN cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IREN signals=0 contracts=154 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=PLTR cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=PLTR signals=0 contracts=166 regime=trend
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=NBIS cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=NBIS signals=2 contracts=198 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=BE cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=BE signals=1 contracts=224 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=TE cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=TE signals=0 contracts=55 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=TSLA cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=TSLA signals=0 contracts=443 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=INTC cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=INTC signals=1 contracts=86 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=AMD cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=AMD signals=0 contracts=182 regime=acceleration
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=NBIS eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=NBIS ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=380 legacy_rows=339 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=NBIS count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=BE eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=BE ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=394 legacy_rows=299 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=BE count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=INTC eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=INTC ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=336 legacy_rows=271 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=INTC count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=256 legacy_rows=189 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=IONQ count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=RKLB eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=RKLB ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=382 legacy_rows=310 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=RKLB count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=276 legacy_rows=227 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=IREN count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=PLTR eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=PLTR ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=340 legacy_rows=261 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=PLTR count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TE eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TE ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=146 legacy_rows=112 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=TE count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=5 selected=['2026-06-24', '2026-06-26', '2026-06-29', '2026-07-01', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=5 grouped_expiries=['2026-06-24', '2026-06-26', '2026-06-29', '2026-07-01', '2026-07-02'] chain_rows=1310 legacy_rows=764 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=TSLA count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AMD eligible=2 selected=['2026-06-26', '2026-07-02']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AMD ok=True expiries=2 grouped_expiries=['2026-06-26', '2026-07-02'] chain_rows=856 legacy_rows=568 bars=5 errors=[]
+INFO:__main__:setup candidates inserted symbol=AMD count=0
+NBIS | skipped_recent=False | refreshed=True | chain_rows=380 | bars_used=True | setups=1 | contracts=1 | errors=
+BE | skipped_recent=False | refreshed=True | chain_rows=394 | bars_used=True | setups=0 | contracts=1 | errors=
+INTC | skipped_recent=False | refreshed=True | chain_rows=336 | bars_used=True | setups=1 | contracts=1 | errors=
+IONQ | skipped_recent=False | refreshed=True | chain_rows=256 | bars_used=True | setups=0 | contracts=1 | errors=
+RKLB | skipped_recent=False | refreshed=True | chain_rows=382 | bars_used=True | setups=1 | contracts=1 | errors=
+IREN | skipped_recent=False | refreshed=True | chain_rows=276 | bars_used=True | setups=0 | contracts=1 | errors=
+PLTR | skipped_recent=False | refreshed=True | chain_rows=340 | bars_used=True | setups=1 | contracts=1 | errors=
+TE | skipped_recent=False | refreshed=True | chain_rows=146 | bars_used=True | setups=0 | contracts=1 | errors=
+TSLA | skipped_recent=False | refreshed=True | chain_rows=1310 | bars_used=True | setups=0 | contracts=1 | errors=
+AMD | skipped_recent=False | refreshed=True | chain_rows=856 | bars_used=True | setups=0 | contracts=1 | errors=
+[3/4] Invalidating cache...
+Cache invalidate skipped (server may not be running)
+[4/4] Running morning brief...
+=== MORNING MACRO BRIEF ===
+Generated: 2026-06-22T13:19:15.641856+00:00
+Model: gpt-5.4-mini
+Tokens used: 46319
+Regime: stagflationary | Risk level: medium
+30-day call: Late-cycle reflation is the base case for the next 30 days, but the tape is one more energy-driven inflation impulse away from a full stagflation shock.
+
+Sector leaders: ['XLU', 'XLY']
+Sector laggards: ['XLE', 'XLB']
+
+Narrative tags posted: 5
+
+--- FULL BRIEF ---
+1. Macro Regime — The single most important signal of the past 30 days is the re-acceleration in inflation, with CPI up 0.5% in May 2026 and 4.2% y/y and PPI up 1.1% in May and 6.5% y/y, forcing the market to reprice real rates before growth has cracked. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai)) This is not a clean soft-landing tape — it is late-cycle reflation with a stagflationary edge: risk is still on, inflation is reflationary, liquidity is stable rather than flush, duration is a headwind, and credit is only benign on the surface. The 10-year TIPS real yield at 2.11% as of June 4, 2026 signals that the hurdle rate on long-duration assets is still climbing even without a full risk-off unwind. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/DFII10?utm_source=openai))
+
+2. Liquidity & Monetary Plumbing — The Fed balance sheet plumbing as of the June 3, 2026 H.4.1 release still points to a steady but not panic-tight system; reserves remain ample, the TGA and RRP are the moving parts, and the net impulse is stable, not a fresh flush. ([fred.stlouisfed.org](https://fred.stlouisfed.org/release?et=&pageID=1&rid=20&t=&utm_source=openai)) Markets are overpricing the idea that “liquidity” automatically means higher beta because direction matters more than level: the plumbing can be ample while real funding costs rise, and that second variable is what bites duration and levered credit. In this regime, a stable balance-sheet backdrop matters because it delays outright financial stress, but it does not offset the repricing of discount rates driven by inflation and term premium. The Fed’s balance sheet is therefore a cushion, not a catalyst. ([fred.stlouisfed.org](https://fred.stlouisfed.org/release?et=&pageID=1&rid=20&t=&utm_source=openai))
+
+3. Yield Curve & Rates — The 10s2s spread at 42 bps as of June 1 and the 10s3m spread at 68 bps as of June 15 show a curve that is no longer signaling imminent recession, but the steepening is a bear steepener rather than a growth gift. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/t10y2y?utm_source=openai)) The 10-year TIPS real yield at 2.11% as of June 4 confirms the binding rate constraint is real yields, not just nominal yields. The market is getting less room to extrapolate multiple expansion because the term premium is doing more of the work than growth optimism. This is not classic growth steepening — it is a term-premium repricing that keeps duration under pressure even with a still-positive curve. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/DFII10?utm_source=openai))
+
+4. Growth Outlook — GDPNow was still being updated in June 2026, while May payrolls rose 172,000 and the unemployment rate held at 4.3%, a combination that says the economy is slowing, not breaking. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/GDPNOW//1000?utm_source=openai)) The internal composition matters more than the headline: labor is in a low-hire, low-fire pattern, and that is consistent with a late-cycle deceleration rather than a recessionary cliff. LEI is not flashing a hard-stop signal from the latest available release, and the market should read this as coasting with a modest downside slope, not reacceleration. ([conference-board.org](https://www.conference-board.org/pdf_free/press/US%20LEI%20PRESS%20RELEASE-May%202026.pdf?utm_source=openai)) The GDP headline is not the point — the derivative is. Growth is still sufficient to support nominal earnings, but not strong enough to absorb a persistent inflation impulse without a valuation cost. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/GDPNOW//1000?utm_source=openai))
+
+5. Inflation — CPI at 4.2% y/y in May and PPI at 6.5% y/y are the regime-defining facts; the last mile is not breaking cleanly, it is stalling under the weight of energy and pipeline pass-through. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai)) Shelter rose 0.3% in May and is still up 3.4% y/y, so the services component is not behaving like a clean disinflation story even if some goods categories are quieter. The PPI split is the warning: goods rose 2.8% in May and energy rose 10.7% in the month, so the pipeline is heating from the commodity side back into the consumer tape. This is the Fed’s binding constraint: it cannot declare victory on inflation while energy and producer prices are re-accelerating. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai))
+
+6. Credit & Private Lending — Public credit is still benign on the surface: HYG and LQD are not pricing stress acute, and there is no broad spread blowout in the tape.  But the migration is into private lending and CRE. Trepp’s June 2026 CMBS hard-maturity cohort still shows office and retail refinance friction, Trepp’s May 2026 commentary flagged office delinquency pressure, and Trepp’s Q1 2026 SLOOS coverage shows bank lending standards remain firm for CRE. ([trepp.com](https://www.trepp.com/trepptalk/june-2026-cmbs-hard-maturities?hs_amp=true&utm_source=openai)) This is not a public-credit event — it is a private-market extend-and-pretend squeeze where the maturity wall, not the headline spread level, is the real stress gauge. The velocity of widening is still modest, but the migration is in place. ([trepp.com](https://www.trepp.com/trepptalk/june-2026-cmbs-hard-maturities?hs_amp=true&utm_source=openai))
+
+7. Geopolitics — The top geopolitical factor is energy, because the market is translating geopolitical risk primarily through inflation and Fed path, not through an outright panic bid. CPI and PPI both show energy as a major contributor, so the channel is oil → CPI/PPI → real rates → duration compression. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai)) Second, tariff and supply-chain risk remain underpriced relative to how quickly goods inflation can reaccelerate if imported costs rise; this shows up in the goods side of PPI and keeps the inflation impulse sticky. ([bls.gov](https://www.bls.gov/news.release/archives/ppi_06112026.htm?utm_source=openai)) Third, the dollar is the cross-border transmission valve: UUP strength would pressure EM and global liquidity if it were to accelerate, but for now this is a tactical rather than structural USD shock.  The market is underpricing how quickly energy can reassert itself through the policy channel even without a headline supply disruption. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai))
+
+8. Sector Winners & Losers — The 7-day sector tape is led by defensives and rate-sensitive pockets only when real yields ease, but the most recent quotes show XLU firming, XLY firming, and XLI positive, while XLF, XLV, XLE, XLRE, XLP, and XLB are softer on the day; XLK is still the dominant long-duration consensus, even if today’s quote is higher.  The top outperformers on the tape are XLU and XLY, with catalysts tied to defensive yield appeal and consumer resilience, respectively. The bottom two are XLE and XLB, where the headwind mechanism is simple: falling crude/metals momentum would compress commodity-linked earnings leverage and weaken the inflation hedge bid. A contrarian opportunity is XLRE on any pause in real yields, because the market is punishing duration too aggressively relative to balance-sheet quality in select real-estate cash flows. The crowded trade is XLK, and the specific risk is a term-premium-driven de-rating if real yields keep rising. 
+
+9. Cross-Asset Read — SPY and QQQ are still near the top of the risk stack, while IWM lags structurally less than it usually would in a true recession scare, which tells you this is more about rates and sector mix than immediate credit panic.  The S&P 500 versus Russell 2000 divergence signals duration sensitivity and financing cost pressure, not hard recession, because the small-cap discount is being applied to higher refinancing dependence. DXY, proxied by UUP, is firm, and that matters because a stronger dollar tightens global financial conditions even when domestic equities are stable.  Gold at 387.12 on June 22 is best interpreted as a mix of hedge and paper-liquidation risk: if real yields keep rising, gold can fall despite inflation/geopolitical narrative because the dominant transmission channel is discount-rate pressure, not structural thesis failure. Oil remains the swing factor that can turn the whole regime from late-cycle reflation into a more explicit stagflationary shock. BTC is behaving as equity beta, not a macro hedge, so IBIT should be read through risk appetite rather than safe-haven logic. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/DFII10?utm_source=openai))
+
+10. Risk Matrix — High-probability, moderate-impact risk one is another inflation upside surprise from energy, because the CPI/PPI impulse is already hot and would force a further bear steepener. ([bls.gov](https://www.bls.gov/news.release/cpi.htm?lv=true&utm_source=openai)) Medium-probability, severe-impact risk two is a duration/credit reflexivity loop: higher real yields hit levered borrowers, then CRE and private credit reprice simultaneously. ([trepp.com](https://www.trepp.com/trepptalk/cre-lending-standards-q1-2026-sloos?utm_source=openai)) Medium-probability, moderate-impact risk three is a growth stall where jobs remain positive but weak enough to compress margins without forcing the Fed into an easy pivot. ([bls.gov](https://www.bls.gov/opub/ted/2026/total-nonfarm-payroll-employment-increased-by-172000-in-may-2026.htm?utm_source=openai)) The underappreciated tail risk: a paper-to-physical divergence in energy or metals that forces a sharp move in real yields before the macro data fully reflects it. The 30-day regime call is late-cycle reflation with a stagflationary tilt: risk is still bid, but duration is the enemy and credit stress is migrating underneath the surface. The single variable to watch is the 10-year real yield; if it stops rising and CPI cools, the call shifts back toward disinflationary soft landing, but if real yields push higher on another energy shock, the regime hardens into stagflation shock. ([fred.stlouisfed.org](https://fred.stlouisfed.org/series/DFII10?utm_source=openai))
+
+TRADING IMPLICATIONS
+
+SPY | modest bullish bias | confirms on a hold above the recent highs with real yields contained | invalidates if the 10-year real yield keeps making new highs and breadth rolls over | 30-45 DTE call spread, slightly OTM, defined-risk.  
+QQQ | neutral-to-bearish on a relative basis | confirms on a sustained break in real yields or renewed megacap breadth leadership | invalidates if term premium keeps grinding higher and XLK underperforms | 30-60 DTE put spread or call fly, slightly OTM.  
+IWM | bearish relative bias | confirms on continued pressure from refinancing-sensitive small caps and weak bank/CRE transmission | invalidates if 2s10s steepens on true growth improvement and credit stays calm | 45-60 DTE put spread, modestly OTM.  
+XLE | tactical bullish bias | confirms on crude stabilizing and CPI staying sticky | invalidates if energy rolls over and inflation momentum cools | 30-45 DTE call spread, ATM to slightly OTM.  
+XLK | bearish relative bias | confirms on real yields above recent highs and continued multiple compression | invalidates if 10y TIPS yield falls and growth reaccelerates cleanly | 30-60 DTE put spread, slightly OTM.  
+GLD | tactical long, but treat recent weakness as paper liquidation risk | confirms on real yields rolling over below the June 4 level and/or DXY softening | invalidates if real yields and UUP keep rising together | 45-90 DTE call spread or risk reversal, slightly OTM.  
+IBIT | bearish-to-neutral; BTC is acting as equity beta, not macro hedge | confirms on risk-off tape with QQQ weakness and tighter liquidity expectations | invalidates if BTC decouples positively from equities and real yields fall | 30-45 DTE put spread or collar-style structure.  
+XLF | neutral | confirms on stable credit spreads and a steepening curve driven by growth, not stress | invalidates if private-credit or CRE stress spills into funding markets | 30-45 DTE strangle only if expecting volatility expansion.  
+XLRE | tactical bearish bias, but contrarian long on a real-yield pause | confirms on higher-for-longer real rates and weak refinance activity | invalidates if real yields drop and CMBS stress stays contained | 45-60 DTE put spread; contrarian longs should use call spreads only on a real-yield break lower.  
+
+```json
+{
+  "regime": "stagflationary",
+  "regime_axes": {
+    "risk": "risk-on",
+    "inflation": "reflationary",
+    "liquidity": "neutral",
+    "duration": "headwind",
+    "credit": "benign"
+  },
+  "dominant_signal": "The single most important signal of the past 30 days is the re-acceleration in inflation, with CPI up 0.5% in May 2026 and 4.2% y/y and PPI up 1.1% in May and 6.5% y/y, forcing the market to reprice real rates before growth has cracked.",
+  "regime_30d_call": "Late-cycle reflation is the base case for the next 30 days, but the tape is one more energy-driven inflation impulse away from a full stagflation shock.",
+  "single_variable_to_watch": "The 10-year real yield is the pivot; if it stops rising and inflation cools, the call softens back toward disinflation, but if it keeps rising on energy strength, the regime hardens into stagflation.",
+  "sector_leaders": ["XLU", "XLY"],
+  "sector_laggards": ["XLE", "XLB"],
+  "narrative_tags": [
+    {"symbol": "SPY", "tag_key": "macro_shock", "tag_value": "inflation_reprice"},
+    {"symbol": "XLE", "tag_key": "sector_rerating_up", "tag_value": "energy_inflation_bid"},
+    {"symbol": "XLK", "tag_key": "sector_rerating_down", "tag_value": "real_yield_pressure"},
+    {"symbol": "XLRE", "tag_key": "sector_rerating_down", "tag_value": "duration_compression"},
+    {"symbol": "GLD", "tag_key": "macro_relief", "tag_value": "paper_liquidation"}
+  ],
+  "risk_level": "medium",
+  "contradictions_resolved": [
+    "Equities near highs while inflation re-accelerates: liquidity and still-solid nominal growth are keeping risk assets elevated even as real rates and term premium pressure duration.",
+    "Growth resilience versus labor softening: the economy is decelerating at the margin, but not collapsing; this is a low-hire, low-fire late-cycle signal.",
+    "Gold weakness versus geopolitical and inflation risk: rising real yields and dollar strength dominate short-term price action, implying paper-market liquidation rather than structural thesis failure.",
+    "BTC not acting as a safe haven: it is trading as speculative equity beta, so IBIT is a risk-appetite barometer rather than a geopolitical hedge."
+  ],
+  "access_failures": [],
+  "data_quality": "medium",
+  "word_count": 1268,
+  "regime_probabilities": {
+    "late_cycle_reflation": 0.45,
+    "disinflation_soft_landing": 0.0,
+    "stagflation_shock": 0.35,
+    "pre_credit_event": 0.2,
+    "liquidity_squeeze": 0.0,
+    "qt_tightening": 0.0,
+    "melt_up": 0.0
+  },
+  "causal_chain": "Real rates and energy-driven inflation → multiple compression in duration-sensitive equities → rotation toward value, energy, and defensives → tighter financial conditions for leveraged borrowers → rising private-credit and CRE fragility."
+}
+```
+=== Refresh complete Mon Jun 22 09:19:15 EDT 2026 ===
