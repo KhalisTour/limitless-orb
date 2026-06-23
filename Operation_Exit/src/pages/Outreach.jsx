@@ -1,3 +1,4 @@
+import { OutreachGenerator } from "../components/CareerCommand";
 import { outreachContacts, outreachLanes, outreachScripts } from "../data/courseContent";
 import { Card, PageHero, Section, StatusPill } from "../components/Primitives";
 
@@ -14,6 +15,7 @@ export default function Outreach() {
       <Section title="Outreach tracker" subtitle="Leverage becomes real when the next action is visible.">
         <div className="contact-list">{outreachContacts.map((contact) => <Card className="contact-card" key={contact.contact}><h3>{contact.contact}</h3><span>{contact.platform}</span><span>{contact.relationship}</span><StatusPill tone={contact.sent === "Yes" ? "lime" : "purple"}>{contact.sent === "Yes" ? "Sent" : "Draft"}</StatusPill><span>{contact.followUp}</span><strong>{contact.outcome}</strong></Card>)}</div>
       </Section>
+      <Section title="Outreach Generator" subtitle="Generate direct messages with clear asks and follow-ups."><OutreachGenerator /></Section>
     </>
   );
 }

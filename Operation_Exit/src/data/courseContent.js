@@ -4,6 +4,7 @@ export const navigation = [
   { path: "/roadmap", label: "Roadmap" },
   { path: "/todays-rep", label: "Today’s Rep" },
   { path: "/tracker", label: "Tracker" },
+  { path: "/resume-lab", label: "Resume Lab" },
   { path: "/outreach", label: "Outreach" },
   { path: "/interview-gym", label: "Interview Gym" },
   { path: "/portfolio", label: "Proof" },

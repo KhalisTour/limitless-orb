@@ -1,5 +1,6 @@
 import { reviewItems } from "../data/courseContent";
 import { Card, CoachPanel, PageHero, Section } from "../components/Primitives";
+import { PipelineCommandCenter } from "../components/CareerCommand";
 
 export default function Review() {
   return (
@@ -10,6 +11,7 @@ export default function Review() {
           {reviewItems.map((item) => <Card key={item.label}><span className="tag">{item.label}</span><h3>{item.value}</h3><p>{item.note}</p></Card>)}
         </div>
       </Section>
+      <Section title="Pipeline Command Center" subtitle="Visible metrics with action attached."><PipelineCommandCenter /></Section>
       <CoachPanel>Do not optimize for relief only. Score each option by commute, manager quality, growth, stability, compensation, and whether the work creates better future options.</CoachPanel>
     </>
   );

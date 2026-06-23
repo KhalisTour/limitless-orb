@@ -2,6 +2,7 @@ import { useState } from "react";
 import { repOptions } from "../data/courseContent";
 import { Card, CoachPanel, PageHero, StatusPill } from "../components/Primitives";
 import { useRepCompletion } from "../hooks/useRepCompletion";
+import { RecoveryModeCard } from "../components/CareerCommand";
 
 export default function TodaysRep() {
   const [selectedRep, setSelectedRep] = useState(repOptions[0]);
@@ -36,6 +37,8 @@ export default function TodaysRep() {
           </div>
         </Card>
       </section>
+
+      <RecoveryModeCard />
 
       <CoachPanel>Too tired? Run the recovery version. Open the tracker, choose one next action, and stop while the system is still intact.</CoachPanel>
     </>

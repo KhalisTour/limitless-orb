@@ -1,7 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { navigation, userProgress } from "../data/courseContent";
 
-export function AppShell({ children }) {
+export function AppShell({ children, headerAction }) {
   return (
     <div className="app-shell">
       <header className="site-header">
@@ -16,7 +16,7 @@ export function AppShell({ children }) {
             </NavLink>
           ))}
         </nav>
-        <div className="header-status"><span className="pulse" /> Pipeline Active</div>
+        <div className="header-actions">{headerAction}<div className="header-status"><span className="pulse" /> Pipeline Active</div></div>
       </header>
       {children}
     </div>

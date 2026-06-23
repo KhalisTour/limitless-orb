@@ -1,3 +1,4 @@
+import { InterviewAnswerBuilder } from "../components/CareerCommand";
 import { interviewDrills, interviewModules } from "../data/courseContent";
 import { Card, PageHero, ProgressBar, Section, StatusPill } from "../components/Primitives";
 
@@ -13,6 +14,7 @@ export default function InterviewGym() {
         <ProgressBar label="Answer reps" value={practiced} max={interviewDrills.length} />
         <div className="drill-list">{interviewDrills.map((drill) => <Card className={drill.practiced ? "complete drill-card" : "drill-card"} key={drill.prompt}><StatusPill tone={drill.practiced ? "lime" : "purple"}>{drill.practiced ? "Practiced" : "Queued"}</StatusPill><h3>{drill.prompt}</h3></Card>)}</div>
       </Section>
+      <Section title="Interview Answer Builder" subtitle="Generate, edit, save, and practice Point → Evidence → Judgment answers."><InterviewAnswerBuilder /></Section>
     </>
   );
 }
