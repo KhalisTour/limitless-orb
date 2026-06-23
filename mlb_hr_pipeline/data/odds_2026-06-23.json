@@ -1,0 +1,97 @@
+{
+  "date": "2026-06-23",
+  "book": "betrivers",
+  "pulled_at": "2026-06-23T22:33:12.056904Z",
+  "lines": [
+    {
+      "name": "Ben Rice",
+      "american": 3500,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 19900,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 335,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 5000,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 19900,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 430,
+      "batter_id": "695506"
+    },
+    {
+      "name": "James Wood",
+      "american": 19900,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 1400,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 9000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "James Wood",
+      "american": 5500,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 165,
+      "batter_id": "656941"
+    },
+    {
+      "name": "James Wood",
+      "american": 450,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 3300,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 18000,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 330,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 16000,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 2800,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 285,
+      "batter_id": "621439"
+    }
+  ]
+}
