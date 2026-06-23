@@ -1,4 +1,6 @@
 import { portfolioProjects } from "../data/courseContent";
+import { proofLibrary } from "../data/proofLibrary";
+import { InterviewAnswerBuilder, ProofCard } from "../components/CareerCommand";
 import { Card, PageHero, Section } from "../components/Primitives";
 
 export default function Portfolio() {
@@ -24,6 +26,6 @@ export default function Portfolio() {
           ))}
         </div>
       </Section>
-    </>
+    <Section title="Proof Library" subtitle="Reusable leverage assets for resumes, outreach, and interviews."><div className="card-grid two">{proofLibrary.map(project => <ProofCard project={project} key={project.id} />)}</div></Section><Section title="Use proof in an interview answer"><InterviewAnswerBuilder /></Section></>
   );
 }

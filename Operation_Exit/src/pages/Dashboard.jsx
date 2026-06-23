@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { badges, dailyChecklist, repOptions, statCards } from "../data/courseContent";
 import { Card, CoachPanel, PageHero, ProgressBar, Section, StatGrid, StatusPill } from "../components/Primitives";
+import { JobCaptureModal, PipelineCommandCenter, RecoveryModeCard, RoleMatchScorer } from "../components/CareerCommand";
+import { sampleCapturedJobs } from "../data/jobCaptureData";
 
 export default function Dashboard() {
   return (
@@ -25,8 +27,17 @@ export default function Dashboard() {
           <ProgressBar />
           <StatGrid stats={statCards} />
           <Link className="button secondary full" to="/tracker">Quick link: application tracker</Link>
+          <Link className="button secondary full" to="/resume-lab">Upload resume / open Resume Lab</Link>
         </Card>
       </section>
+
+      <Section title="Capture external roles" subtitle="Paste a role, score it, and convert browsing into execution."><JobCaptureModal inline /></Section>
+
+      <Section title="Pipeline Command Center" subtitle="Every metric includes an interpretation and next action."><PipelineCommandCenter /></Section>
+
+      <Section title="High-match saved roles" subtitle="Top roles worth action now."><div className="card-grid three">{sampleCapturedJobs.map(job => <Card key={job.id}><h3>{job.role}</h3><p>{job.company} · {job.lane}</p><RoleMatchScorer score={{ matchScore: job.matchScore, nextAction: job.nextAction, reason: "Saved role with clear proof match." }} /></Card>)}</div></Section>
+
+      <RecoveryModeCard />
 
       <Section title="Daily checklist" subtitle="Make it obvious, easy, attractive, and satisfying.">
         <div className="checklist-grid">
