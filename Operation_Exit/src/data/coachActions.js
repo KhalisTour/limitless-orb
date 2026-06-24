@@ -1,5 +1,5 @@
-import { scoreJob, tailorResumeToJob } from './jobCaptureData';
-import { generateInterviewAnswer } from './interviewContent';
+import { scoreJob, tailorResumeToJob } from './jobCaptureData.js';
+import { generateInterviewAnswer } from './interviewContent.js';
 export const coachModes = ['What is my next rep?','Tailor this resume bullet','Score this job','Draft outreach','Prep interview answer','Review my pipeline','Recovery rep'];
 export function generateRecoveryRep() { return { title:'Rewrite one bullet', why:'It improves future applications without requiring a full application tonight.', steps:['Open Resume Lab','Pick one weak bullet','Use the coach rewrite','Save the improved version'], timeEstimate:'7 minutes', xp:20, completionCriteria:'One improved bullet saved.' }; }
 export function generateOutreachMessage(input = {}) { return { type: input.audience || 'Hiring Manager', subject:`${input.role || 'Growth Analyst'} proof of work`, message:`Hi ${input.contact || 'Jordan'}, I saw the ${input.role || 'Growth Analyst'} role at ${input.company || 'your team'} and applied because it maps to my work improving conversion flows, AI-assisted qualification, and campaign performance. If useful, I can send a short project summary showing how I moved prospects through a leasing funnel.`, followUp:`Hi ${input.contact || 'Jordan'}, quick follow-up. I’m still interested in the ${input.role || 'role'} and think my conversion and AI workflow experience could map well to the team’s goals.` }; }

@@ -14,6 +14,11 @@ export function useRepCompletion() {
     const nextState = { completed: true, completedRep: rep.title, xpClaimed: rep.xp };
     setState(nextState);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    // localStorage stays authoritative. Mirror XP/streak into the optional
+    // server blob fire-and-forget: never block or throw into the UI.
+    import("../lib/api.js")
+      .then((m) => m.apiSaveState({ lastCompletedRepAt: Date.now(), weeklyXp: rep.xp }))
+      .catch(() => {});
   }
 
   function resetRep() {

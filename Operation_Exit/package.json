@@ -6,14 +6,22 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "dev:api": "node server/dev-server.js",
+    "dev:all": "concurrently \"vite --host 0.0.0.0\" \"node server/dev-server.js\"",
+    "test:api": "node server/test/manual.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "4.3.4",
     "vite": "5.4.11",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "6.28.0"
+    "react-router-dom": "6.28.0",
+    "openai": "^4.77.0",
+    "zod": "^3.23.8"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "express": "^4.21.2",
+    "concurrently": "^9.1.2"
+  }
 }
