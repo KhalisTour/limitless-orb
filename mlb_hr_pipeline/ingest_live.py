@@ -277,6 +277,35 @@ def snapshot(date: str = None):
     except Exception as e:
         print(f"[ingest] low-min pitcher pull failed (continuing): {e}")
 
+    # Pitcher handedness cache: Savant stat boards omit it, so look it up by id via
+    # the Stats API. Handedness is static — only fetch ids not already cached.
+    try:
+        hands_path = DATA_DIR / "pitcher_hands.csv"
+        hands_df = pd.read_csv(hands_path) if hands_path.exists() else \
+            pd.DataFrame(columns=["player_id", "name", "throws"])
+        have = set(pd.to_numeric(hands_df["player_id"], errors="coerce").dropna().astype(int))
+        id_name = {}
+        for board in (pit, locals().get("pit_allpa")):
+            if board is None:
+                continue
+            nc = find_name_col(board)
+            for _, r in board.iterrows():
+                pid = r.get("player_id")
+                if pd.notna(pid):
+                    id_name.setdefault(int(pid), r.get(nc) if nc else None)
+        missing = [pid for pid in id_name if pid not in have]
+        if missing:
+            fetched = fetch.get_pitcher_hands(missing)
+            new_rows = [{"player_id": pid, "name": id_name.get(pid), "throws": thr}
+                        for pid, thr in fetched.items()]
+            if new_rows:
+                hands_df = pd.concat([hands_df, pd.DataFrame(new_rows)], ignore_index=True)
+                hands_df = hands_df.drop_duplicates(subset=["player_id"], keep="last")
+                hands_df.to_csv(hands_path, index=False)
+                print(f"[ingest] pitcher_hands: +{len(new_rows)} (total {len(hands_df)})")
+    except Exception as e:
+        print(f"[ingest] pitcher hands fetch failed (continuing): {e}")
+
     # Prior-year board: stable full-season reference; fetched once and cached in data/
     prev_year = year - 1
     prev_pit_path = DATA_DIR / f"pitchers_{prev_year}.csv"
@@ -389,6 +418,19 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     _ars_nc = find_name_col(_ars) if _ars is not None else None
     _ars_index = _build_name_index(_ars, _ars_nc) if _ars_nc else {}
 
+    # Pitcher handedness (stat boards omit it) — resolve once up front so both the
+    # cascade's handedness-aware priors and the platoon factor use the real hand.
+    sp_throws = None
+    _hands_path = DATA_DIR / "pitcher_hands.csv"
+    if _hands_path.exists():
+        _hands = pd.read_csv(_hands_path)
+        if "throws" in _hands.columns:
+            _hnc = find_name_col(_hands)
+            _h_idx = _fuzzy_lookup(opp_sp_name, _build_name_index(_hands, _hnc)) if _hnc else None
+            if _h_idx is not None:
+                _thr = str(_hands.loc[_h_idx, "throws"] or "").strip().upper()
+                sp_throws = _thr if _thr in ("L", "R") else None
+
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
     if p_idx is not None:
         # Level 1: primary board (≥50 PA, current year) — normal path
@@ -409,7 +451,7 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
 
         if _cur_row is not None:
             n_pa = _get_pa_count(_cur_row)
-            throws = str(_cur_row.get("p_throws", "") or "").strip() or None
+            throws = sp_throws
             if n_pa >= 50:
                 # Enough current-year sample — use at face value
                 pdict = row_to_pitcher_dict(_cur_row)
@@ -434,10 +476,15 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
             print(f"[bridge] pitcher {opp_sp_name}: {_prev_year} stats (no 2026 data)")
         else:
             # No data anywhere — handedness-aware league-average floor
-            defaults = _pitcher_defaults_by_hand(None)
+            defaults = _pitcher_defaults_by_hand(sp_throws)
             pdict = dict(defaults)
             pdict["arsenal"] = _zero_arsenal()
-            print(f"[bridge] pitcher {opp_sp_name}: league-average floor (no data found)")
+            hand_label = "LHP" if sp_throws == "L" else ("RHP" if sp_throws else "RHP/unknown")
+            print(f"[bridge] pitcher {opp_sp_name}: {hand_label} league-average floor (no data found)")
+
+    # Record handedness so the platoon factor in predict_today uses the real hand.
+    if sp_throws in ("L", "R"):
+        pdict["p_throws"] = sp_throws
 
     # Attach the resolved pitcher's real arsenal so the matchup model has signal.
     a_idx = _fuzzy_lookup(opp_sp_name, _ars_index) if _ars_index else None

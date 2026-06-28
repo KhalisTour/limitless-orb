@@ -125,6 +125,30 @@ def get_pitcher_season(year=None, min_pa=50):
     return pd.read_csv(io.StringIO(r.text))
 
 
+def get_pitcher_hands(player_ids):
+    """Return {mlbam_id: 'L'/'R'} throwing hand via the MLB Stats API people endpoint.
+
+    Savant's stat leaderboards omit handedness, so we look it up by player id.
+    Handedness is a static attribute — callers should cache results and only
+    request ids they don't already have. Batches ids to keep URLs short.
+    """
+    import statsapi
+    out = {}
+    ids = []
+    for i in player_ids:
+        if pd.notna(i):
+            ids.append(str(int(i)))
+    for start in range(0, len(ids), 100):
+        chunk = ids[start:start + 100]
+        data = statsapi.get("people", {"personIds": ",".join(chunk),
+                                       "fields": "people,id,pitchHand,code"})
+        for p in data.get("people", []):
+            code = (p.get("pitchHand") or {}).get("code")
+            if code in ("L", "R"):
+                out[int(p["id"])] = code
+    return out
+
+
 def get_pitch_arsenal(year=None):
     """Pitch-mix % per pitcher (4-seam/sinker/cutter/etc). Separate Savant board."""
     year = year or dt.date.today().year
