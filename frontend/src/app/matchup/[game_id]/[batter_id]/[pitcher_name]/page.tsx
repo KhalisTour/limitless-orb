@@ -9,6 +9,7 @@ import { isTrajectoryVisible } from "@/lib/trajectory";
 import StatGrid from "@/components/StatGrid";
 import ModelViews from "@/components/ModelViews";
 import PitchFamilyToggle from "@/components/PitchFamilyToggle";
+import PitchBubbleChart from "@/components/PitchBubbleChart";
 import StaleBanner from "@/components/StaleBanner";
 import OfflineShell from "@/components/OfflineShell";
 
@@ -156,7 +157,19 @@ export default async function MatchupPage({
         </Section>
       )}
 
-      {/* §5 MODEL VIEWS */}
+      {/* §5 PITCH-MIX MATCHUP */}
+      {hitter?.tb?.families && hitter.tb.families.length > 0 && (
+        <Section title="Pitch-mix matchup">
+          <div className="rounded-xl border border-white/5 bg-card p-4">
+            <p className="mb-3 font-mono text-xs text-text-muted">
+              bubble size = how often thrown &nbsp;·&nbsp; number &amp; color = TB score (5 = league avg)
+            </p>
+            <PitchBubbleChart families={hitter.tb.families} />
+          </div>
+        </Section>
+      )}
+
+      {/* §6 MODEL VIEWS */}
       {hitter && (
         <Section title="Model views">
           <ModelViews components={hitter.components} ensemble={hitter.p_per_pa} />

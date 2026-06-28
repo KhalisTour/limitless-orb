@@ -43,6 +43,33 @@ export function zoneColor(hrPct: number): string {
   return "#d50000";
 }
 
+/*
+  Pitch-mix matchup color scale — separate from the zone heatmap.
+  Royal blue (score 1, cold) → vibrant magenta (score 10, hot).
+  score = 1-10 where 5 = league average (etb / league_etb * 5).
+*/
+const PITCH_SCALE: [number, [number, number, number]][] = [
+  [1, [0x1e, 0x40, 0xaf]], // royal blue
+  [3, [0x5b, 0x21, 0xb6]], // violet
+  [5, [0x6d, 0x28, 0xd9]], // purple (league avg)
+  [7, [0xc0, 0x26, 0xd3]], // orchid
+  [10, [0xff, 0x2d, 0x95]], // magenta-hot
+];
+
+/** Map a 1-10 pitch-matchup score to a hex color (royal-blue → magenta). */
+export function pitchHeat(score: number): string {
+  const v = Math.max(1, Math.min(10, score));
+  for (let i = 0; i < PITCH_SCALE.length - 1; i++) {
+    const [lo, loC] = PITCH_SCALE[i];
+    const [hi, hiC] = PITCH_SCALE[i + 1];
+    if (v >= lo && v <= hi) {
+      const t = (v - lo) / (hi - lo);
+      return `#${toHex(lerp(loC[0], hiC[0], t))}${toHex(lerp(loC[1], hiC[1], t))}${toHex(lerp(loC[2], hiC[2], t))}`;
+    }
+  }
+  return "#ff2d95";
+}
+
 /** Desaturated treatment for league-baseline / no-data cells. */
 export function desaturate(hex: string, factor = 0.5): string {
   const m = hex.replace("#", "");
