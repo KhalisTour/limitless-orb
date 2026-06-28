@@ -350,47 +350,60 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     _prev_year = int(date.split("-")[0]) - 1
     _prev_pit_path = DATA_DIR / f"pitchers_{_prev_year}.csv"
     _pit_prev = pd.read_csv(_prev_pit_path) if _prev_pit_path.exists() else None
+    if _pit_prev is None:
+        print(f"[bridge] prior-year board missing ({_prev_pit_path.name}) — Level 3 unavailable; run ingest_live.py to cache it")
     _prev_nc = find_name_col(_pit_prev) if _pit_prev is not None else None
     _prev_index = _build_name_index(_pit_prev, _prev_nc) if _prev_nc else {}
 
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
     if p_idx is not None:
-        # Level 1: primary board (min_pa=50, current year) — normal path
+        # Level 1: primary board (≥50 PA, current year) — normal path
         pdict = row_to_pitcher_dict(pit.loc[p_idx])
     else:
-        pdict = None
-
-        # Level 2: low-sample current year, regressed toward handedness prior
+        # Look up both fallback boards before deciding what to blend
+        _cur_row = None
         if _pit_allpa is not None:
             p_idx2 = _fuzzy_lookup(opp_sp_name, _allpa_index)
             if p_idx2 is not None:
-                row2 = _pit_allpa.loc[p_idx2]
-                n_pa = _get_pa_count(row2)
-                throws = str(row2.get("p_throws", "") or "").strip() or None
-                defaults = _pitcher_defaults_by_hand(throws)
-                pdict = _regress_pitcher(row_to_pitcher_dict(row2), n_pa, defaults)
-                hand_label = "LHP" if throws == "L" else "RHP"
-                print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, regressed → {hand_label} prior)")
+                _cur_row = _pit_allpa.loc[p_idx2]
 
-        # Level 3: prior-year full-season stats
-        if pdict is None and _pit_prev is not None:
+        _prev_row = None
+        if _pit_prev is not None:
             p_idx3 = _fuzzy_lookup(opp_sp_name, _prev_index)
             if p_idx3 is not None:
-                pdict = row_to_pitcher_dict(_pit_prev.loc[p_idx3])
-                print(f"[bridge] pitcher {opp_sp_name}: {_prev_year} prior-year stats")
+                _prev_row = _pit_prev.loc[p_idx3]
 
-        # Level 4: handedness-aware league-average floor (true rookie / no data anywhere)
-        if pdict is None:
-            throws = None
-            if _pit_allpa is not None and _allpa_index:
-                p_idx4 = _fuzzy_lookup(opp_sp_name, _allpa_index)
-                if p_idx4 is not None:
-                    throws = str(_pit_allpa.loc[p_idx4].get("p_throws", "") or "").strip() or None
-            defaults = _pitcher_defaults_by_hand(throws)
+        if _cur_row is not None:
+            n_pa = _get_pa_count(_cur_row)
+            throws = str(_cur_row.get("p_throws", "") or "").strip() or None
+            if n_pa >= 50:
+                # Enough current-year sample — use at face value
+                pdict = row_to_pitcher_dict(_cur_row)
+                print(f"[bridge] pitcher {opp_sp_name}: 2026 allpa ({n_pa:.0f} PA, full stats)")
+            elif _prev_row is not None:
+                # Low current-year sample — blend toward 2025 stats as the informed prior
+                cur_dict = row_to_pitcher_dict(_cur_row)
+                prev_dict = row_to_pitcher_dict(_prev_row)
+                _fill_defaults(prev_dict, PITCHER_DEFAULTS)
+                prior_2025 = {k: prev_dict[k] for k in PITCHER_DEFAULTS if prev_dict.get(k) is not None}
+                pdict = _regress_pitcher(cur_dict, n_pa, prior_2025)
+                print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, blended with {_prev_year} stats)")
+            else:
+                # Low current-year sample, no prior-year data — regress toward handedness prior
+                defaults = _pitcher_defaults_by_hand(throws)
+                pdict = _regress_pitcher(row_to_pitcher_dict(_cur_row), n_pa, defaults)
+                hand_label = "LHP" if throws == "L" else "RHP"
+                print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, regressed → {hand_label} prior, no {_prev_year} data)")
+        elif _prev_row is not None:
+            # No 2026 appearances at all — use prior-year full-season stats
+            pdict = row_to_pitcher_dict(_prev_row)
+            print(f"[bridge] pitcher {opp_sp_name}: {_prev_year} stats (no 2026 data)")
+        else:
+            # No data anywhere — handedness-aware league-average floor
+            defaults = _pitcher_defaults_by_hand(None)
             pdict = dict(defaults)
             pdict["arsenal"] = dict(four_seam=0, sinker=0, cutter=0, slider=0, change=0, curve=0, split=0, kn=0)
-            hand_label = "LHP" if throws == "L" else ("RHP" if throws else "unknown")
-            print(f"[bridge] pitcher {opp_sp_name}: {hand_label} league-average floor (no data found)")
+            print(f"[bridge] pitcher {opp_sp_name}: league-average floor (no data found)")
 
     _fill_defaults(pdict, PITCHER_DEFAULTS)
     PITCHER = pdict
