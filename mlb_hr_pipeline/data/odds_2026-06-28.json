@@ -1,0 +1,142 @@
+{
+  "date": "2026-06-28",
+  "book": "betrivers",
+  "pulled_at": "2026-06-28T18:10:22.064377Z",
+  "lines": [
+    {
+      "name": "Kazuma Okamoto",
+      "american": 5000,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 15000,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Brandon Nimmo",
+      "american": 6600,
+      "batter_id": "607043"
+    },
+    {
+      "name": "Brandon Nimmo",
+      "american": 12500,
+      "batter_id": "607043"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 390,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Brandon Nimmo",
+      "american": 480,
+      "batter_id": "607043"
+    },
+    {
+      "name": "James Wood",
+      "american": 5000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 4500,
+      "batter_id": "624413"
+    },
+    {
+      "name": "James Wood",
+      "american": 14000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 390,
+      "batter_id": "624413"
+    },
+    {
+      "name": "James Wood",
+      "american": 400,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Kahlil Watson",
+      "american": 9000,
+      "batter_id": "696135"
+    },
+    {
+      "name": "Kahlil Watson",
+      "american": 700,
+      "batter_id": "696135"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 4000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 16000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 360,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 18000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 3400,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 9000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 330,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 540,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 19900,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 5000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 420,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 12500,
+      "batter_id": "669127"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 2000,
+      "batter_id": "669127"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 230,
+      "batter_id": "669127"
+    }
+  ]
+}
