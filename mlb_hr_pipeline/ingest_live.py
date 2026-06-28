@@ -144,11 +144,36 @@ def row_to_hitter_dict(row: pd.Series) -> dict:
 
 def row_to_pitcher_dict(row: pd.Series, arsenal: dict = None) -> dict:
     base = {k: first_present(row, cands) for k, cands in PITCHER_KEY_CANDIDATES.items()}
-    base["arsenal"] = arsenal or dict(
-        four_seam=0, sinker=0, cutter=0, slider=0,
-        change=0, curve=0, split=0, kn=0,
-    )
+    base["arsenal"] = arsenal or _zero_arsenal()
     return base
+
+
+def _zero_arsenal() -> dict:
+    return dict(four_seam=0, sinker=0, cutter=0, slider=0,
+                change=0, curve=0, split=0, kn=0)
+
+
+def _row_to_arsenal(row: pd.Series) -> dict:
+    """Map a Savant pitch-arsenals row (usage % per pitch) to models.py family keys.
+    Sweeper (n_st) and slurve (n_sv) are breaking balls — folded into slider so the
+    'soft' family captures their usage. Missing cells are 0% usage."""
+    def g(col):
+        if col in row.index and pd.notna(row[col]):
+            try:
+                return float(row[col])
+            except (TypeError, ValueError):
+                return 0.0
+        return 0.0
+    return dict(
+        four_seam=g("n_ff"),
+        sinker=g("n_si"),
+        cutter=g("n_fc"),
+        slider=g("n_sl") + g("n_st") + g("n_sv"),
+        change=g("n_ch"),
+        curve=g("n_cu"),
+        split=g("n_fs"),
+        kn=g("n_kn"),
+    )
 
 
 BATTER_DEFAULTS = {
@@ -355,6 +380,15 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     _prev_nc = find_name_col(_pit_prev) if _pit_prev is not None else None
     _prev_index = _build_name_index(_pit_prev, _prev_nc) if _prev_nc else {}
 
+    # Arsenal board (pitch-usage %): drives the matchup model. Loaded here so the
+    # resolved pitcher's pitch mix actually reaches models.py instead of all-zeros.
+    _ars_path = snapshot_dir / f"arsenals_{date}.csv"
+    _ars = pd.read_csv(_ars_path) if _ars_path.exists() else None
+    if _ars is None:
+        print(f"[bridge] arsenal board missing ({_ars_path.name}) — matchup model will be inert; run ingest_live.py")
+    _ars_nc = find_name_col(_ars) if _ars is not None else None
+    _ars_index = _build_name_index(_ars, _ars_nc) if _ars_nc else {}
+
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
     if p_idx is not None:
         # Level 1: primary board (≥50 PA, current year) — normal path
@@ -402,8 +436,15 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
             # No data anywhere — handedness-aware league-average floor
             defaults = _pitcher_defaults_by_hand(None)
             pdict = dict(defaults)
-            pdict["arsenal"] = dict(four_seam=0, sinker=0, cutter=0, slider=0, change=0, curve=0, split=0, kn=0)
+            pdict["arsenal"] = _zero_arsenal()
             print(f"[bridge] pitcher {opp_sp_name}: league-average floor (no data found)")
+
+    # Attach the resolved pitcher's real arsenal so the matchup model has signal.
+    a_idx = _fuzzy_lookup(opp_sp_name, _ars_index) if _ars_index else None
+    if a_idx is not None:
+        pdict["arsenal"] = _row_to_arsenal(_ars.loc[a_idx])
+    elif not any(pdict.get("arsenal", {}).values()):
+        print(f"[bridge] pitcher {opp_sp_name}: no arsenal match — matchup inert for this start")
 
     _fill_defaults(pdict, PITCHER_DEFAULTS)
     PITCHER = pdict
