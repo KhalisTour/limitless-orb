@@ -216,6 +216,9 @@ def main():
         "exbh": {str(b): [round(v, 5) for v in exbh[i]] for i, b in enumerate(batter_ids)},
         "etb_league": [round(v, 5) for v in etb_league],
         "exbh_league": [round(v, 5) for v in exbh_league],
+        # League pitch-mix (sums to 1, FAMILIES order). The consumer takes the
+        # matchup delta relative to THIS baseline: dot(etb[b], arsenal) - dot(etb[b], league_usage).
+        "league_usage": [round(v, 6) for v in (pa_per_bf.sum(axis=0) / pa_per_bf.sum()).tolist()],
     }
     out_path = MODELS_DIR / "tensor_factors.json"
     out_path.write_text(json.dumps(out))

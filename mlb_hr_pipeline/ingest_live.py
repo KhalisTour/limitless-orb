@@ -387,6 +387,10 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
             continue
         hdict = row_to_hitter_dict(bat.loc[row_idx])
         _fill_defaults(hdict, BATTER_DEFAULTS)
+        # Carry the mlbam id so the tensor ranker can key into per-batter factors.
+        _bid = bat.loc[row_idx].get("player_id")
+        if pd.notna(_bid):
+            hdict["batter_id"] = int(_bid)
         HITTERS[nm] = hdict
         LINEUP_ORDER.append(nm)
 

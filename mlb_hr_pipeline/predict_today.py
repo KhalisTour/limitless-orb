@@ -78,6 +78,60 @@ def _apply_fitted_coefs():
     return True
 
 
+def _apply_fitted_coefs_to(module, json_name: str,
+                           overlap=("barrel", "xslg", "hardhit", "la", "whiff")):
+    """Push fitted M3 coefficients into a model module (models_xbh / models_hit)."""
+    p = MODELS_OUT / json_name
+    if not p.exists():
+        print(f"[predict] {json_name} not found — using reasoned {module.__name__} priors")
+        return False
+    fit = json.loads(p.read_text())
+    for k in overlap:
+        if k in fit.get("coefficients", {}):
+            module.M3[k] = float(fit["coefficients"][k])
+    module.M3["intercept"] = float(fit["intercept"])
+    module.CALIBRATION_DAMP = 1.0
+    print(f"[predict] applied fitted coefficients from {json_name}")
+    return True
+
+
+def _load_tensor():
+    p = MODELS_OUT / "tensor_factors.json"
+    if not p.exists():
+        print("[predict] tensor_factors.json not found — TB/XBH tensor delta = 0; "
+              "run fit_tensor.py to enable the matchup ranker")
+        return None
+    tf = json.loads(p.read_text())
+    print(f"[predict] loaded tensor ({tf['meta']['n_batters']} batters, rank {tf['meta']['rank']})")
+    return tf
+
+
+def _tensor_deltas(tf, batter_id, arsenal):
+    """Matchup delta (tb, xbh) for this batter vs this starter's pitch mix.
+
+    delta = E[stat | batter, this arsenal] - E[stat | batter, league mix].
+    The level is supplied by the logistic; this is purely the interaction term.
+    Returns (0, 0) when the batter isn't in the tensor or the arsenal is empty.
+    """
+    if tf is None or batter_id is None:
+        return 0.0, 0.0
+    key = str(batter_id)
+    etb = tf["etb"].get(key)
+    exbh = tf["exbh"].get(key)
+    if etb is None or exbh is None:
+        return 0.0, 0.0
+    fams = tf["families"]
+    usage = [float(arsenal.get(f, 0) or 0) for f in fams]
+    s = sum(usage)
+    if s <= 0:
+        return 0.0, 0.0
+    usage = [u / s for u in usage]
+    league = tf["league_usage"]
+    tb_d = sum(e * u for e, u in zip(etb, usage)) - sum(e * l for e, l in zip(etb, league))
+    xbh_d = sum(e * u for e, u in zip(exbh, usage)) - sum(e * l for e, l in zip(exbh, league))
+    return tb_d, xbh_d
+
+
 def _inject_state(state: dict):
     import models, sim
     models.HITTERS = state["HITTERS"]
@@ -90,9 +144,17 @@ def _inject_state(state: dict):
 
 def predict_side(state: dict, n_sims: int = 1000,
                   park_factor: float = 1.0, platoon_factors: dict = None,
-                  pitcher_throws: str = None) -> dict:
+                  pitcher_throws: str = None, tensor: dict = None) -> dict:
     _inject_state(state)
-    import models, sim
+    import models, models_xbh, models_hit, sim
+    # XBH/hit ensembles read module-level state too; share the same arsenal-bearing
+    # PITCHER so their matchup terms are live (same fix as the HR path).
+    for mod in (models_xbh, models_hit):
+        mod.HITTERS = state["HITTERS"]
+        mod.PITCHER = state["PITCHER"]
+        mod.LEAGUE = state["LEAGUE"]
+        mod.PITCH_FAMILIES = state["PITCH_FAMILIES"]
+    arsenal = state["PITCHER"].get("arsenal", {})
     pf_map = platoon_factors or {}
     per_hitter = {}
     for name in state["LINEUP_ORDER"]:
@@ -105,10 +167,25 @@ def predict_side(state: dict, n_sims: int = 1000,
             r = models.model5_ensemble(name, state["LINEUP_ORDER"],
                                        park_factor=park_factor,
                                        platoon_factor=plat_f)
-            per_hitter[name] = {"p_per_pa": r["p_per_pa"], "exp_pa": r["exp_pa"],
-                                "components": r["components"], "tto_mult": r["tto_mult"],
-                                "park_factor": r["park_factor"],
-                                "platoon_factor": r["platoon_factor"]}
+            entry = {"p_per_pa": r["p_per_pa"], "exp_pa": r["exp_pa"],
+                     "components": r["components"], "tto_mult": r["tto_mult"],
+                     "park_factor": r["park_factor"],
+                     "platoon_factor": r["platoon_factor"]}
+
+            # XBH and TB: calibrated logistic level + tensor matchup delta.
+            p_hr = r["p_per_pa"]
+            p_xbh = models_xbh.model5_ensemble(name, state["LINEUP_ORDER"])["p_per_pa"]
+            p_hit = models_hit.model5_ensemble(name, state["LINEUP_ORDER"])["p_per_pa"]
+            tb_level = p_hit + p_xbh + 2.0 * p_hr   # E[TB]/PA ~ P(hit)+P(XBH)+2*P(HR)
+            tb_d, xbh_d = _tensor_deltas(tensor, h.get("batter_id"), arsenal)
+            exp_pa = r["exp_pa"]
+            xbh_pa = max(0.0, p_xbh + xbh_d)
+            tb_pa = max(0.0, tb_level + tb_d)
+            entry["xbh"] = {"per_pa_level": p_xbh, "tensor_delta": xbh_d,
+                            "per_pa": xbh_pa, "exp_per_game": xbh_pa * exp_pa}
+            entry["tb"] = {"per_pa_level": tb_level, "tensor_delta": tb_d,
+                           "per_pa": tb_pa, "exp_per_game": tb_pa * exp_pa}
+            per_hitter[name] = entry
         except Exception as e:
             per_hitter[name] = {"error": str(e)}
     sim_summary = None
@@ -138,6 +215,10 @@ def main(date: str = None):
     slate = json.loads((snap / "slate.json").read_text())
 
     _apply_fitted_coefs()
+    import models_xbh, models_hit
+    _apply_fitted_coefs_to(models_xbh, "fitted_coefficients_xbh.json")
+    _apply_fitted_coefs_to(models_hit, "fitted_coefficients_hit.json")
+    tensor = _load_tensor()
 
     park_factors = _load_park_factors()
     platoon_factors_map = _load_platoon_factors()
@@ -168,7 +249,7 @@ def main(date: str = None):
                 game_rec["sides"][side] = predict_side(
                     state, park_factor=pf,
                     platoon_factors=platoon_factors_map,
-                    pitcher_throws=p_throws)
+                    pitcher_throws=p_throws, tensor=tensor)
             except Exception as e:
                 game_rec["sides"][side] = {"error": str(e)}
         out["games"].append(game_rec)
