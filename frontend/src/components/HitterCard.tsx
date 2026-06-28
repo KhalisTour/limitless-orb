@@ -9,6 +9,13 @@ import Headshot from "./Headshot";
 import ProbabilityRing from "./ProbabilityRing";
 import LabelBadge from "./LabelBadge";
 import EmblemRow from "./EmblemBadge";
+import MatchupChip from "./MatchupChip";
+
+/* P(>=1 XBH this game) from the per-PA rate over expected PAs. */
+function gameXbhProb(perPa: number | null | undefined, expPa: number): number | null {
+  if (perPa == null || !Number.isFinite(perPa)) return null;
+  return 1 - Math.pow(1 - perPa, Math.max(0, expPa));
+}
 
 /*
   HitterCard (PART 3 widget hierarchy).
@@ -64,12 +71,19 @@ export default function HitterCard({
             <span className="font-mono text-xs text-text-muted">
               {formatPct(hitter.p_game_hr)} game HR
             </span>
+            <MatchupChip tb={hitter.tb} />
             <EmblemRow emblems={emblems} compact />
           </div>
-          <div className="mt-1.5 flex gap-3 font-mono text-[11px] text-text-muted">
+          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-text-muted">
             <span>BRL {hitter.stats?.barrel_pct != null ? `${hitter.stats.barrel_pct.toFixed(1)}%` : "—"}</span>
             <span>HH {hitter.stats?.hardhit_pct != null ? `${hitter.stats.hardhit_pct.toFixed(1)}%` : "—"}</span>
             <span>{hitter.exp_pa.toFixed(1)} PA</span>
+            {hitter.tb?.exp_per_game != null && (
+              <span><span className="font-bold text-neon-lime">{hitter.tb.exp_per_game.toFixed(1)}</span> xTB</span>
+            )}
+            {gameXbhProb(hitter.xbh?.per_pa, hitter.exp_pa) != null && (
+              <span><span className="font-bold text-neon-lime">{formatPct(gameXbhProb(hitter.xbh?.per_pa, hitter.exp_pa)!, 0)}</span> XBH</span>
+            )}
           </div>
         </div>
       </div>
@@ -102,6 +116,7 @@ export default function HitterCard({
         <div className="truncate font-sans font-semibold text-text-pri">{hitter.name}</div>
         <div className="truncate font-mono text-[11px] text-text-muted">vs {oppPitcher}</div>
       </div>
+      <MatchupChip tb={hitter.tb} />
       <LabelBadge label={label} size="sm" />
       {time && <span className="hidden shrink-0 font-mono text-[11px] text-text-muted sm:inline">{time}</span>}
     </div>

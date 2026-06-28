@@ -142,6 +142,8 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "explanation": entry.get("explanation"),
                     "opp_pitcher": opp_pitcher,
                     "stats": stats,
+                    "tb": entry.get("tb"),
+                    "xbh": entry.get("xbh"),
                 })
     return flat, blob, served, stale
 
@@ -298,6 +300,8 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
                 "platoon_factor": entry.get("platoon_factor"),
                 "explanation": entry.get("explanation"),
                 "stats": stats,
+                "tb": entry.get("tb"),
+                "xbh": entry.get("xbh"),
             })
         out_sides[side_key] = {
             "pitcher": side.get("pitcher"),

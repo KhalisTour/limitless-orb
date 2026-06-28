@@ -132,6 +132,23 @@ def _tensor_deltas(tf, batter_id, arsenal):
     return tb_d, xbh_d
 
 
+def _tensor_breakdown(tf, batter_id, arsenal):
+    """Per-pitch-family detail for the matchup page: this batter's expected TB vs
+    each family alongside how often this starter throws it. None when unavailable."""
+    if tf is None or batter_id is None:
+        return None
+    etb = tf["etb"].get(str(batter_id))
+    if etb is None:
+        return None
+    fams = tf["families"]
+    raw = [float(arsenal.get(f, 0) or 0) for f in fams]
+    s = sum(raw)
+    if s <= 0:
+        return None
+    return [{"family": f, "etb": round(e, 4), "usage": round(u / s, 4)}
+            for f, e, u in zip(fams, etb, raw)]
+
+
 def _inject_state(state: dict):
     import models, sim
     models.HITTERS = state["HITTERS"]
@@ -184,7 +201,8 @@ def predict_side(state: dict, n_sims: int = 1000,
             entry["xbh"] = {"per_pa_level": p_xbh, "tensor_delta": xbh_d,
                             "per_pa": xbh_pa, "exp_per_game": xbh_pa * exp_pa}
             entry["tb"] = {"per_pa_level": tb_level, "tensor_delta": tb_d,
-                           "per_pa": tb_pa, "exp_per_game": tb_pa * exp_pa}
+                           "per_pa": tb_pa, "exp_per_game": tb_pa * exp_pa,
+                           "families": _tensor_breakdown(tensor, h.get("batter_id"), arsenal)}
             per_hitter[name] = entry
         except Exception as e:
             per_hitter[name] = {"error": str(e)}

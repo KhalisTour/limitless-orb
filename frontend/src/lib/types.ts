@@ -24,6 +24,27 @@ export interface HitterComponents {
   linear: number;
 }
 
+/* Per-pitch-family detail for the matchup overlay (tensor etb vs pitcher usage). */
+export interface FamilyMatchup {
+  family: string;
+  etb: number;
+  usage: number;
+}
+
+/* XBH prediction: calibrated logistic level + tensor matchup delta.
+   Nullable across the board for older prediction JSONs that predate the tensor. */
+export interface XbhPrediction {
+  per_pa_level: number;
+  tensor_delta: number;
+  per_pa: number;
+  exp_per_game: number;
+}
+
+/* Total-bases prediction: same shape + the per-family breakdown for the overlay. */
+export interface TbPrediction extends XbhPrediction {
+  families: FamilyMatchup[] | null;
+}
+
 export interface Hitter {
   name: string;
   batter_id: string | null;
@@ -39,6 +60,8 @@ export interface Hitter {
   components: HitterComponents;
   explanation: string | null;
   stats: HitterStats | null;
+  tb: TbPrediction | null;
+  xbh: XbhPrediction | null;
 }
 
 export interface Sim {

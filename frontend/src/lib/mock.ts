@@ -54,6 +54,22 @@ function makeHitter(
 ): Hitter {
   const seed = hitterSeed++;
   const batterId = `6450${(seed + 10).toString().padStart(2, "0")}`;
+  const expPa = 4.4;
+  // TB/XBH mock: calibrated-ish levels + a tensor delta that swings sign by seed
+  // so the EDGE/FADE chip and the per-family chart both demo across mock cards.
+  const xbhLevel = Math.min(0.3, pPerPa * 2.5);
+  const hitLevel = Math.min(0.45, 0.21 + pPerPa * 3.0);
+  const tbLevel = hitLevel + xbhLevel + 2 * pPerPa;
+  const tbDelta = ((seed % 7) - 3) / 250; // ~ -0.012 .. +0.016
+  const xbhDelta = tbDelta * 0.6;
+  const fams = ["four_seam", "sinker", "cutter", "slider", "change", "curve", "split", "kn"];
+  const usageRaw = [33, 9, 7, 22, 11, 10, 7, 1].map((u, i) => u + ((seed + i) % 5));
+  const usageSum = usageRaw.reduce((a, b) => a + b, 0);
+  const families = fams.map((f, i) => ({
+    family: f,
+    etb: Math.round((0.32 + ((seed * 7 + i * 13) % 17) / 100) * 1000) / 1000,
+    usage: Math.round((usageRaw[i] / usageSum) * 1000) / 1000,
+  }));
   return {
     name,
     batter_id: batterId,
@@ -62,7 +78,7 @@ function makeHitter(
     p_per_pa_pctile: Math.round(pPerPa / 0.001),
     p_game_hr: Math.min(0.1, pPerPa * 4.4),
     p_multi_hr: pPerPa * 0.04,
-    exp_pa: 4.4,
+    exp_pa: expPa,
     tto_mult: 1.1 + (seed % 5) / 50,
     park_factor: 1.0 + ((seed % 7) - 3) / 20,
     platoon_factor: 0.95 + (seed % 5) / 50,
@@ -73,6 +89,19 @@ function makeHitter(
     },
     explanation: null,
     stats: makeStats(seed),
+    xbh: {
+      per_pa_level: xbhLevel,
+      tensor_delta: xbhDelta,
+      per_pa: Math.max(0, xbhLevel + xbhDelta),
+      exp_per_game: Math.max(0, xbhLevel + xbhDelta) * expPa,
+    },
+    tb: {
+      per_pa_level: tbLevel,
+      tensor_delta: tbDelta,
+      per_pa: Math.max(0, tbLevel + tbDelta),
+      exp_per_game: Math.max(0, tbLevel + tbDelta) * expPa,
+      families,
+    },
     ...opts,
   };
 }
