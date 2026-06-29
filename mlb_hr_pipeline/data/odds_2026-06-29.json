@@ -1,0 +1,112 @@
+{
+  "date": "2026-06-29",
+  "book": "betrivers",
+  "pulled_at": "2026-06-29T22:20:36.641371Z",
+  "lines": [
+    {
+      "name": "Miguel Vargas",
+      "american": 16000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 2800,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 3300,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 16000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 325,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 265,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 4000,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 1700,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 11000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 19900,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 360,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 195,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 12000,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 1900,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 215,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 16000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 2800,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 295,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 6000,
+      "batter_id": "679822"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 19900,
+      "batter_id": "679822"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 500,
+      "batter_id": "679822"
+    }
+  ]
+}
