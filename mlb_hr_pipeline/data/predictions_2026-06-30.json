@@ -1,0 +1,276 @@
+{
+  "date": "2026-06-30",
+  "generated_at": "2026-06-30T17:31:31.664244Z",
+  "games": [
+    {
+      "game_id": 824819,
+      "away": "Chicago White Sox",
+      "home": "Baltimore Orioles",
+      "away_sp": "Erick Fedde",
+      "home_sp": "Trey Gibson",
+      "game_datetime": "2026-06-30T22:35:00Z",
+      "venue": "Oriole Park at Camden Yards",
+      "park_factor": 1.2304,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824418,
+      "away": "Texas Rangers",
+      "home": "Cleveland Guardians",
+      "away_sp": "Jacob deGrom",
+      "home_sp": "Tanner Bibee",
+      "game_datetime": "2026-06-30T22:40:00Z",
+      "venue": "Progressive Field",
+      "park_factor": 0.8831,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823445,
+      "away": "Pittsburgh Pirates",
+      "home": "Philadelphia Phillies",
+      "away_sp": "Bubba Chandler",
+      "home_sp": "Cristopher S\u00e1nchez",
+      "game_datetime": "2026-06-30T22:40:00Z",
+      "venue": "Citizens Bank Park",
+      "park_factor": 1.1489,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823528,
+      "away": "Detroit Tigers",
+      "home": "New York Yankees",
+      "away_sp": "Tarik Skubal",
+      "home_sp": "Cam Schlittler",
+      "game_datetime": "2026-06-30T23:05:00Z",
+      "venue": "Yankee Stadium",
+      "park_factor": 1.1459,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 822793,
+      "away": "New York Mets",
+      "home": "Toronto Blue Jays",
+      "away_sp": "Nolan McLean",
+      "home_sp": "Kevin Gausman",
+      "game_datetime": "2026-06-30T23:07:00Z",
+      "venue": "Rogers Centre",
+      "park_factor": 1.1731,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824742,
+      "away": "Washington Nationals",
+      "home": "Boston Red Sox",
+      "away_sp": "Cade Cavalli",
+      "home_sp": "Connelly Early",
+      "game_datetime": "2026-06-30T23:10:00Z",
+      "venue": "Fenway Park",
+      "park_factor": 0.8266,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824907,
+      "away": "St. Louis Cardinals",
+      "home": "Atlanta Braves",
+      "away_sp": "Matthew Liberatore",
+      "home_sp": "Mart\u00edn P\u00e9rez",
+      "game_datetime": "2026-06-30T23:15:00Z",
+      "venue": "Truist Park",
+      "park_factor": 1.0448,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824096,
+      "away": "Tampa Bay Rays",
+      "home": "Kansas City Royals",
+      "away_sp": "Griffin Jax",
+      "home_sp": "Noah Cameron",
+      "game_datetime": "2026-06-30T23:40:00Z",
+      "venue": "Kauffman Stadium",
+      "park_factor": 0.8167,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823768,
+      "away": "Cincinnati Reds",
+      "home": "Milwaukee Brewers",
+      "away_sp": "Rhett Lowder",
+      "home_sp": "Brandon Sproat",
+      "game_datetime": "2026-06-30T23:40:00Z",
+      "venue": "American Family Field",
+      "park_factor": 0.9003,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824661,
+      "away": "San Diego Padres",
+      "home": "Chicago Cubs",
+      "away_sp": "JP Sears",
+      "home_sp": "Matthew Boyd",
+      "game_datetime": "2026-07-01T00:05:00Z",
+      "venue": "Wrigley Field",
+      "park_factor": 1.1185,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824175,
+      "away": "Minnesota Twins",
+      "home": "Houston Astros",
+      "away_sp": "Joe Ryan",
+      "home_sp": "Mike Burrows",
+      "game_datetime": "2026-07-01T00:10:00Z",
+      "venue": "Daikin Park",
+      "park_factor": 1.0914,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824338,
+      "away": "Miami Marlins",
+      "home": "Colorado Rockies",
+      "away_sp": "Eury P\u00e9rez",
+      "home_sp": "Tanner Gordon",
+      "game_datetime": "2026-07-01T00:40:00Z",
+      "venue": "Coors Field",
+      "park_factor": 1.103,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824984,
+      "away": "Los Angeles Dodgers",
+      "home": "Athletics",
+      "away_sp": "Justin Wrobleski",
+      "home_sp": "Jeffrey Springs",
+      "game_datetime": "2026-07-01T01:40:00Z",
+      "venue": "Sutter Health Park",
+      "park_factor": 1.0,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823122,
+      "away": "Los Angeles Angels",
+      "home": "Seattle Mariners",
+      "away_sp": "Jos\u00e9 Soriano",
+      "home_sp": "Bryan Woo",
+      "game_datetime": "2026-07-01T01:40:00Z",
+      "venue": "T-Mobile Park",
+      "park_factor": 1.0329,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 825066,
+      "away": "San Francisco Giants",
+      "home": "Arizona Diamondbacks",
+      "away_sp": "Landen Roupp",
+      "home_sp": null,
+      "game_datetime": "2026-07-01T01:40:00Z",
+      "venue": "Chase Field",
+      "park_factor": 0.9471,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-06-30 \u2014 lineups likely not posted yet"
+        }
+      }
+    }
+  ]
+}
