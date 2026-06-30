@@ -1,0 +1,92 @@
+{
+  "date": "2026-06-30",
+  "book": "betrivers",
+  "pulled_at": "2026-06-30T23:05:11.890882Z",
+  "lines": [
+    {
+      "name": "Miguel Vargas",
+      "american": 14000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 5500,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 4000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 18000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 430,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 340,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 2400,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 15000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 7500,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 225,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 550,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 13000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 2400,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 255,
+      "batter_id": "665742"
+    },
+    {
+      "name": "James Wood",
+      "american": 3000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 16000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 310,
+      "batter_id": "695578"
+    }
+  ]
+}
