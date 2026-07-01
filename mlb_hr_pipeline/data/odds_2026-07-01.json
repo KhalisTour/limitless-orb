@@ -1,0 +1,137 @@
+{
+  "date": "2026-07-01",
+  "book": "betrivers",
+  "pulled_at": "2026-07-01T16:06:15.055078Z",
+  "lines": [
+    {
+      "name": "Pete Alonso",
+      "american": 2200,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 13000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 19900,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 4000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 19900,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 4000,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 235,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Andrew Benintendi",
+      "american": 380,
+      "batter_id": "643217"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 8000,
+      "batter_id": "679822"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 19900,
+      "batter_id": "679822"
+    },
+    {
+      "name": "Justin Foscue",
+      "american": 575,
+      "batter_id": "679822"
+    },
+    {
+      "name": "James Wood",
+      "american": 2800,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 15000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 285,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 1900,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 3500,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 19900,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 11000,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Dillon Dingler",
+      "american": 360,
+      "batter_id": "693307"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 230,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 15000,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 2500,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 270,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 19900,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 4000,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 360,
+      "batter_id": "672960"
+    }
+  ]
+}
