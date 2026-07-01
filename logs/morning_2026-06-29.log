@@ -1,0 +1,220 @@
+=== AION Morning Refresh Mon Jun 29 18:26:08 EDT 2026 ===
+Watchlist: BE,RKLB,NBIS,IONQ,TSLA,VST,INTC,IREN,AMZN
+[1/4] Refreshing bars...
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=BE timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=BE eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=BE ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=496 legacy_rows=371 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=RKLB timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=RKLB eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=RKLB ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=454 legacy_rows=327 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=NBIS timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=NBIS eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=NBIS ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=422 legacy_rows=325 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IONQ timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=284 legacy_rows=221 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=TSLA timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=6 selected=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=6 grouped_expiries=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13'] chain_rows=1386 legacy_rows=893 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=VST timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=VST eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=VST ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=232 legacy_rows=134 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=INTC timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=INTC eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=INTC ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=354 legacy_rows=315 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=IREN timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=308 legacy_rows=222 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:ingestion backfill bars symbol=AMZN timeframe=1D start=2026-03-31 end=2026-06-29 upserted=62
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AMZN eligible=6 selected=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AMZN ok=True expiries=6 grouped_expiries=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13'] chain_rows=580 legacy_rows=345 bars=6 errors=[]
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=expiry start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_min start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=dte_max start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contracts start=2026-03-31 end=2026-06-29; treating as non-fatal
+INFO:aion_terminal.services.ingestion_service:option history not available (404) for contract=contract_count start=2026-03-31 end=2026-06-29; treating as non-fatal
+Backfill summary: 9/9 symbols succeeded
+BE: ok=True bars=62 option_rows=0
+RKLB: ok=True bars=62 option_rows=0
+NBIS: ok=True bars=62 option_rows=0
+IONQ: ok=True bars=62 option_rows=0
+TSLA: ok=True bars=62 option_rows=0
+VST: ok=True bars=62 option_rows=0
+INTC: ok=True bars=62 option_rows=0
+IREN: ok=True bars=62 option_rows=0
+AMZN: ok=True bars=62 option_rows=0
+[2/4] Running chain snapshot...
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=BE cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=BE signals=0 contracts=258 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=RKLB cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=RKLB signals=1 contracts=180 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=NBIS cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=NBIS signals=0 contracts=240 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IONQ cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IONQ signals=0 contracts=221 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=TSLA cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=TSLA signals=0 contracts=542 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=VST cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=VST signals=0 contracts=22 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=INTC cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=INTC signals=0 contracts=117 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=IREN cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=IREN signals=0 contracts=168 regime=acceleration
+INFO:aion_terminal.services.ranking_service:ranking cache-only symbol=AMZN cache_hit=True
+INFO:aion_terminal.services.ranking_service:rank_symbol symbol=AMZN signals=1 contracts=154 regime=range
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=AMZN eligible=6 selected=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=AMZN ok=True expiries=6 grouped_expiries=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13'] chain_rows=580 legacy_rows=345 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=AMZN count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=RKLB eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=RKLB ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=454 legacy_rows=327 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=RKLB count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=BE eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=BE ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=496 legacy_rows=371 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=BE count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=NBIS eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=NBIS ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=422 legacy_rows=325 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=NBIS count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IONQ eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IONQ ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=284 legacy_rows=221 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=IONQ count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=TSLA eligible=6 selected=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=TSLA ok=True expiries=6 grouped_expiries=['2026-07-01', '2026-07-02', '2026-07-06', '2026-07-08', '2026-07-10', '2026-07-13'] chain_rows=1386 legacy_rows=893 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=TSLA count=1
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=VST eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=VST ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=232 legacy_rows=134 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=VST count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=INTC eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=INTC ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=354 legacy_rows=315 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=INTC count=0
+INFO:aion_terminal.services.ingestion_service:ingestion expiry fetch symbol=IREN eligible=2 selected=['2026-07-02', '2026-07-10']
+INFO:aion_terminal.services.ingestion_service:ingestion refresh symbol=IREN ok=True expiries=2 grouped_expiries=['2026-07-02', '2026-07-10'] chain_rows=308 legacy_rows=222 bars=6 errors=[]
+INFO:__main__:setup candidates inserted symbol=IREN count=0
+AMZN | skipped_recent=False | refreshed=True | chain_rows=580 | bars_used=True | setups=1 | contracts=1 | errors=
+RKLB | skipped_recent=False | refreshed=True | chain_rows=454 | bars_used=True | setups=1 | contracts=1 | errors=
+BE | skipped_recent=False | refreshed=True | chain_rows=496 | bars_used=True | setups=0 | contracts=1 | errors=
+NBIS | skipped_recent=False | refreshed=True | chain_rows=422 | bars_used=True | setups=0 | contracts=1 | errors=
+IONQ | skipped_recent=False | refreshed=True | chain_rows=284 | bars_used=True | setups=0 | contracts=1 | errors=
+TSLA | skipped_recent=False | refreshed=True | chain_rows=1386 | bars_used=True | setups=1 | contracts=1 | errors=
+VST | skipped_recent=False | refreshed=True | chain_rows=232 | bars_used=True | setups=0 | contracts=1 | errors=
+INTC | skipped_recent=False | refreshed=True | chain_rows=354 | bars_used=True | setups=0 | contracts=1 | errors=
+IREN | skipped_recent=False | refreshed=True | chain_rows=308 | bars_used=True | setups=0 | contracts=1 | errors=
+[3/4] Invalidating cache...
+Cache invalidate skipped (server may not be running)
+[4/4] Running morning brief...
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/scripts/run_morning_brief.py", line 121, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/scripts/run_morning_brief.py", line 82, in main
+    brief = generate_morning_brief(settings.watchlist, api_key=api_key)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 221, in generate_morning_brief
+    full_text, tokens_used = _call_api()
+                             ^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/aion_terminal/agents/brief_agent.py", line 204, in _call_api
+    response = client.responses.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/resources/responses/responses.py", line 917, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 1019, in request
+    response = self._send_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 400, in _send_request
+    return self._send_with_auth_retry(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_client.py", line 378, in _send_with_auth_retry
+    response = super()._send_request(request, stream=stream, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/openai/_base_client.py", line 947, in _send_request
+    return self._client.send(request, stream=stream, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khaliwilliams/limitless-orb/venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 128, in read
+    return self._sock.recv(max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1232, in recv
+    return self.read(buflen)
+           ^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len)
+           ^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
