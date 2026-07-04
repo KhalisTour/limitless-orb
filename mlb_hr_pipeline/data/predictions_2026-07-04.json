@@ -1,6 +1,6 @@
 {
   "date": "2026-07-04",
-  "generated_at": "2026-07-04T21:31:43.279277Z",
+  "generated_at": "2026-07-04T22:50:03.967608Z",
   "games": [
     {
       "game_id": 822716,
@@ -3750,27 +3750,27 @@
         "away": {
           "per_hitter": {
             "Nathan Lukes": {
-              "p_per_pa": 0.0153722896014629,
+              "p_per_pa": 0.012453747928807777,
               "exp_pa": 4.6,
               "components": {
-                "logistic": 0.00927130615698503,
-                "matchup": 0.01662510820048745,
-                "linear": 0.016641714414214925
+                "logistic": 0.007194607937379515,
+                "matchup": 0.012457511076146822,
+                "linear": 0.01526525277844821
               },
               "tto_mult": 1.1540715647999997,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.05105237786800799,
+                "per_pa_level": 0.042049784166931455,
                 "tensor_delta": -7.198708000001608e-05,
-                "per_pa": 0.05098039078800797,
-                "exp_per_game": 0.23450979762483665
+                "per_pa": 0.04197779708693144,
+                "exp_per_game": 0.1930978665998846
               },
               "tb": {
-                "per_pa_level": 0.2602133480296054,
+                "per_pa_level": 0.21570375816733312,
                 "tensor_delta": -0.00916330232000001,
-                "per_pa": 0.2510500457096054,
-                "exp_per_game": 1.1548302102641845,
+                "per_pa": 0.2065404558473331,
+                "exp_per_game": 0.9500860968977322,
                 "families": [
                   {
                     "family": "four_seam",
@@ -3815,94 +3815,94 @@
                 ]
               }
             },
-            "Vladimir Guerrero Jr.": {
-              "p_per_pa": 0.04159639640066903,
+            "Myles Straw": {
+              "p_per_pa": 0.0309443622805538,
               "exp_pa": 4.4799999999999995,
               "components": {
-                "logistic": 0.0339138800988138,
-                "matchup": 0.03549331751841235,
-                "linear": 0.045684734772340745
+                "logistic": 0.01769958527196312,
+                "matchup": 0.049932498180356964,
+                "linear": 0.019305043885847153
               },
               "tto_mult": 1.1142759936,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.11586033457714709,
-                "tensor_delta": -0.000371125479999998,
-                "per_pa": 0.11548920909714709,
-                "exp_per_game": 0.5173916567552189
+                "per_pa_level": 0.09667800416425121,
+                "tensor_delta": -0.00013799458000000875,
+                "per_pa": 0.0965400095842512,
+                "exp_per_game": 0.43249924293744535
               },
               "tb": {
-                "per_pa_level": 0.5272551399439542,
-                "tensor_delta": -0.01391688469000002,
-                "per_pa": 0.5133382552539543,
-                "exp_per_game": 2.2997553835377147,
+                "per_pa_level": 0.44539292030165245,
+                "tensor_delta": -0.011331822070000053,
+                "per_pa": 0.4340610982316524,
+                "exp_per_game": 1.9445937200778025,
                 "families": [
                   {
                     "family": "four_seam",
-                    "etb": 0.3574,
+                    "etb": 0.3564,
                     "usage": 0.378
                   },
                   {
                     "family": "sinker",
-                    "etb": 0.4135,
+                    "etb": 0.4058,
                     "usage": 0.003
                   },
                   {
                     "family": "cutter",
-                    "etb": 0.3913,
+                    "etb": 0.3858,
                     "usage": 0.082
                   },
                   {
                     "family": "slider",
-                    "etb": 0.3331,
+                    "etb": 0.3401,
                     "usage": 0.232
                   },
                   {
                     "family": "change",
-                    "etb": 0.3715,
+                    "etb": 0.3696,
                     "usage": 0.08
                   },
                   {
                     "family": "curve",
-                    "etb": 0.3698,
+                    "etb": 0.3682,
                     "usage": 0.083
                   },
                   {
                     "family": "split",
-                    "etb": 0.3189,
+                    "etb": 0.3307,
                     "usage": 0.142
                   },
                   {
                     "family": "kn",
-                    "etb": 0.4658,
+                    "etb": 0.4429,
                     "usage": 0.0
                   }
                 ]
               }
             },
             "Kazuma Okamoto": {
-              "p_per_pa": 0.1535051149715844,
+              "p_per_pa": 0.09724469553487812,
               "exp_pa": 4.359999999999999,
               "components": {
-                "logistic": 0.21114609860198935,
-                "matchup": 0.08642331060830845,
-                "linear": 0.08768707460074782
+                "logistic": 0.11933165356149389,
+                "matchup": 0.06848097923938601,
+                "linear": 0.06504154839788659
               },
               "tto_mult": 1.0744804224,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.2686687585541881,
+                "per_pa_level": 0.20191256602512542,
                 "tensor_delta": -0.0004871038700000052,
-                "per_pa": 0.2681816546841881,
-                "exp_per_game": 1.16927201442306
+                "per_pa": 0.2014254621551254,
+                "exp_per_game": 0.8782150149963467
               },
               "tb": {
-                "per_pa_level": 1.054375410022291,
+                "per_pa_level": 0.7909548455730655,
                 "tensor_delta": -0.008011957890000032,
-                "per_pa": 1.046363452132291,
-                "exp_per_game": 4.562144651296789,
+                "per_pa": 0.7829428876830655,
+                "exp_per_game": 3.413630990298165,
                 "families": [
                   {
                     "family": "four_seam",
@@ -3947,94 +3947,28 @@
                 ]
               }
             },
-            "Daulton Varsho": {
-              "p_per_pa": 0.032190567888004,
+            "Ernie Clement": {
+              "p_per_pa": 0.015702174376961774,
               "exp_pa": 4.239999999999999,
               "components": {
-                "logistic": 0.0267196379118641,
-                "matchup": 0.03982110908448334,
-                "linear": 0.028565205420743926
+                "logistic": 0.010165141556695902,
+                "matchup": 0.020635223639575602,
+                "linear": 0.017643692340960394
               },
               "tto_mult": 1.0346848512,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.09444406557482546,
-                "tensor_delta": -0.0008691400100000052,
-                "per_pa": 0.09357492556482545,
-                "exp_per_game": 0.39675768439485987
-              },
-              "tb": {
-                "per_pa_level": 0.4104439842113391,
-                "tensor_delta": -0.01055820284000003,
-                "per_pa": 0.39988578137133907,
-                "exp_per_game": 1.6955157130144773,
-                "families": [
-                  {
-                    "family": "four_seam",
-                    "etb": 0.3319,
-                    "usage": 0.378
-                  },
-                  {
-                    "family": "sinker",
-                    "etb": 0.3934,
-                    "usage": 0.003
-                  },
-                  {
-                    "family": "cutter",
-                    "etb": 0.3784,
-                    "usage": 0.082
-                  },
-                  {
-                    "family": "slider",
-                    "etb": 0.3325,
-                    "usage": 0.232
-                  },
-                  {
-                    "family": "change",
-                    "etb": 0.3314,
-                    "usage": 0.08
-                  },
-                  {
-                    "family": "curve",
-                    "etb": 0.383,
-                    "usage": 0.083
-                  },
-                  {
-                    "family": "split",
-                    "etb": 0.3233,
-                    "usage": 0.142
-                  },
-                  {
-                    "family": "kn",
-                    "etb": 0.4774,
-                    "usage": 0.0
-                  }
-                ]
-              }
-            },
-            "Ernie Clement": {
-              "p_per_pa": 0.017242334684700544,
-              "exp_pa": 4.119999999999999,
-              "components": {
-                "logistic": 0.01145064035880075,
-                "matchup": 0.025042635790211154,
-                "linear": 0.018661316819355532
-              },
-              "tto_mult": 0.9948892799999999,
-              "park_factor": 1.0329,
-              "platoon_factor": 0.9632,
-              "xbh": {
-                "per_pa_level": 0.055767674800785406,
+                "per_pa_level": 0.051331124196490226,
                 "tensor_delta": -0.00016851044000000537,
-                "per_pa": 0.0555991643607854,
-                "exp_per_game": 0.22906855716643582
+                "per_pa": 0.05116261375649022,
+                "exp_per_game": 0.2169294823275185
               },
               "tb": {
-                "per_pa_level": 0.2701760831675982,
+                "per_pa_level": 0.24785908429682757,
                 "tensor_delta": -0.011640510669999993,
-                "per_pa": 0.25853557249759823,
-                "exp_per_game": 1.0651665586901045,
+                "per_pa": 0.23621857362682758,
+                "exp_per_game": 1.0015667521777487,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4080,27 +4014,27 @@
               }
             },
             "Yohendrick Pi\u00f1ango": {
-              "p_per_pa": 0.03062499225237635,
-              "exp_pa": 3.9999999999999996,
+              "p_per_pa": 0.021479887608201333,
+              "exp_pa": 4.119999999999999,
               "components": {
-                "logistic": 0.02999974508800431,
-                "matchup": 0.023733527695995647,
-                "linear": 0.040649473726857094
+                "logistic": 0.018373612751357522,
+                "matchup": 0.01753011464246353,
+                "linear": 0.03225227637461462
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.08464956294302366,
+                "per_pa_level": 0.06378368945775273,
                 "tensor_delta": 0.00011451896000000406,
-                "per_pa": 0.08476408190302366,
-                "exp_per_game": 0.3390563276120946
+                "per_pa": 0.06389820841775273,
+                "exp_per_game": 0.2632606186811412
               },
               "tb": {
-                "per_pa_level": 0.377304704651931,
+                "per_pa_level": 0.2913089603272939,
                 "tensor_delta": -0.0077070303199999746,
-                "per_pa": 0.369597674331931,
-                "exp_per_game": 1.4783906973277239,
+                "per_pa": 0.28360193000729395,
+                "exp_per_game": 1.1684399516300508,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4146,27 +4080,27 @@
               }
             },
             "Brandon Valenzuela": {
-              "p_per_pa": 0.05618428681266184,
-              "exp_pa": 3.88,
+              "p_per_pa": 0.03995661366084885,
+              "exp_pa": 3.9999999999999996,
               "components": {
-                "logistic": 0.06719334659292361,
-                "matchup": 0.05300642590783522,
-                "linear": 0.04133588109396486
+                "logistic": 0.04292768057680692,
+                "matchup": 0.041132096038397015,
+                "linear": 0.03401913864256784
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.13630673358853718,
+                "per_pa_level": 0.10616135154341025,
                 "tensor_delta": -0.0004258748200000051,
-                "per_pa": 0.13588085876853717,
-                "exp_per_game": 0.5272177320219242
+                "per_pa": 0.10573547672341024,
+                "exp_per_game": 0.4229419068936409
               },
               "tb": {
-                "per_pa_level": 0.5711388098411644,
+                "per_pa_level": 0.4506360902071096,
                 "tensor_delta": -0.013016058420000032,
-                "per_pa": 0.5581227514211644,
-                "exp_per_game": 2.165516275514118,
+                "per_pa": 0.43762003178710956,
+                "exp_per_game": 1.750480127148438,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4211,67 +4145,67 @@
                 ]
               }
             },
-            "Andr\u00e9s Gim\u00e9nez": {
-              "p_per_pa": 0.010261058606528553,
-              "exp_pa": 3.76,
+            "Luis Ur\u00edas": {
+              "p_per_pa": 0.06912423947384734,
+              "exp_pa": 3.88,
               "components": {
-                "logistic": 0.006394332105049184,
-                "matchup": 0.013095603834158375,
-                "linear": 0.014030555186105775
+                "logistic": 0.08522372174005001,
+                "matchup": 0.04291773148846523,
+                "linear": 0.07301333855970059
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.03442506385915226,
-                "tensor_delta": -0.00011106021000001354,
-                "per_pa": 0.03431400364915225,
-                "exp_per_game": 0.12902065372081245
+                "per_pa_level": 0.15286612389769969,
+                "tensor_delta": -0.0002271825399999955,
+                "per_pa": 0.15263894135769968,
+                "exp_per_game": 0.5922390924678748
               },
               "tb": {
-                "per_pa_level": 0.16691856848029074,
-                "tensor_delta": -0.005449330840000044,
-                "per_pa": 0.1614692376402907,
-                "exp_per_game": 0.607124333527493,
+                "per_pa_level": 0.6574483114827889,
+                "tensor_delta": -0.008781561770000001,
+                "per_pa": 0.6486667497127889,
+                "exp_per_game": 2.516826988885621,
                 "families": [
                   {
                     "family": "four_seam",
-                    "etb": 0.3514,
+                    "etb": 0.3512,
                     "usage": 0.378
                   },
                   {
                     "family": "sinker",
-                    "etb": 0.3753,
+                    "etb": 0.3896,
                     "usage": 0.003
                   },
                   {
                     "family": "cutter",
-                    "etb": 0.3663,
+                    "etb": 0.3752,
                     "usage": 0.082
                   },
                   {
                     "family": "slider",
-                    "etb": 0.3442,
+                    "etb": 0.3373,
                     "usage": 0.232
                   },
                   {
                     "family": "change",
-                    "etb": 0.3553,
+                    "etb": 0.3578,
                     "usage": 0.08
                   },
                   {
                     "family": "curve",
-                    "etb": 0.3592,
+                    "etb": 0.3697,
                     "usage": 0.083
                   },
                   {
                     "family": "split",
-                    "etb": 0.3384,
+                    "etb": 0.3301,
                     "usage": 0.142
                   },
                   {
                     "family": "kn",
-                    "etb": 0.4005,
+                    "etb": 0.435,
                     "usage": 0.0
                   }
                 ]
@@ -4281,129 +4215,127 @@
           "sim": {
             "n_games": 1000,
             "team_hr_dist": {
-              "2": 0.277,
-              "1": 0.317,
-              "3": 0.15,
-              "4": 0.069,
-              "0": 0.162,
+              "2": 0.278,
+              "0": 0.178,
+              "3": 0.128,
+              "1": 0.34,
+              "4": 0.052,
               "6": 0.006,
-              "5": 0.018,
+              "5": 0.017,
               "7": 0.001
             },
             "p_at_least_one_hr": {
-              "Nathan Lukes": 0.067,
-              "Vladimir Guerrero Jr.": 0.183,
-              "Kazuma Okamoto": 0.56,
-              "Daulton Varsho": 0.158,
-              "Ernie Clement": 0.099,
-              "Yohendrick Pi\u00f1ango": 0.147,
-              "Brandon Valenzuela": 0.2,
-              "Andr\u00e9s Gim\u00e9nez": 0.039
+              "Nathan Lukes": 0.073,
+              "Myles Straw": 0.165,
+              "Kazuma Okamoto": 0.46,
+              "Ernie Clement": 0.081,
+              "Yohendrick Pi\u00f1ango": 0.113,
+              "Brandon Valenzuela": 0.197,
+              "Luis Ur\u00edas": 0.314
             },
             "p_multi_hr": {
               "Nathan Lukes": 0.004,
-              "Vladimir Guerrero Jr.": 0.015,
-              "Kazuma Okamoto": 0.175,
-              "Daulton Varsho": 0.01,
-              "Ernie Clement": 0.007,
-              "Yohendrick Pi\u00f1ango": 0.007,
-              "Brandon Valenzuela": 0.021,
-              "Andr\u00e9s Gim\u00e9nez": 0.0
+              "Myles Straw": 0.012,
+              "Kazuma Okamoto": 0.112,
+              "Ernie Clement": 0.001,
+              "Yohendrick Pi\u00f1ango": 0.008,
+              "Brandon Valenzuela": 0.014,
+              "Luis Ur\u00edas": 0.044
             },
-            "back_to_back_per_game": 0.076
+            "back_to_back_per_game": 0.049
           },
           "pitcher": "Logan Gilbert"
         },
         "home": {
           "per_hitter": {
-            "J.P. Crawford": {
-              "p_per_pa": 0.05354379289475118,
+            "Weston Wilson": {
+              "p_per_pa": 0.021257094933157663,
               "exp_pa": 4.6,
               "components": {
-                "logistic": 0.037806033118315395,
-                "matchup": 0.07436993635511417,
-                "linear": 0.02828744416472286
+                "logistic": 0.016150506598283446,
+                "matchup": 0.01972451470502428,
+                "linear": 0.020936539681758598
               },
               "tto_mult": 1.1540715647999997,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.15545960598959618,
-                "tensor_delta": 0.0009344933920879261,
-                "per_pa": 0.1563940993816841,
-                "exp_per_game": 0.7194128571557469
+                "per_pa_level": 0.0665300347392463,
+                "tensor_delta": 0.0006742860590309707,
+                "per_pa": 0.06720432079827728,
+                "exp_per_game": 0.30913987567207546
               },
               "tb": {
-                "per_pa_level": 0.6756515102400245,
-                "tensor_delta": 0.000274832390879165,
-                "per_pa": 0.6759263426309037,
-                "exp_per_game": 3.1092611761021565,
+                "per_pa_level": 0.297841176108676,
+                "tensor_delta": -0.0008370834785514369,
+                "per_pa": 0.29700409263012456,
+                "exp_per_game": 1.3662188260985728,
                 "families": [
                   {
                     "family": "four_seam",
-                    "etb": 0.3613,
+                    "etb": 0.3498,
                     "usage": 0.3946
                   },
                   {
                     "family": "sinker",
-                    "etb": 0.392,
+                    "etb": 0.3771,
                     "usage": 0.0
                   },
                   {
                     "family": "cutter",
-                    "etb": 0.3785,
+                    "etb": 0.3643,
                     "usage": 0.1618
                   },
                   {
                     "family": "slider",
-                    "etb": 0.3417,
+                    "etb": 0.3324,
                     "usage": 0.1319
                   },
                   {
                     "family": "change",
-                    "etb": 0.3701,
+                    "etb": 0.3564,
                     "usage": 0.1439
                   },
                   {
                     "family": "curve",
-                    "etb": 0.3729,
+                    "etb": 0.3476,
                     "usage": 0.1678
                   },
                   {
                     "family": "split",
-                    "etb": 0.3347,
+                    "etb": 0.321,
                     "usage": 0.0
                   },
                   {
                     "family": "kn",
-                    "etb": 0.4271,
+                    "etb": 0.4101,
                     "usage": 0.0
                   }
                 ]
               }
             },
             "Randy Arozarena": {
-              "p_per_pa": 0.024558305206630705,
+              "p_per_pa": 0.039595293031621515,
               "exp_pa": 4.4799999999999995,
               "components": {
-                "logistic": 0.01721801446927963,
-                "matchup": 0.019375281957958103,
-                "linear": 0.03391602336635478
+                "logistic": 0.03429107814499564,
+                "matchup": 0.029477232951731096,
+                "linear": 0.04504156911104165
               },
               "tto_mult": 1.1142759936,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.07343975321166613,
+                "per_pa_level": 0.1082302553240533,
                 "tensor_delta": 0.0005739364402497643,
-                "per_pa": 0.07401368965191589,
-                "exp_per_game": 0.3315813296405832
+                "per_pa": 0.10880419176430306,
+                "exp_per_game": 0.4874427791040777
               },
               "tb": {
-                "per_pa_level": 0.3422859848149499,
+                "per_pa_level": 0.48320622703849403,
                 "tensor_delta": -0.001104334930809192,
-                "per_pa": 0.3411816498841407,
-                "exp_per_game": 1.52849379148095,
+                "per_pa": 0.48210189210768484,
+                "exp_per_game": 2.159816476642428,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4449,27 +4381,27 @@
               }
             },
             "Dominic Canzone": {
-              "p_per_pa": 0.10184477114161662,
+              "p_per_pa": 0.13825134282277582,
               "exp_pa": 4.359999999999999,
               "components": {
-                "logistic": 0.12488264353409202,
-                "matchup": 0.058197819336518755,
-                "linear": 0.08451439564118478
+                "logistic": 0.17637334069920801,
+                "matchup": 0.0856466155880344,
+                "linear": 0.09442440479765961
               },
               "tto_mult": 1.0744804224,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.20809739786442738,
+                "per_pa_level": 0.2609621724246924,
                 "tensor_delta": 0.0006524940855244798,
-                "per_pa": 0.20874989194995186,
-                "exp_per_game": 0.91014952890179
+                "per_pa": 0.26161466651021686,
+                "exp_per_game": 1.1406399459845453
               },
               "tb": {
-                "per_pa_level": 0.855857274415421,
+                "per_pa_level": 1.0374648580702441,
                 "tensor_delta": -0.00041847220665330864,
-                "per_pa": 0.8554388022087678,
-                "exp_per_game": 3.7297131776302272,
+                "per_pa": 1.0370463858635908,
+                "exp_per_game": 4.521522242365255,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4515,27 +4447,27 @@
               }
             },
             "Cal Raleigh": {
-              "p_per_pa": 0.03906152006682587,
+              "p_per_pa": 0.053731657340760644,
               "exp_pa": 4.239999999999999,
               "components": {
-                "logistic": 0.03808305613176044,
-                "matchup": 0.045399954630671736,
-                "linear": 0.027978930581059044
+                "logistic": 0.06007510799782116,
+                "matchup": 0.05123556196600141,
+                "linear": 0.03810395989020231
               },
               "tto_mult": 1.0346848512,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.10657704934370432,
+                "per_pa_level": 0.1316870813076162,
                 "tensor_delta": 0.0004277699828571513,
-                "per_pa": 0.10700481932656147,
-                "exp_per_game": 0.45370043394462056
+                "per_pa": 0.13211485129047335,
+                "exp_per_game": 0.5601669694716069
               },
               "tb": {
-                "per_pa_level": 0.4409747867112922,
+                "per_pa_level": 0.5370458952233772,
                 "tensor_delta": -0.002430206782657318,
-                "per_pa": 0.4385445799286349,
-                "exp_per_game": 1.8594290188974116,
+                "per_pa": 0.5346156884407198,
+                "exp_per_game": 2.266770518988652,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4581,27 +4513,27 @@
               }
             },
             "Josh Naylor": {
-              "p_per_pa": 0.02389456851526271,
+              "p_per_pa": 0.0438209914203895,
               "exp_pa": 4.119999999999999,
               "components": {
-                "logistic": 0.019327288117054094,
-                "matchup": 0.02644217343214211,
-                "linear": 0.029549530405607285
+                "logistic": 0.04150711800269499,
+                "matchup": 0.05043989577733368,
+                "linear": 0.04094370745405648
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.07294516962192224,
+                "per_pa_level": 0.12135889116534024,
                 "tensor_delta": 0.0009614514974225913,
-                "per_pa": 0.07390662111934483,
-                "exp_per_game": 0.30449527901170065
+                "per_pa": 0.12232034266276283,
+                "exp_per_game": 0.5039598117705828
               },
               "tb": {
-                "per_pa_level": 0.344561579405829,
+                "per_pa_level": 0.5419667927605801,
                 "tensor_delta": -0.00191197813433569,
-                "per_pa": 0.3426496012714933,
-                "exp_per_game": 1.411716357238552,
+                "per_pa": 0.5400548146262445,
+                "exp_per_game": 2.225025836260127,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4646,160 +4578,94 @@
                 ]
               }
             },
-            "Luke Raley": {
-              "p_per_pa": 0.07675636444561006,
+            "Miles Mastrobuoni": {
+              "p_per_pa": 0.013356944469983586,
               "exp_pa": 3.9999999999999996,
               "components": {
-                "logistic": 0.10790681034897301,
-                "matchup": 0.039140394313651745,
-                "linear": 0.06740190765946825
+                "logistic": 0.006597344149852082,
+                "matchup": 0.023691638734665232,
+                "linear": 0.013397049014888905
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.15340518458279043,
-                "tensor_delta": 0.0006444722890509569,
-                "per_pa": 0.15404965687184138,
-                "exp_per_game": 0.6161986274873654
+                "per_pa_level": 0.045866260727145676,
+                "tensor_delta": 0.0009196766660339722,
+                "per_pa": 0.04678593739317965,
+                "exp_per_game": 0.18714374957271857
               },
               "tb": {
-                "per_pa_level": 0.6221989137227675,
-                "tensor_delta": -0.0014637835826872836,
-                "per_pa": 0.6207351301400802,
-                "exp_per_game": 2.4829405205603203,
+                "per_pa_level": 0.2305786307225184,
+                "tensor_delta": -0.0017053590132067864,
+                "per_pa": 0.22887327170931163,
+                "exp_per_game": 0.9154930868372464,
                 "families": [
                   {
                     "family": "four_seam",
-                    "etb": 0.3467,
+                    "etb": 0.3606,
                     "usage": 0.3946
                   },
                   {
                     "family": "sinker",
-                    "etb": 0.3858,
+                    "etb": 0.4025,
                     "usage": 0.0
                   },
                   {
                     "family": "cutter",
-                    "etb": 0.3701,
+                    "etb": 0.3822,
                     "usage": 0.1618
                   },
                   {
                     "family": "slider",
-                    "etb": 0.3339,
+                    "etb": 0.339,
                     "usage": 0.1319
                   },
                   {
                     "family": "change",
-                    "etb": 0.3513,
+                    "etb": 0.3735,
                     "usage": 0.1439
                   },
                   {
                     "family": "curve",
-                    "etb": 0.3586,
+                    "etb": 0.3619,
                     "usage": 0.1678
                   },
                   {
                     "family": "split",
-                    "etb": 0.3232,
+                    "etb": 0.3291,
                     "usage": 0.0
                   },
                   {
                     "family": "kn",
-                    "etb": 0.4341,
-                    "usage": 0.0
-                  }
-                ]
-              }
-            },
-            "Cole Young": {
-              "p_per_pa": 0.0322144047515197,
-              "exp_pa": 3.88,
-              "components": {
-                "logistic": 0.030400789731582993,
-                "matchup": 0.03651566632510553,
-                "linear": 0.030979336090462873
-              },
-              "tto_mult": 0.9948892799999999,
-              "park_factor": 1.0329,
-              "platoon_factor": 0.9632,
-              "xbh": {
-                "per_pa_level": 0.094010873146104,
-                "tensor_delta": 0.0004475306879920121,
-                "per_pa": 0.09445840383409601,
-                "exp_per_game": 0.3664986068762925
-              },
-              "tb": {
-                "per_pa_level": 0.43043461119712295,
-                "tensor_delta": -0.0029435620767532256,
-                "per_pa": 0.4274910491203697,
-                "exp_per_game": 1.6586652705870344,
-                "families": [
-                  {
-                    "family": "four_seam",
-                    "etb": 0.3526,
-                    "usage": 0.3946
-                  },
-                  {
-                    "family": "sinker",
-                    "etb": 0.4017,
-                    "usage": 0.0
-                  },
-                  {
-                    "family": "cutter",
-                    "etb": 0.382,
-                    "usage": 0.1618
-                  },
-                  {
-                    "family": "slider",
-                    "etb": 0.3392,
-                    "usage": 0.1319
-                  },
-                  {
-                    "family": "change",
-                    "etb": 0.3649,
-                    "usage": 0.1439
-                  },
-                  {
-                    "family": "curve",
-                    "etb": 0.3567,
-                    "usage": 0.1678
-                  },
-                  {
-                    "family": "split",
-                    "etb": 0.3272,
-                    "usage": 0.0
-                  },
-                  {
-                    "family": "kn",
-                    "etb": 0.4335,
+                    "etb": 0.4331,
                     "usage": 0.0
                   }
                 ]
               }
             },
             "Victor Robles": {
-              "p_per_pa": 0.009781249791663891,
-              "exp_pa": 3.76,
+              "p_per_pa": 0.017120534575920294,
+              "exp_pa": 3.88,
               "components": {
-                "logistic": 0.005819517462003104,
-                "matchup": 0.013323006439878214,
-                "linear": 0.012863244096341209
+                "logistic": 0.013468689718286216,
+                "matchup": 0.020155115343184093,
+                "linear": 0.02040414933780353
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.0326936154355828,
+                "per_pa_level": 0.05320854529700816,
                 "tensor_delta": 0.0004431402338761353,
-                "per_pa": 0.03313675566945894,
-                "exp_per_game": 0.1245942013171656
+                "per_pa": 0.05365168553088429,
+                "exp_per_game": 0.20816853985983105
               },
               "tb": {
-                "per_pa_level": 0.1692371205766504,
+                "per_pa_level": 0.2647633595279652,
                 "tensor_delta": -0.0036181061625773503,
-                "per_pa": 0.16561901441407306,
-                "exp_per_game": 0.6227274941969146,
+                "per_pa": 0.26114525336538785,
+                "exp_per_game": 1.013243583057705,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4845,27 +4711,27 @@
               }
             },
             "Colt Emerson": {
-              "p_per_pa": 0.010587691068142504,
-              "exp_pa": 3.6399999999999997,
+              "p_per_pa": 0.015196946987540382,
+              "exp_pa": 3.76,
               "components": {
-                "logistic": 0.006601862000253708,
-                "matchup": 0.013576895072045164,
-                "linear": 0.014392693345102429
+                "logistic": 0.012635975846340016,
+                "matchup": 0.013622631068571103,
+                "linear": 0.022008139408426695
               },
               "tto_mult": 0.9948892799999999,
               "park_factor": 1.0329,
               "platoon_factor": 0.9632,
               "xbh": {
-                "per_pa_level": 0.035044330621704686,
+                "per_pa_level": 0.04633742588641084,
                 "tensor_delta": 0.0009908438534565467,
-                "per_pa": 0.03603517447516123,
-                "exp_per_game": 0.13116803508958688
+                "per_pa": 0.04732826973986739,
+                "exp_per_game": 0.17795429422190137
               },
               "tb": {
-                "per_pa_level": 0.1633549930748848,
+                "per_pa_level": 0.2093997579710545,
                 "tensor_delta": 0.000711748631228748,
-                "per_pa": 0.16406674170611354,
-                "exp_per_game": 0.5972029398102533,
+                "per_pa": 0.21011150660228325,
+                "exp_per_game": 0.790019264824585,
                 "families": [
                   {
                     "family": "four_seam",
@@ -4914,37 +4780,36 @@
           "sim": {
             "n_games": 1000,
             "team_hr_dist": {
-              "1": 0.347,
-              "2": 0.287,
-              "3": 0.132,
-              "0": 0.168,
-              "4": 0.046,
-              "5": 0.015,
-              "6": 0.005
+              "2": 0.258,
+              "1": 0.326,
+              "4": 0.073,
+              "3": 0.144,
+              "0": 0.173,
+              "6": 0.005,
+              "5": 0.02,
+              "7": 0.001
             },
             "p_at_least_one_hr": {
-              "J.P. Crawford": 0.243,
-              "Randy Arozarena": 0.119,
-              "Dominic Canzone": 0.349,
-              "Cal Raleigh": 0.166,
-              "Josh Naylor": 0.103,
-              "Luke Raley": 0.281,
-              "Cole Young": 0.112,
-              "Victor Robles": 0.045,
-              "Colt Emerson": 0.04
+              "Weston Wilson": 0.091,
+              "Randy Arozarena": 0.173,
+              "Dominic Canzone": 0.512,
+              "Cal Raleigh": 0.237,
+              "Josh Naylor": 0.238,
+              "Miles Mastrobuoni": 0.062,
+              "Victor Robles": 0.074,
+              "Colt Emerson": 0.055
             },
             "p_multi_hr": {
-              "J.P. Crawford": 0.026,
-              "Randy Arozarena": 0.005,
-              "Dominic Canzone": 0.053,
-              "Cal Raleigh": 0.013,
-              "Josh Naylor": 0.007,
-              "Luke Raley": 0.03,
-              "Cole Young": 0.007,
-              "Victor Robles": 0.0,
+              "Weston Wilson": 0.005,
+              "Randy Arozarena": 0.015,
+              "Dominic Canzone": 0.15,
+              "Cal Raleigh": 0.031,
+              "Josh Naylor": 0.029,
+              "Miles Mastrobuoni": 0.0,
+              "Victor Robles": 0.002,
               "Colt Emerson": 0.001
             },
-            "back_to_back_per_game": 0.064
+            "back_to_back_per_game": 0.097
           },
           "pitcher": "Shane Bieber"
         }
@@ -8827,7 +8692,639 @@
           "pitcher": "Shota Imanaga"
         },
         "home": {
-          "error": "No home lineup yet for game 824658"
+          "per_hitter": {
+            "Pete Crow-Armstrong": {
+              "p_per_pa": 0.05783712258308107,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.05582820571133352,
+                "matchup": 0.014893734157026937,
+                "linear": 0.0667579749287867
+              },
+              "tto_mult": 1.249713472,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.12174540087495754,
+                "tensor_delta": 0.00022264657221779394,
+                "per_pa": 0.12196804744717533,
+                "exp_per_game": 0.5610530182570065
+              },
+              "tb": {
+                "per_pa_level": 0.5164455642617586,
+                "tensor_delta": -0.0029916519177921597,
+                "per_pa": 0.5134539123439664,
+                "exp_per_game": 2.3618879967822455,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3435,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3995,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3806,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3258,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3513,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3642,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3085,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4697,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Alex Bregman": {
+              "p_per_pa": 0.03458950412829797,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.017146851457007197,
+                "matchup": 0.0525089472892141,
+                "linear": 0.020790713993035077
+              },
+              "tto_mult": 1.2066199040000003,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.1003345941771091,
+                "tensor_delta": 0.00025545483026973015,
+                "per_pa": 0.10059004900737883,
+                "exp_per_game": 0.45064341955305715
+              },
+              "tb": {
+                "per_pa_level": 0.4675876995729169,
+                "tensor_delta": -0.0020568478611688312,
+                "per_pa": 0.4655308517117481,
+                "exp_per_game": 2.0855782156686313,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3532,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3969,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3802,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3414,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3608,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3727,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3349,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4394,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Michael Busch": {
+              "p_per_pa": 0.04864003459399841,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.038517297177848804,
+                "matchup": 0.05309385964927551,
+                "linear": 0.03417216351987404
+              },
+              "tto_mult": 1.1635263359999999,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.12174905777020478,
+                "tensor_delta": 0.0002470407255544538,
+                "per_pa": 0.12199609849575924,
+                "exp_per_game": 0.5319029894415102
+              },
+              "tb": {
+                "per_pa_level": 0.5364330365501521,
+                "tensor_delta": -0.001743952890349676,
+                "per_pa": 0.5346890836598024,
+                "exp_per_game": 2.331244404756738,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3476,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3874,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3738,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3378,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3503,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3672,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3272,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.441,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Seiya Suzuki": {
+              "p_per_pa": 0.0452295763687213,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.0404220386470913,
+                "matchup": 0.04581632976194111,
+                "linear": 0.03373254333092123
+              },
+              "tto_mult": 1.120432768,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.1133986124862633,
+                "tensor_delta": 0.00022707246961038707,
+                "per_pa": 0.11362568495587369,
+                "exp_per_game": 0.48177290421290436
+              },
+              "tb": {
+                "per_pa_level": 0.4994354957925963,
+                "tensor_delta": -0.0020103411365534063,
+                "per_pa": 0.49742515465604287,
+                "exp_per_game": 2.1090826557416213,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3411,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3958,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3782,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3362,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3439,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3728,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3271,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4596,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Ian Happ": {
+              "p_per_pa": 0.048304826541763636,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.048920427674657,
+                "matchup": 0.04206679493638508,
+                "linear": 0.040811703107664216
+              },
+              "tto_mult": 1.0773392,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.11196499159796737,
+                "tensor_delta": 0.00016691356472528507,
+                "per_pa": 0.11213190516269265,
+                "exp_per_game": 0.46198344927029367
+              },
+              "tb": {
+                "per_pa_level": 0.4812869106408359,
+                "tensor_delta": -0.002256095351028997,
+                "per_pa": 0.4790308152898069,
+                "exp_per_game": 1.973606958994004,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.35,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3781,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3658,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3387,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3553,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3487,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3282,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4062,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Nico Hoerner": {
+              "p_per_pa": 0.00991664372779424,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.005571433848716706,
+                "matchup": 0.01245421020437582,
+                "linear": 0.011845388089050486
+              },
+              "tto_mult": 1.0773392,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.03260208199665711,
+                "tensor_delta": 0.00018364906053947028,
+                "per_pa": 0.03278573105719658,
+                "exp_per_game": 0.1311429242287863
+              },
+              "tb": {
+                "per_pa_level": 0.19576065623982253,
+                "tensor_delta": -0.002830598507432558,
+                "per_pa": 0.19293005773238997,
+                "exp_per_game": 0.7717202309295598,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3601,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.405,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3871,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3405,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3731,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3711,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.331,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4417,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Michael Conforto": {
+              "p_per_pa": 0.09040129619776552,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.10336545058274711,
+                "matchup": 0.06319514015693291,
+                "linear": 0.07375456995639909
+              },
+              "tto_mult": 1.0773392,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.17784845935336974,
+                "tensor_delta": 0.00023508408555444893,
+                "per_pa": 0.17808354343892419,
+                "exp_per_game": 0.6909641485430258
+              },
+              "tb": {
+                "per_pa_level": 0.7331433731031249,
+                "tensor_delta": -0.0033916208763236644,
+                "per_pa": 0.7297517522268013,
+                "exp_per_game": 2.831436798639989,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3424,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3899,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3699,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3249,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3509,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3465,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3097,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4408,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Miguel Amaya": {
+              "p_per_pa": 0.015111110927055362,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.00922640426048109,
+                "matchup": 0.0202296475561755,
+                "linear": 0.015222199617469621
+              },
+              "tto_mult": 1.0773392,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.046217201534102664,
+                "tensor_delta": 0.0001295291466833215,
+                "per_pa": 0.046346730680785986,
+                "exp_per_game": 0.1742637073597553
+              },
+              "tb": {
+                "per_pa_level": 0.21532712481654306,
+                "tensor_delta": -0.0016214807541658494,
+                "per_pa": 0.21370564406237721,
+                "exp_per_game": 0.8035332216745383,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3508,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3677,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3614,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3274,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3559,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3507,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3135,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4098,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Dansby Swanson": {
+              "p_per_pa": 0.024650555428520335,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.02056540560411378,
+                "matchup": 0.020466289508728294,
+                "linear": 0.029946563567294884
+              },
+              "tto_mult": 1.0773392,
+              "park_factor": 1.1185,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.0679706319055175,
+                "tensor_delta": 0.00015412386561439173,
+                "per_pa": 0.06812475577113189,
+                "exp_per_game": 0.24797411100692004
+              },
+              "tb": {
+                "per_pa_level": 0.3067521768930892,
+                "tensor_delta": -0.0026398203951847887,
+                "per_pa": 0.3041123564979044,
+                "exp_per_game": 1.106968977652372,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3353,
+                    "usage": 0.2887
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3866,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3685,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3281,
+                    "usage": 0.2867
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3416,
+                    "usage": 0.1319
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3543,
+                    "usage": 0.1608
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3187,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4385,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "2": 0.246,
+              "1": 0.359,
+              "3": 0.135,
+              "0": 0.201,
+              "4": 0.045,
+              "5": 0.011,
+              "6": 0.002,
+              "7": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Pete Crow-Armstrong": 0.237,
+              "Alex Bregman": 0.153,
+              "Michael Busch": 0.176,
+              "Seiya Suzuki": 0.176,
+              "Ian Happ": 0.178,
+              "Nico Hoerner": 0.038,
+              "Michael Conforto": 0.294,
+              "Miguel Amaya": 0.055,
+              "Dansby Swanson": 0.084
+            },
+            "p_multi_hr": {
+              "Pete Crow-Armstrong": 0.026,
+              "Alex Bregman": 0.01,
+              "Michael Busch": 0.006,
+              "Seiya Suzuki": 0.013,
+              "Ian Happ": 0.018,
+              "Nico Hoerner": 0.0,
+              "Michael Conforto": 0.042,
+              "Miguel Amaya": 0.0,
+              "Dansby Swanson": 0.001
+            },
+            "back_to_back_per_game": 0.044
+          },
+          "pitcher": "Kyle Leahy"
         }
       }
     },
@@ -8842,7 +9339,639 @@
       "park_factor": 1.0448,
       "sides": {
         "away": {
-          "error": "No away lineup yet for game 824903"
+          "per_hitter": {
+            "Francisco Lindor": {
+              "p_per_pa": 0.04297725566737271,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.0314641164059841,
+                "matchup": 0.03799909414301753,
+                "linear": 0.04282895489731283
+              },
+              "tto_mult": 1.1850623104,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.11945617932812595,
+                "tensor_delta": -0.0003628979399999954,
+                "per_pa": 0.11909328138812596,
+                "exp_per_game": 0.5478290943853794
+              },
+              "tb": {
+                "per_pa_level": 0.5211222293848204,
+                "tensor_delta": -0.009326231870000035,
+                "per_pa": 0.5117959975148204,
+                "exp_per_game": 2.354261588568174,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3552,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4072,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3853,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3419,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.366,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3688,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3342,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4448,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Juan Soto": {
+              "p_per_pa": 0.15516760265425047,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.1613611290525569,
+                "matchup": 0.1232692391025669,
+                "linear": 0.10407701640362511
+              },
+              "tto_mult": 1.1441980928000002,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.2905650028796036,
+                "tensor_delta": -0.0007503648900000076,
+                "per_pa": 0.28981463798960355,
+                "exp_per_game": 1.2983695781934237
+              },
+              "tb": {
+                "per_pa_level": 1.1009002081881045,
+                "tensor_delta": -0.009473503269999961,
+                "per_pa": 1.0914267049181046,
+                "exp_per_game": 4.889591638033108,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3515,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3984,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3805,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3355,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3575,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3698,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3241,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4545,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Bo Bichette": {
+              "p_per_pa": 0.022288353188363988,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.01515845483921183,
+                "matchup": 0.020864395811052996,
+                "linear": 0.028481163991666242
+              },
+              "tto_mult": 1.1033338752000001,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.06917799454262834,
+                "tensor_delta": -0.00014198226000000647,
+                "per_pa": 0.06903601228262833,
+                "exp_per_game": 0.3009970135522595
+              },
+              "tb": {
+                "per_pa_level": 0.3362160234352607,
+                "tensor_delta": -0.009793532230000013,
+                "per_pa": 0.3264224912052607,
+                "exp_per_game": 1.4232020616549363,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.365,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4193,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.396,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.355,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3786,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3849,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3532,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4451,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Mark Vientos": {
+              "p_per_pa": 0.026728763358176255,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.026972015299620872,
+                "matchup": 0.018282833921543586,
+                "linear": 0.03013977810984093
+              },
+              "tto_mult": 1.0624696576,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.07383853350564566,
+                "tensor_delta": -0.0014740848600000023,
+                "per_pa": 0.07236444864564566,
+                "exp_per_game": 0.30682526225753753
+              },
+              "tb": {
+                "per_pa_level": 0.32266192044846265,
+                "tensor_delta": -0.011167694320000032,
+                "per_pa": 0.3114942261284626,
+                "exp_per_game": 1.3207355187846812,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3306,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3815,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3703,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3282,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3278,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3793,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3188,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4682,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Eric Wagaman": {
+              "p_per_pa": 0.020482414642479147,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.01990778988656092,
+                "matchup": 0.022954060112560553,
+                "linear": 0.01681807386317777
+              },
+              "tto_mult": 1.0216054399999999,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.05863257177041898,
+                "tensor_delta": -0.0005843546999999977,
+                "per_pa": 0.05804821707041898,
+                "exp_per_game": 0.23915865433012617
+              },
+              "tb": {
+                "per_pa_level": 0.28384784786069683,
+                "tensor_delta": -0.00863136521000002,
+                "per_pa": 0.2752164826506968,
+                "exp_per_game": 1.1338919085208707,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3454,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3892,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3745,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3364,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3524,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3674,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3293,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4354,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Francisco Alvarez": {
+              "p_per_pa": 0.05106707814518382,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.05748786463632482,
+                "matchup": 0.03954284435157472,
+                "linear": 0.04901877113531171
+              },
+              "tto_mult": 1.0216054399999999,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.11598604576292426,
+                "tensor_delta": -0.0013103478400000035,
+                "per_pa": 0.11467569792292426,
+                "exp_per_game": 0.458702791691697
+              },
+              "tb": {
+                "per_pa_level": 0.4856993713181618,
+                "tensor_delta": -0.014243406250000035,
+                "per_pa": 0.4714559650681618,
+                "exp_per_game": 1.885823860272647,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3432,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4161,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3924,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.336,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3481,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3901,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.326,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4978,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Carson Benge": {
+              "p_per_pa": 0.03170098779177408,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.027555255466417294,
+                "matchup": 0.03709312497560056,
+                "linear": 0.030011025841778307
+              },
+              "tto_mult": 1.0216054399999999,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.09028632065530776,
+                "tensor_delta": -0.0004635298300000035,
+                "per_pa": 0.08982279082530775,
+                "exp_per_game": 0.3485124284021941
+              },
+              "tb": {
+                "per_pa_level": 0.41206061339574135,
+                "tensor_delta": -0.010084158220000028,
+                "per_pa": 0.4019764551757413,
+                "exp_per_game": 1.5596686460818763,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3585,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4092,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3874,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3341,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3711,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3667,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3206,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4575,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Tyrone Taylor": {
+              "p_per_pa": 0.0154362616036031,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.010588630785849236,
+                "matchup": 0.021167676637948343,
+                "linear": 0.01597848287149939
+              },
+              "tto_mult": 1.0216054399999999,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.05021890479146741,
+                "tensor_delta": -0.0004910764300000148,
+                "per_pa": 0.04972782836146739,
+                "exp_per_game": 0.18697663463911737
+              },
+              "tb": {
+                "per_pa_level": 0.23794876444512325,
+                "tensor_delta": -0.006542729869999986,
+                "per_pa": 0.23140603457512327,
+                "exp_per_game": 0.8700866900024634,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3483,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3835,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3703,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3396,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3529,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3603,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3317,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.421,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Brett Baty": {
+              "p_per_pa": 0.015630302516152522,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.011160278494585466,
+                "matchup": 0.020061792182311716,
+                "linear": 0.017036327282596346
+              },
+              "tto_mult": 1.0216054399999999,
+              "park_factor": 1.0448,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.05078235702162967,
+                "tensor_delta": -0.0002594906300000116,
+                "per_pa": 0.05052286639162966,
+                "exp_per_game": 0.18390323366553193
+              },
+              "tb": {
+                "per_pa_level": 0.23935978760693702,
+                "tensor_delta": -0.009469974320000019,
+                "per_pa": 0.229889813286937,
+                "exp_per_game": 0.8367989203644506,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3469,
+                    "usage": 0.399
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.399,
+                    "usage": 0.084
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3786,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3318,
+                    "usage": 0.398
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3609,
+                    "usage": 0.119
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3582,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3231,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4363,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "2": 0.29,
+              "1": 0.334,
+              "3": 0.136,
+              "4": 0.062,
+              "5": 0.013,
+              "0": 0.16,
+              "7": 0.004,
+              "6": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Francisco Lindor": 0.195,
+              "Juan Soto": 0.552,
+              "Bo Bichette": 0.072,
+              "Mark Vientos": 0.107,
+              "Eric Wagaman": 0.087,
+              "Francisco Alvarez": 0.195,
+              "Carson Benge": 0.105,
+              "Tyrone Taylor": 0.056,
+              "Brett Baty": 0.053
+            },
+            "p_multi_hr": {
+              "Francisco Lindor": 0.018,
+              "Juan Soto": 0.169,
+              "Bo Bichette": 0.001,
+              "Mark Vientos": 0.006,
+              "Eric Wagaman": 0.005,
+              "Francisco Alvarez": 0.007,
+              "Carson Benge": 0.007,
+              "Tyrone Taylor": 0.0,
+              "Brett Baty": 0.001
+            },
+            "back_to_back_per_game": 0.059
+          },
+          "pitcher": "Chris Sale"
         },
         "home": {
           "per_hitter": {
@@ -10085,7 +11214,639 @@
           "pitcher": "Sean Sullivan"
         },
         "home": {
-          "error": "No home lineup yet for game 824334"
+          "per_hitter": {
+            "Willi Castro": {
+              "p_per_pa": 0.028408901672181592,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.021682751001145265,
+                "matchup": 0.0165904235789563,
+                "linear": 0.03189287163951844
+              },
+              "tto_mult": 1.2510755439999999,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.07734965199756245,
+                "tensor_delta": -6.084688999999366e-05,
+                "per_pa": 0.07728880510756246,
+                "exp_per_game": 0.3555285034947873
+              },
+              "tb": {
+                "per_pa_level": 0.34596568250477167,
+                "tensor_delta": -0.005347442459999963,
+                "per_pa": 0.3406182400447717,
+                "exp_per_game": 1.5668439042059497,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3493,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3975,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3807,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3461,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3588,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3737,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3438,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.429,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Kyle Karros": {
+              "p_per_pa": 0.06300583635838411,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.04520591450450228,
+                "matchup": 0.06333744328836392,
+                "linear": 0.05126424425783612
+              },
+              "tto_mult": 1.207935008,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.15670857215829384,
+                "tensor_delta": 0.00020517675999999485,
+                "per_pa": 0.15691374891829385,
+                "exp_per_game": 0.7029735951539564
+              },
+              "tb": {
+                "per_pa_level": 0.6684612437455693,
+                "tensor_delta": -0.004614506480000002,
+                "per_pa": 0.6638467372655692,
+                "exp_per_game": 2.9740333829497496,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3528,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3979,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3777,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3372,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.365,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3576,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3291,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.427,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Hunter Goodman": {
+              "p_per_pa": 0.1267418678916611,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.1335256569176431,
+                "matchup": 0.06400190221328432,
+                "linear": 0.11809353144484355
+              },
+              "tto_mult": 1.164794472,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.22551562921590926,
+                "tensor_delta": -0.0003189316099999895,
+                "per_pa": 0.22519669760590927,
+                "exp_per_game": 0.9818576015617643
+              },
+              "tb": {
+                "per_pa_level": 0.905813890999074,
+                "tensor_delta": -0.00691748163,
+                "per_pa": 0.8988964093690739,
+                "exp_per_game": 3.919188344849162,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3417,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4015,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3818,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3373,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3473,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3772,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3311,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4624,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Tyler Freeman": {
+              "p_per_pa": 0.026534414963395526,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.014004177536958106,
+                "matchup": 0.040942186543416435,
+                "linear": 0.02028788734455941
+              },
+              "tto_mult": 1.121653936,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.07909436246082954,
+                "tensor_delta": 0.00019000420999999712,
+                "per_pa": 0.07928436667082954,
+                "exp_per_game": 0.3361657146843172
+              },
+              "tb": {
+                "per_pa_level": 0.3959735863430761,
+                "tensor_delta": -0.003469997339999975,
+                "per_pa": 0.39250358900307614,
+                "exp_per_game": 1.6642152173730425,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3639,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3971,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3836,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3475,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3724,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3841,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3435,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4327,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Cole Carrigg": {
+              "p_per_pa": 0.027871257353725358,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.02752715241568388,
+                "matchup": 0.023138975423168333,
+                "linear": 0.02605351997298204
+              },
+              "tto_mult": 1.0785134,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.07146939099164724,
+                "tensor_delta": -0.00019113802999999596,
+                "per_pa": 0.07127825296164725,
+                "exp_per_game": 0.2936664022019866
+              },
+              "tb": {
+                "per_pa_level": 0.3412186716708106,
+                "tensor_delta": -0.005145922729999974,
+                "per_pa": 0.33607274894081063,
+                "exp_per_game": 1.3846197256361394,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3401,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3852,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3719,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3257,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3456,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3621,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3124,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4493,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Jake McCarthy": {
+              "p_per_pa": 0.03288519627048637,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.03216116639344197,
+                "matchup": 0.03420059861860769,
+                "linear": 0.023034087807527727
+              },
+              "tto_mult": 1.0785134,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.08284483153000306,
+                "tensor_delta": 0.00023927854999999942,
+                "per_pa": 0.08308411008000306,
+                "exp_per_game": 0.3323364403200122
+              },
+              "tb": {
+                "per_pa_level": 0.40192612914896714,
+                "tensor_delta": -0.004262832659999993,
+                "per_pa": 0.39766329648896714,
+                "exp_per_game": 1.5906531859558684,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.361,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4041,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3821,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3414,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3726,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3572,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3308,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4298,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Braxton Fulford": {
+              "p_per_pa": 0.028604350708513037,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.014596348069801384,
+                "matchup": 0.0539838237859597,
+                "linear": 0.015034052853266153
+              },
+              "tto_mult": 1.0785134,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.08171412760378341,
+                "tensor_delta": -2.7831279999987468e-05,
+                "per_pa": 0.08168629632378342,
+                "exp_per_game": 0.3169428297362797
+              },
+              "tb": {
+                "per_pa_level": 0.33905370229422815,
+                "tensor_delta": -0.005285867089999952,
+                "per_pa": 0.3337678352042282,
+                "exp_per_game": 1.2950192005924055,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3403,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3895,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3714,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3235,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3501,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3499,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3092,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4413,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Ezequiel Tovar": {
+              "p_per_pa": 0.019918658338478303,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.01859754956935215,
+                "matchup": 0.012770551324393514,
+                "linear": 0.02507424472198387
+              },
+              "tto_mult": 1.0785134,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.05350994834572419,
+                "tensor_delta": -0.00010097111000000047,
+                "per_pa": 0.05340897723572419,
+                "exp_per_game": 0.20081775440632293
+              },
+              "tb": {
+                "per_pa_level": 0.24831399287992806,
+                "tensor_delta": -0.0049809570300000106,
+                "per_pa": 0.24333303584992805,
+                "exp_per_game": 0.9149322147957294,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3442,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3892,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3743,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3324,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3518,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3634,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.322,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4401,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Troy Johnston": {
+              "p_per_pa": 0.022280596181133483,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.018306704327529268,
+                "matchup": 0.017327476996494832,
+                "linear": 0.028889431231080925
+              },
+              "tto_mult": 1.0785134,
+              "park_factor": 1.103,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.06369311037112353,
+                "tensor_delta": 0.0003155127800000129,
+                "per_pa": 0.06400862315112354,
+                "exp_per_game": 0.2329913882700897
+              },
+              "tb": {
+                "per_pa_level": 0.3103860648826118,
+                "tensor_delta": -0.0016727995400000473,
+                "per_pa": 0.30871326534261173,
+                "exp_per_game": 1.1237162858471066,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3724,
+                    "usage": 0.387
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.391,
+                    "usage": 0.09
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3817,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.355,
+                    "usage": 0.266
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3811,
+                    "usage": 0.169
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3759,
+                    "usage": 0.088
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3504,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4049,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "1": 0.373,
+              "0": 0.2,
+              "2": 0.244,
+              "4": 0.04,
+              "3": 0.126,
+              "5": 0.013,
+              "6": 0.003,
+              "7": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Willi Castro": 0.124,
+              "Kyle Karros": 0.262,
+              "Hunter Goodman": 0.391,
+              "Tyler Freeman": 0.102,
+              "Cole Carrigg": 0.113,
+              "Jake McCarthy": 0.121,
+              "Braxton Fulford": 0.098,
+              "Ezequiel Tovar": 0.064,
+              "Troy Johnston": 0.077
+            },
+            "p_multi_hr": {
+              "Willi Castro": 0.006,
+              "Kyle Karros": 0.03,
+              "Hunter Goodman": 0.069,
+              "Tyler Freeman": 0.005,
+              "Cole Carrigg": 0.008,
+              "Jake McCarthy": 0.001,
+              "Braxton Fulford": 0.007,
+              "Ezequiel Tovar": 0.0,
+              "Troy Johnston": 0.001
+            },
+            "back_to_back_per_game": 0.066
+          },
+          "pitcher": "Robbie Ray"
         }
       }
     },
@@ -11341,7 +13102,570 @@
       "park_factor": 1.1948,
       "sides": {
         "away": {
-          "error": "No away lineup yet for game 824012"
+          "per_hitter": {
+            "Anthony Seigler": {
+              "p_per_pa": 0.019157786515872514,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.00910475880019188,
+                "matchup": 0.014877861953373756,
+                "linear": 0.02230402530883525
+              },
+              "tto_mult": 1.3551995104,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.055622010913565396,
+                "tensor_delta": 0.0001291338299999889,
+                "per_pa": 0.055751144743565385,
+                "exp_per_game": 0.25645526582040074
+              },
+              "tb": {
+                "per_pa_level": 0.27885375859727995,
+                "tensor_delta": -0.002584323020000001,
+                "per_pa": 0.27626943557727995,
+                "exp_per_game": 1.2708394036554878,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3439,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3838,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3718,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3349,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3494,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3658,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3265,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4325,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Ceddanne Rafaela": {
+              "p_per_pa": 0.018419535146933626,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.010632008370104534,
+                "matchup": 0.015949664661916652,
+                "linear": 0.018031472640806484
+              },
+              "tto_mult": 1.3084684928000003,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.049831106965869953,
+                "tensor_delta": 0.0010732137100000066,
+                "per_pa": 0.05090432067586996,
+                "exp_per_game": 0.2280513566278974
+              },
+              "tb": {
+                "per_pa_level": 0.24893031227809126,
+                "tensor_delta": 0.0021777347499999933,
+                "per_pa": 0.25110804702809125,
+                "exp_per_game": 1.1249640506858487,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3604,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3926,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3787,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3391,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3714,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3659,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3298,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4245,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Wilyer Abreu": {
+              "p_per_pa": 0.09533399981737535,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.09260441763982408,
+                "matchup": 0.059842201329572214,
+                "linear": 0.06373226431127853
+              },
+              "tto_mult": 1.2617374752000001,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.18068242219661415,
+                "tensor_delta": 0.0007963081999999844,
+                "per_pa": 0.18147873039661414,
+                "exp_per_game": 0.7912472645292375
+              },
+              "tb": {
+                "per_pa_level": 0.7749183483606205,
+                "tensor_delta": 0.0008843505799999707,
+                "per_pa": 0.7758026989406204,
+                "exp_per_game": 3.3824997673811046,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.353,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3915,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3759,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3328,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3627,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3593,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3204,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.434,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Willson Contreras": {
+              "p_per_pa": 0.12645034197465713,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.1507009436235577,
+                "matchup": 0.04556693160158417,
+                "linear": 0.0903531931282738
+              },
+              "tto_mult": 1.2150064576000001,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.19762916721870397,
+                "tensor_delta": 2.5751999999990005e-05,
+                "per_pa": 0.19765491921870396,
+                "exp_per_game": 0.8380568574873046
+              },
+              "tb": {
+                "per_pa_level": 0.8434900441093824,
+                "tensor_delta": -0.0029633221600000037,
+                "per_pa": 0.8405267219493824,
+                "exp_per_game": 3.563833301065381,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.349,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3966,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3764,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3364,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3552,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3639,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3272,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4451,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Caleb Durbin": {
+              "p_per_pa": 0.022093372185926222,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.011517046090043972,
+                "matchup": 0.033034779226505696,
+                "linear": 0.015271976873281533
+              },
+              "tto_mult": 1.1682754400000002,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.06097760539681307,
+                "tensor_delta": 0.00029936581999999434,
+                "per_pa": 0.06127697121681307,
+                "exp_per_game": 0.25246112141326976
+              },
+              "tb": {
+                "per_pa_level": 0.3116402427531647,
+                "tensor_delta": -0.0018537110000000356,
+                "per_pa": 0.3097865317531647,
+                "exp_per_game": 1.2763205108230382,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3497,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3935,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3753,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.339,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3605,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3572,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3315,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4219,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Jarren Duran": {
+              "p_per_pa": 0.028773408958757407,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.024710292188991654,
+                "matchup": 0.020269162408202604,
+                "linear": 0.02971431875231356
+              },
+              "tto_mult": 1.1682754400000002,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.0674672268581808,
+                "tensor_delta": -0.00021394308000000084,
+                "per_pa": 0.0672532837781808,
+                "exp_per_game": 0.2690131351127231
+              },
+              "tb": {
+                "per_pa_level": 0.30066592924733504,
+                "tensor_delta": -0.0037747545700000384,
+                "per_pa": 0.296891174677335,
+                "exp_per_game": 1.1875646987093398,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3409,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3829,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3699,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.334,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.344,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3627,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3247,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4359,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Andruw Monasterio": {
+              "p_per_pa": 0.05930093223779678,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.04174513058525655,
+                "matchup": 0.07885025395250427,
+                "linear": 0.03327596388604399
+              },
+              "tto_mult": 1.1682754400000002,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.13954326473129705,
+                "tensor_delta": 0.000654725719999999,
+                "per_pa": 0.14019799045129705,
+                "exp_per_game": 0.5439682029510325
+              },
+              "tb": {
+                "per_pa_level": 0.5937840232035352,
+                "tensor_delta": 0.000674828329999988,
+                "per_pa": 0.5944588515335352,
+                "exp_per_game": 2.3065003439501166,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3507,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3855,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3727,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3314,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3573,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3606,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3182,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4355,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Connor Wong": {
+              "p_per_pa": 0.02457779513168539,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.017135003428813727,
+                "matchup": 0.024536182652761192,
+                "linear": 0.023864261341395344
+              },
+              "tto_mult": 1.1682754400000002,
+              "park_factor": 1.1948,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.06492105621585119,
+                "tensor_delta": 0.0007142970500000068,
+                "per_pa": 0.0656353532658512,
+                "exp_per_game": 0.24678892827960047
+              },
+              "tb": {
+                "per_pa_level": 0.31009228425291835,
+                "tensor_delta": 0.0013555270099999683,
+                "per_pa": 0.3114478112629183,
+                "exp_per_game": 1.1710437703485728,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3448,
+                    "usage": 0.458
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.377,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3651,
+                    "usage": 0.113
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3237,
+                    "usage": 0.046
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3504,
+                    "usage": 0.312
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3494,
+                    "usage": 0.071
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3077,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4307,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "4": 0.059,
+              "1": 0.329,
+              "2": 0.261,
+              "3": 0.142,
+              "0": 0.194,
+              "5": 0.014,
+              "7": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Anthony Seigler": 0.071,
+              "Ceddanne Rafaela": 0.083,
+              "Wilyer Abreu": 0.336,
+              "Willson Contreras": 0.436,
+              "Caleb Durbin": 0.107,
+              "Jarren Duran": 0.113,
+              "Andruw Monasterio": 0.184,
+              "Connor Wong": 0.071
+            },
+            "p_multi_hr": {
+              "Anthony Seigler": 0.004,
+              "Ceddanne Rafaela": 0.0,
+              "Wilyer Abreu": 0.056,
+              "Willson Contreras": 0.089,
+              "Caleb Durbin": 0.007,
+              "Jarren Duran": 0.004,
+              "Andruw Monasterio": 0.016,
+              "Connor Wong": 0.001
+            },
+            "back_to_back_per_game": 0.074
+          },
+          "pitcher": "Sam Aldegheri"
         },
         "home": {
           "per_hitter": {
@@ -11990,7 +14314,639 @@
       "park_factor": 1.0,
       "sides": {
         "away": {
-          "error": "No away lineup yet for game 824983"
+          "per_hitter": {
+            "Liam Hicks": {
+              "p_per_pa": 0.022994265925977506,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.014817259512370421,
+                "matchup": 0.03171137103716463,
+                "linear": 0.017595233811025148
+              },
+              "tto_mult": 1.1173119999999999,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.07546537786992895,
+                "tensor_delta": 0.00027332488000000876,
+                "per_pa": 0.07573870274992896,
+                "exp_per_game": 0.3483980326496732
+              },
+              "tb": {
+                "per_pa_level": 0.3589054744456517,
+                "tensor_delta": 0.010002458450000029,
+                "per_pa": 0.3689079328956517,
+                "exp_per_game": 1.6969764913199978,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3564,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4017,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.382,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3426,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3691,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3639,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3362,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4266,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Kyle Stowers": {
+              "p_per_pa": 0.061266547579756865,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.061705581450768376,
+                "matchup": 0.044335167108915205,
+                "linear": 0.06289666741266502
+              },
+              "tto_mult": 1.078784,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.15516938891358073,
+                "tensor_delta": 0.001249970670000003,
+                "per_pa": 0.15641935958358072,
+                "exp_per_game": 0.7007587309344415
+              },
+              "tb": {
+                "per_pa_level": 0.6249107794433749,
+                "tensor_delta": 0.011646682959999988,
+                "per_pa": 0.636557462403375,
+                "exp_per_game": 2.8517774315671196,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3481,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3909,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3744,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3404,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3533,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3663,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3339,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4329,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Otto Lopez": {
+              "p_per_pa": 0.03146525122744247,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.03004225523267787,
+                "matchup": 0.02265154181311658,
+                "linear": 0.039732505178120776
+              },
+              "tto_mult": 1.040256,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.08988364156614911,
+                "tensor_delta": 0.0003656827100000093,
+                "per_pa": 0.09024932427614912,
+                "exp_per_game": 0.3934870538440101
+              },
+              "tb": {
+                "per_pa_level": 0.4127661320759176,
+                "tensor_delta": 0.01134606473999994,
+                "per_pa": 0.42411219681591755,
+                "exp_per_game": 1.8491291781174002,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3588,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4033,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3862,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3477,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.371,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3739,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3429,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4298,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Xavier Edwards": {
+              "p_per_pa": 0.021881717544329875,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.018506249937852385,
+                "matchup": 0.02860287645818939,
+                "linear": 0.01974118301068509
+              },
+              "tto_mult": 1.001728,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.06925780812833358,
+                "tensor_delta": 0.0018379623400000128,
+                "per_pa": 0.0710957704683336,
+                "exp_per_game": 0.3014460667857344
+              },
+              "tb": {
+                "per_pa_level": 0.33490847529317663,
+                "tensor_delta": 0.026618775640000036,
+                "per_pa": 0.36152725093317667,
+                "exp_per_game": 1.5328755439566688,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3482,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4397,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.4109,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3462,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3643,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.4027,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3437,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.5044,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Griffin Conine": {
+              "p_per_pa": 0.04895537900855248,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.06609263738672962,
+                "matchup": 0.020067714570073038,
+                "linear": 0.060255064192193106
+              },
+              "tto_mult": 0.9632,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.11082657892733958,
+                "tensor_delta": 0.0006314895899999923,
+                "per_pa": 0.11145806851733957,
+                "exp_per_game": 0.45920724229143894
+              },
+              "tb": {
+                "per_pa_level": 0.4793416340225503,
+                "tensor_delta": 0.007657336329999986,
+                "per_pa": 0.4869989703525503,
+                "exp_per_game": 2.0064357578525067,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.353,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3879,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.371,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3362,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.361,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3548,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3268,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4205,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Owen Caissie": {
+              "p_per_pa": 0.07475826712220959,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.07856318717439867,
+                "matchup": 0.0910986154832246,
+                "linear": 0.059725844448943695
+              },
+              "tto_mult": 0.9632,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.18107750925844177,
+                "tensor_delta": 0.0014359315400000044,
+                "per_pa": 0.18251344079844178,
+                "exp_per_game": 0.730053763193767
+              },
+              "tb": {
+                "per_pa_level": 0.7004380767217606,
+                "tensor_delta": 0.01220673044999998,
+                "per_pa": 0.7126448071717606,
+                "exp_per_game": 2.850579228687042,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3418,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.378,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.367,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3259,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3456,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3582,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3124,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4383,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Jakob Marsee": {
+              "p_per_pa": 0.0161543015052582,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.011183627994100172,
+                "matchup": 0.02680816037834098,
+                "linear": 0.014785646862832265
+              },
+              "tto_mult": 0.9632,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.05555525838561088,
+                "tensor_delta": 0.002018682460000004,
+                "per_pa": 0.057573940845610884,
+                "exp_per_game": 0.2233868904809702
+              },
+              "tb": {
+                "per_pa_level": 0.2553199161810327,
+                "tensor_delta": 0.017753218889999978,
+                "per_pa": 0.2730731350710327,
+                "exp_per_game": 1.0595237640756068,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3424,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.4011,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3819,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3315,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3492,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3725,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3193,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4692,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Joe Mack": {
+              "p_per_pa": 0.04366360265824404,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.0447247443490538,
+                "matchup": 0.053437581575047494,
+                "linear": 0.036697615845782516
+              },
+              "tto_mult": 0.9632,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.11886768589519449,
+                "tensor_delta": 3.699371000000229e-05,
+                "per_pa": 0.11890467960519449,
+                "exp_per_game": 0.44708159531553127
+              },
+              "tb": {
+                "per_pa_level": 0.5075052256096351,
+                "tensor_delta": 0.004679983839999957,
+                "per_pa": 0.5121852094496351,
+                "exp_per_game": 1.9258163875306278,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.361,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3859,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.372,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3337,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3714,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3495,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3195,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4133,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Javier Sanoja": {
+              "p_per_pa": 0.009475271862650741,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.0060898720644717505,
+                "matchup": 0.010865855102663996,
+                "linear": 0.015348339802991337
+              },
+              "tto_mult": 0.9632,
+              "park_factor": 1.0,
+              "platoon_factor": 0.9632,
+              "xbh": {
+                "per_pa_level": 0.03394062103746693,
+                "tensor_delta": 0.00031146415999999677,
+                "per_pa": 0.034252085197466926,
+                "exp_per_game": 0.1246775901187796
+              },
+              "tb": {
+                "per_pa_level": 0.17307629265707739,
+                "tensor_delta": 0.0037807950600000084,
+                "per_pa": 0.1768570877170774,
+                "exp_per_game": 0.6437597992901617,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3582,
+                    "usage": 0.124
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3769,
+                    "usage": 0.191
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3659,
+                    "usage": 0.356
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3374,
+                    "usage": 0.034
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3641,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3507,
+                    "usage": 0.235
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3265,
+                    "usage": 0.06
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4028,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "0": 0.218,
+              "1": 0.352,
+              "2": 0.266,
+              "4": 0.042,
+              "3": 0.113,
+              "5": 0.005,
+              "7": 0.002,
+              "6": 0.002
+            },
+            "p_at_least_one_hr": {
+              "Liam Hicks": 0.114,
+              "Kyle Stowers": 0.272,
+              "Otto Lopez": 0.113,
+              "Xavier Edwards": 0.092,
+              "Griffin Conine": 0.207,
+              "Owen Caissie": 0.281,
+              "Jakob Marsee": 0.059,
+              "Joe Mack": 0.156,
+              "Javier Sanoja": 0.032
+            },
+            "p_multi_hr": {
+              "Liam Hicks": 0.004,
+              "Kyle Stowers": 0.035,
+              "Otto Lopez": 0.002,
+              "Xavier Edwards": 0.004,
+              "Griffin Conine": 0.022,
+              "Owen Caissie": 0.03,
+              "Jakob Marsee": 0.003,
+              "Joe Mack": 0.009,
+              "Javier Sanoja": 0.001
+            },
+            "back_to_back_per_game": 0.046
+          },
+          "pitcher": "Aaron Civale"
         },
         "home": {
           "per_hitter": {
@@ -13156,7 +16112,639 @@
           "error": "No away lineup yet for game 823932"
         },
         "home": {
-          "error": "No home lineup yet for game 823932"
+          "per_hitter": {
+            "Tommy Edman": {
+              "p_per_pa": 0.04015404417730031,
+              "exp_pa": 4.6,
+              "components": {
+                "logistic": 0.025171208282436384,
+                "matchup": 0.024840439181693798,
+                "linear": 0.030496269174196067
+              },
+              "tto_mult": 1.5207997183999997,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.08756763141375991,
+                "tensor_delta": -0.00032921705220220754,
+                "per_pa": 0.0872384143615577,
+                "exp_per_game": 0.40129670606316536
+              },
+              "tb": {
+                "per_pa_level": 0.4483048381673746,
+                "tensor_delta": 0.009591578117267241,
+                "per_pa": 0.45789641628464184,
+                "exp_per_game": 2.106323514909352,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3453,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3988,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3806,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3341,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3536,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3681,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.323,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4543,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Andy Pages": {
+              "p_per_pa": 0.04104725141205915,
+              "exp_pa": 4.4799999999999995,
+              "components": {
+                "logistic": 0.029804849451685392,
+                "matchup": 0.02009324170301051,
+                "linear": 0.034057457084248254
+              },
+              "tto_mult": 1.4683583488,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.08824063655012075,
+                "tensor_delta": -0.0005852779126426372,
+                "per_pa": 0.08765535863747811,
+                "exp_per_game": 0.39269600669590193
+              },
+              "tb": {
+                "per_pa_level": 0.41026243114779015,
+                "tensor_delta": 0.005028652310640647,
+                "per_pa": 0.4152910834584308,
+                "exp_per_game": 1.8605040538937698,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3511,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3982,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3842,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3508,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3553,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3909,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3483,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4464,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Freddie Freeman": {
+              "p_per_pa": 0.08604892068154396,
+              "exp_pa": 4.359999999999999,
+              "components": {
+                "logistic": 0.06352571954201405,
+                "matchup": 0.05319784144311357,
+                "linear": 0.06490659472351656
+              },
+              "tto_mult": 1.4159169792,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.15569327885556047,
+                "tensor_delta": -0.00016913312906907674,
+                "per_pa": 0.1555241457264914,
+                "exp_per_game": 0.6780852753675024
+              },
+              "tb": {
+                "per_pa_level": 0.7063986351355248,
+                "tensor_delta": 0.00910706627919916,
+                "per_pa": 0.7155057014147239,
+                "exp_per_game": 3.119604858168196,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.361,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3973,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3831,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.344,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3712,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3691,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3343,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4292,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Mookie Betts": {
+              "p_per_pa": 0.06211133329797831,
+              "exp_pa": 4.239999999999999,
+              "components": {
+                "logistic": 0.029827423506731145,
+                "matchup": 0.07643947155948096,
+                "linear": 0.03679799677575941
+              },
+              "tto_mult": 1.3634756096,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.12944541594787276,
+                "tensor_delta": -4.0670562672665e-05,
+                "per_pa": 0.12940474538520008,
+                "exp_per_game": 0.5486761204332482
+              },
+              "tb": {
+                "per_pa_level": 0.595526347799458,
+                "tensor_delta": 0.008832271738978992,
+                "per_pa": 0.604358619538437,
+                "exp_per_game": 2.562480546842972,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3569,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3863,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3747,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3326,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.365,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3584,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3171,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4297,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Kyle Tucker": {
+              "p_per_pa": 0.018932993737520342,
+              "exp_pa": 4.119999999999999,
+              "components": {
+                "logistic": 0.011625331658876598,
+                "matchup": 0.017469979255417985,
+                "linear": 0.01587549051189721
+              },
+              "tto_mult": 1.31103424,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.04941458703775018,
+                "tensor_delta": -0.0004212152865665786,
+                "per_pa": 0.0489933717511836,
+                "exp_per_game": 0.2018526916148764
+              },
+              "tb": {
+                "per_pa_level": 0.24819329750121577,
+                "tensor_delta": 0.009015315080960984,
+                "per_pa": 0.25720861258217675,
+                "exp_per_game": 1.059699483838568,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3503,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3919,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3745,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3417,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3593,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.358,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3346,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4194,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Teoscar Hern\u00e1ndez": {
+              "p_per_pa": 0.04179477376479322,
+              "exp_pa": 3.9999999999999996,
+              "components": {
+                "logistic": 0.031406950528583076,
+                "matchup": 0.02946849813715148,
+                "linear": 0.03562224695033852
+              },
+              "tto_mult": 1.31103424,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.08878546307799237,
+                "tensor_delta": -0.00039675346160160385,
+                "per_pa": 0.08838870961639077,
+                "exp_per_game": 0.353554838465563
+              },
+              "tb": {
+                "per_pa_level": 0.4002888048420489,
+                "tensor_delta": 0.006918531817998008,
+                "per_pa": 0.4072073366600469,
+                "exp_per_game": 1.6288293466401873,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3436,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3901,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3761,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3286,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3465,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3733,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.316,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4641,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Max Muncy": {
+              "p_per_pa": 0.08834698034673,
+              "exp_pa": 3.88,
+              "components": {
+                "logistic": 0.07299868199952746,
+                "matchup": 0.06874829483673968,
+                "linear": 0.055653382769445495
+              },
+              "tto_mult": 1.31103424,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.15140410612975835,
+                "tensor_delta": -0.0006357418104904894,
+                "per_pa": 0.15076836431926788,
+                "exp_per_game": 0.5849812535587593
+              },
+              "tb": {
+                "per_pa_level": 0.666747844328142,
+                "tensor_delta": 0.006641593946456414,
+                "per_pa": 0.6733894382745984,
+                "exp_per_game": 2.6127510205054416,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3511,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3841,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.37,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.335,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3544,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3633,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3252,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4335,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Dalton Rushing": {
+              "p_per_pa": 0.04581320365675522,
+              "exp_pa": 3.76,
+              "components": {
+                "logistic": 0.03861907003795295,
+                "matchup": 0.02629247068809395,
+                "linear": 0.0387120002215884
+              },
+              "tto_mult": 1.31103424,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.09083575681734529,
+                "tensor_delta": -0.00044739178575575744,
+                "per_pa": 0.09038836503158953,
+                "exp_per_game": 0.3398602525187766
+              },
+              "tb": {
+                "per_pa_level": 0.39722772032400866,
+                "tensor_delta": 0.009687135117327328,
+                "per_pa": 0.406914855441336,
+                "exp_per_game": 1.5299998564594233,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3541,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3862,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3694,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.3384,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3637,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3471,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3293,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.4051,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            },
+            "Alex Freeland": {
+              "p_per_pa": 0.01155910664828888,
+              "exp_pa": 3.6399999999999997,
+              "components": {
+                "logistic": 0.0056339165360858555,
+                "matchup": 0.01371698970077874,
+                "linear": 0.008665701454767675
+              },
+              "tto_mult": 1.31103424,
+              "park_factor": 1.3408,
+              "platoon_factor": 0.9778,
+              "xbh": {
+                "per_pa_level": 0.033073649711422744,
+                "tensor_delta": -0.0005105776169369441,
+                "per_pa": 0.0325630720944858,
+                "exp_per_game": 0.1185295824239283
+              },
+              "tb": {
+                "per_pa_level": 0.17639915796803607,
+                "tensor_delta": 0.008847590001801853,
+                "per_pa": 0.18524674796983792,
+                "exp_per_game": 0.67429816261021,
+                "families": [
+                  {
+                    "family": "four_seam",
+                    "etb": 0.3373,
+                    "usage": 0.1051
+                  },
+                  {
+                    "family": "sinker",
+                    "etb": 0.3994,
+                    "usage": 0.3714
+                  },
+                  {
+                    "family": "cutter",
+                    "etb": 0.3787,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "slider",
+                    "etb": 0.334,
+                    "usage": 0.1762
+                  },
+                  {
+                    "family": "change",
+                    "etb": 0.3435,
+                    "usage": 0.3473
+                  },
+                  {
+                    "family": "curve",
+                    "etb": 0.3701,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "split",
+                    "etb": 0.3265,
+                    "usage": 0.0
+                  },
+                  {
+                    "family": "kn",
+                    "etb": 0.46,
+                    "usage": 0.0
+                  }
+                ]
+              }
+            }
+          },
+          "sim": {
+            "n_games": 1000,
+            "team_hr_dist": {
+              "3": 0.111,
+              "0": 0.223,
+              "4": 0.038,
+              "1": 0.357,
+              "2": 0.26,
+              "5": 0.008,
+              "6": 0.002,
+              "7": 0.001
+            },
+            "p_at_least_one_hr": {
+              "Tommy Edman": 0.145,
+              "Andy Pages": 0.153,
+              "Freddie Freeman": 0.238,
+              "Mookie Betts": 0.194,
+              "Kyle Tucker": 0.064,
+              "Teoscar Hern\u00e1ndez": 0.125,
+              "Max Muncy": 0.248,
+              "Dalton Rushing": 0.129,
+              "Alex Freeland": 0.03
+            },
+            "p_multi_hr": {
+              "Tommy Edman": 0.009,
+              "Andy Pages": 0.009,
+              "Freddie Freeman": 0.019,
+              "Mookie Betts": 0.017,
+              "Kyle Tucker": 0.002,
+              "Teoscar Hern\u00e1ndez": 0.002,
+              "Max Muncy": 0.029,
+              "Dalton Rushing": 0.006,
+              "Alex Freeland": 0.001
+            },
+            "back_to_back_per_game": 0.058
+          },
+          "pitcher": "Wandy Peralta"
         }
       }
     }
