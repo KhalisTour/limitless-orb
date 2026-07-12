@@ -1,0 +1,142 @@
+{
+  "date": "2026-07-12",
+  "book": "betrivers",
+  "pulled_at": "2026-07-12T18:13:55.559971Z",
+  "lines": [
+    {
+      "name": "Pete Alonso",
+      "american": 4500,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 16000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 335,
+      "batter_id": "624413"
+    },
+    {
+      "name": "James Wood",
+      "american": 430,
+      "batter_id": "695578"
+    },
+    {
+      "name": "James Wood",
+      "american": 5000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 6600,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 6000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 12500,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 475,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 475,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 5500,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 15000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 430,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 2800,
+      "batter_id": "669127"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 15000,
+      "batter_id": "669127"
+    },
+    {
+      "name": "Shea Langeliers",
+      "american": 270,
+      "batter_id": "669127"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 4500,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 16000,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 370,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 1700,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 10000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 205,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 1600,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 12500,
+      "batter_id": "606466"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 2200,
+      "batter_id": "606466"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 9000,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 245,
+      "batter_id": "606466"
+    }
+  ]
+}
