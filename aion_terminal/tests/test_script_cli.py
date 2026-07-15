@@ -2,10 +2,26 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from aion_terminal.features.technical import TechnicalState
 from aion_terminal.models.dto import FeatureSnapshotRecord
 from aion_terminal.services.ingestion_service import RefreshResult
 from aion_terminal.scripts import bootstrap_history, run_backfill, run_backtest, run_daily_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
+
+
+def _stub_technical_state():
+    """Neutral TechnicalState standing in for build_technical_features in CLI tests."""
+    return TechnicalState(
+        above_vwap=True,
+        ema_stack="mixed",
+        trend="neutral",
+        compressed=False,
+        high_rvol=False,
+        near_support=False,
+        near_resistance=False,
+        recovering_from_pullback=False,
+        pullback_depth_pct=0.0,
+    )
 
 
 def _memory_conn():
@@ -145,11 +161,21 @@ def test_build_feature_snapshots_for_refresh_creates_one_snapshot_per_expiry():
 
     snapshots = run_daily_snapshot._build_feature_snapshots_for_refresh("IONQ", refresh)
 
-    assert len(snapshots) == 1
-    assert snapshots[0].expiry == "2026-05-01"
-    assert snapshots[0].symbol == "IONQ"
-    assert snapshots[0].dte == 5
-    assert snapshots[0].features_json == '{"distances": {}}'
+    # One combined-across-expiries row plus one per-expiry row (P0-1).
+    assert len(snapshots) == 2
+    by_expiry = {s.expiry: s for s in snapshots}
+    assert set(by_expiry) == {"combined", "2026-05-01"}
+    # Combined and per-expiry share a single snapshot_ts (the join key the arbiter uses).
+    assert len({s.snapshot_ts for s in snapshots}) == 1
+
+    combined = by_expiry["combined"]
+    assert combined.dte is None
+    assert combined.call_wall == 110.0
+
+    per_expiry = by_expiry["2026-05-01"]
+    assert per_expiry.symbol == "IONQ"
+    assert per_expiry.dte == 5
+    assert per_expiry.features_json == '{"distances": {}}'
 
 
 def test_run_daily_snapshot_skips_feature_snapshot_without_expiries(monkeypatch):
@@ -162,7 +188,7 @@ def test_run_daily_snapshot_skips_feature_snapshot_without_expiries(monkeypatch)
 
     monkeypatch.setattr(run_daily_snapshot, "insert_feature_snapshots", fake_insert)
     monkeypatch.setattr(run_daily_snapshot, "rank_universe", lambda symbols=None: [])
-    monkeypatch.setattr(run_daily_snapshot, "build_technical_features", lambda symbols, timeframe: ([], {}))
+    monkeypatch.setattr(run_daily_snapshot, "build_technical_features", lambda symbols, timeframe: ([], _stub_technical_state()))
     monkeypatch.setattr(run_daily_snapshot, "evaluate_symbol_snapshot", lambda **kwargs: [])
     monkeypatch.setattr(run_daily_snapshot, "score_and_rank_contracts", lambda conn, symbol, bias: type("R", (), {"best": None})())
     monkeypatch.setattr(run_daily_snapshot, "_open_conn", _memory_conn)
@@ -258,7 +284,7 @@ def test_run_daily_snapshot_continues_after_one_symbol_missing_expiries(monkeypa
 
     monkeypatch.setattr(run_daily_snapshot, "insert_feature_snapshots", fake_insert)
     monkeypatch.setattr(run_daily_snapshot, "rank_universe", lambda symbols=None: [])
-    monkeypatch.setattr(run_daily_snapshot, "build_technical_features", lambda symbols, timeframe: ([], {}))
+    monkeypatch.setattr(run_daily_snapshot, "build_technical_features", lambda symbols, timeframe: ([], _stub_technical_state()))
     monkeypatch.setattr(run_daily_snapshot, "evaluate_symbol_snapshot", lambda **kwargs: [])
     monkeypatch.setattr(run_daily_snapshot, "score_and_rank_contracts", lambda conn, symbol, bias: type("R", (), {"best": None})())
     monkeypatch.setattr(run_daily_snapshot, "_open_conn", _memory_conn)
@@ -271,7 +297,9 @@ def test_run_daily_snapshot_continues_after_one_symbol_missing_expiries(monkeypa
     assert result == 0
     assert "IONQ | skipped_recent=False | refreshed=True" in captured.out
     assert "ERAS | skipped_recent=False | refreshed=True" in captured.out
-    assert inserted == [["2026-05-01"]]
+    # IONQ persists a combined row plus its single per-expiry row; ERAS has an
+    # empty grouped_chain and is skipped entirely.
+    assert inserted == [["combined", "2026-05-01"]]
 
 
 def test_run_backtest_parse_args(monkeypatch):

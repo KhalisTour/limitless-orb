@@ -272,7 +272,23 @@ def score_and_rank_contracts(
     budget: float | None = None,
 ) -> ContractRecommendation:
     """Score and rank contracts for a symbol/bias from stored snapshots."""
-    side = "call" if bias.lower() == "bullish" else "put"
+    normalized_bias = (bias or "").lower()
+    if normalized_bias not in ("bullish", "bearish"):
+        # A neutral / unknown bias is not a directional thesis. Refuse rather than
+        # silently coercing to puts (the historical default), which fabricated a
+        # bearish recommendation out of "no opinion".
+        logger.info("No directional bias for symbol=%s bias=%s; skipping contract scoring", symbol, bias)
+        return ContractRecommendation(
+            symbol=symbol,
+            bias=normalized_bias or "neutral",
+            spot=spot,
+            best=None,
+            safer=None,
+            convex=None,
+            all_scored=[],
+            warnings=["neutral_bias_no_recommendation"],
+        )
+    side = "call" if normalized_bias == "bullish" else "put"
     rows = load_chain_for_scoring(conn, symbol, bias, dte_min=dte_min, dte_max=dte_max)
     if not rows:
         logger.warning("No contracts available for scoring symbol=%s bias=%s", symbol, bias)

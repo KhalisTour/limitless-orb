@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from aion_terminal.models.dto import UnderlyingBarRecord
+from aion_terminal.models.enums import EMAStack
 from aion_terminal.utils.math_utils import as_float, as_int
 from aion_terminal.utils.time_utils import utc_now_iso
 
@@ -79,10 +80,10 @@ def compute_ema(closes: list[float], period: int) -> list[float]:
 def classify_ema_stack(ema8: float, ema21: float, ema55: float) -> str:
     """Classify EMA alignment as bullish, bearish, or mixed."""
     if ema8 > ema21 > ema55:
-        return "bullish_stack"
+        return EMAStack.BULLISH.value
     if ema8 < ema21 < ema55:
-        return "bearish_stack"
-    return "mixed"
+        return EMAStack.BEARISH.value
+    return EMAStack.MIXED.value
 
 
 def compute_vwap(bars: list[UnderlyingBarRecord]) -> float:

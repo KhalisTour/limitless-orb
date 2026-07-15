@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from aion_terminal.models.enums import EMAStack, Regime
+
 
 def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
     return max(lo, min(hi, x))
@@ -46,18 +48,18 @@ def score_technical_agreement(features: dict | None, bias: str) -> float:
     pullback_depth = f.get("pullback_depth")
 
     if bias == "bullish":
-        if ema_stack in ("bullish", "stacked_bullish", "up"):
+        if ema_stack == EMAStack.BULLISH.value:
             score += 0.2
-        elif ema_stack in ("bearish", "stacked_bearish", "down"):
+        elif ema_stack == EMAStack.BEARISH.value:
             score -= 0.25
         if trend in ("up", "uptrend", "bullish"):
             score += 0.1
         elif trend in ("down", "downtrend", "bearish"):
             score -= 0.15
     else:
-        if ema_stack in ("bearish", "stacked_bearish", "down"):
+        if ema_stack == EMAStack.BEARISH.value:
             score += 0.2
-        elif ema_stack in ("bullish", "stacked_bullish", "up"):
+        elif ema_stack == EMAStack.BULLISH.value:
             score -= 0.25
         if trend in ("down", "downtrend", "bearish"):
             score += 0.1
@@ -112,32 +114,48 @@ def score_dealer_agreement(ranking: dict | None, bias: str) -> float:
     pw_d = _pct_distance(put_wall, spot)
     kn_d = _pct_distance(king_node, spot)
 
+    # Regime is directionless structure (see features.dealer): a gamma vacuum
+    # (acceleration) or an established trend amplifies whichever bias is in play,
+    # while a range works against a directional thesis. Scored symmetrically so
+    # neither side gets a free long/short bias, and every producible regime value
+    # (acceleration/trend/range) is handled — no silent no-op fall-through.
+    score += _regime_alignment(regime)
+
     if bias == "bullish":
-        if regime in ("acceleration", "trending_up", "bullish"):
-            score += 0.25
-        elif regime in ("range", "ranging"):
-            score -= 0.05
-        elif regime in ("trending_down", "bearish", "distribution"):
-            score -= 0.2
         if cw_d is not None and 0 < cw_d < 0.02:
+            # Pinned directly under the call wall: little room to run.
             score -= 0.2
         if cw_d is not None and cw_d > 0.05:
+            # Headroom overhead toward the target.
             score += 0.05
-        if pw_d is not None and pw_d < 0 and abs(pw_d) > 0.02:
+        if pw_d is not None and pw_d < -0.02:
+            # Put-wall support sits comfortably below spot.
             score += 0.05
     elif bias == "bearish":
-        if regime in ("trending_down", "bearish", "distribution"):
-            score += 0.25
-        elif regime in ("acceleration", "trending_up", "bullish"):
-            score -= 0.2
         if pw_d is not None and -0.02 < pw_d < 0:
+            # Pinned directly above the put wall: little room to fall.
             score -= 0.2
-        if cw_d is not None and 0 < cw_d < 0.02:
+        if pw_d is not None and pw_d < -0.05:
+            # Room down toward the target below the put wall.
+            score += 0.05
+        if cw_d is not None and cw_d > 0.02:
+            # Call-wall resistance caps the upside, favouring the short.
             score += 0.05
 
     if kn_d is not None and abs(kn_d) < 0.005:
         score -= 0.05
     return _clamp(score)
+
+
+def _regime_alignment(regime: str) -> float:
+    """Directionless regime contribution, applied identically to both biases."""
+    if regime == Regime.ACCELERATION.value:
+        return 0.25
+    if regime == Regime.TREND.value:
+        return 0.1
+    if regime == Regime.RANGE.value:
+        return -0.05
+    return 0.0
 
 
 def score_contract_agreement(contracts: dict | None, bias: str) -> float:

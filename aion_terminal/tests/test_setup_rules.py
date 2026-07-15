@@ -171,3 +171,50 @@ def test_min_confidence_filters_weak_signals():
     )
     signals = evaluate_symbol_snapshot("AAPL", dealer, features, state, make_tags(), min_confidence=0.5)
     assert signals == []
+
+
+# ------------- P0-5: neutral bias must not default long / coerce to puts -------------
+
+import sys as _sys
+import types as _types
+
+if "dotenv" not in _sys.modules:
+    _sys.modules["dotenv"] = _types.SimpleNamespace(load_dotenv=lambda *a, **k: None)
+
+from aion_terminal.features.contracts import score_and_rank_contracts
+from aion_terminal.services.ranking_service import infer_bias
+from aion_terminal.storage.db import bootstrap_schema, get_connection
+
+
+def test_infer_bias_defaults_to_neutral():
+    """P0-5 regression: with no directional evidence the system must answer
+    'neutral', never fall back to 'bullish'."""
+    _features, state = make_technical(ema_stack="mixed", trend="neutral", high_rvol=False)
+    dealer = make_dealer(regime="range", put_wall=105.0, spot=100.0)  # put wall above spot
+    bias, reasons = infer_bias(technical_state=state, dealer_features=dealer)
+    assert bias == "neutral"
+    assert "bias_defaulted" in reasons
+
+
+def test_infer_bias_still_reads_directional_evidence():
+    """The neutral default must not swallow a genuine bullish read."""
+    _features, state = make_technical(ema_stack="bullish_stack", trend="uptrend")
+    bias, reasons = infer_bias(technical_state=state)
+    assert bias == "bullish"
+    assert reasons == []
+
+
+def test_score_and_rank_contracts_refuses_neutral(tmp_path):
+    """P0-5 regression: a neutral bias must return no recommendation, not silently
+    coerce to puts."""
+    conn = get_connection(str(tmp_path / "contracts.db"))
+    bootstrap_schema(conn, "aion_terminal/storage/schema.sql")
+    try:
+        rec = score_and_rank_contracts(conn, symbol="AAPL", bias="neutral", spot=100.0)
+        assert rec.best is None
+        assert rec.safer is None
+        assert rec.convex is None
+        assert rec.all_scored == []
+        assert "neutral_bias_no_recommendation" in rec.warnings
+    finally:
+        conn.close()

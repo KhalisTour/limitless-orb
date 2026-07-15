@@ -11,6 +11,7 @@ from aion_terminal.features.contracts import ContractScore, score_and_rank_contr
 from aion_terminal.features.dealer import compute_levels
 from aion_terminal.features.technical import TechnicalFeatures, TechnicalState, build_technical_features
 from aion_terminal.models.dto import UnderlyingBarRecord
+from aion_terminal.models.enums import EMAStack
 from aion_terminal.signals.setups import SetupSignal, evaluate_symbol_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 from aion_terminal.storage.repositories import query_latest_chain
@@ -101,14 +102,14 @@ def infer_bias(
         if candidate in {"bullish", "bearish"}:
             return str(candidate), []
     if technical_state is not None:
-        if technical_state.ema_stack == "bullish_stack" or technical_state.trend in {"uptrend", "strong_uptrend"}:
+        if technical_state.ema_stack == EMAStack.BULLISH.value or technical_state.trend in {"uptrend", "strong_uptrend"}:
             return "bullish", []
-        if technical_state.ema_stack == "bearish_stack" or technical_state.trend in {"downtrend", "strong_downtrend"}:
+        if technical_state.ema_stack == EMAStack.BEARISH.value or technical_state.trend in {"downtrend", "strong_downtrend"}:
             return "bearish", []
     dealer = dealer_features or {}
     if str(dealer.get("regime", "")).lower() in {"trend", "acceleration"} and as_float(dealer.get("put_wall")) <= as_float(dealer.get("spot")):
         return "bullish", []
-    return "bullish", ["bias_defaulted"]
+    return "neutral", ["bias_defaulted"]
 
 
 def _load_underlying_bars(conn: sqlite3.Connection, symbol: str) -> list[UnderlyingBarRecord]:

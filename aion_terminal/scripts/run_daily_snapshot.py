@@ -12,7 +12,7 @@ from aion_terminal.app.config import settings
 from aion_terminal.features.contracts import score_and_rank_contracts
 from aion_terminal.features.technical import build_technical_features
 from aion_terminal.services.ingestion_service import refresh_one_symbol, refresh_one_symbol_from_db
-from aion_terminal.services.ranking_service import rank_universe
+from aion_terminal.services.ranking_service import infer_bias, rank_universe
 from aion_terminal.signals.setups import evaluate_symbol_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 from aion_terminal.storage.repositories import (
@@ -72,33 +72,42 @@ def _build_feature_snapshots_for_refresh(symbol: str, refresh) -> list[FeatureSn
         return []
 
     expiry_levels = refresh.levels.get("expiry_levels") or {}
-    if not expiry_levels:
+    combined_levels = refresh.levels.get("combined_levels")
+    if not expiry_levels and not combined_levels:
         return []
 
+    # One timestamp for the whole batch so the combined row and the per-expiry
+    # rows share a single (symbol, snapshot_ts) — this is the key the arbiter and
+    # any consistency check join on.
+    snapshot_ts = utc_now_iso()
     snapshots: list[FeatureSnapshotRecord] = []
+
+    def _record(expiry: str, level: dict, dte) -> FeatureSnapshotRecord:
+        return FeatureSnapshotRecord(
+            snapshot_ts=snapshot_ts,
+            symbol=symbol,
+            expiry=expiry,
+            dte=dte,
+            spot=float(level.get("spot") or 0.0),
+            regime=str(level.get("regime") or "neutral"),
+            king_node=float(level.get("king_node") or 0.0),
+            call_wall=level.get("call_wall"),
+            put_wall=level.get("put_wall"),
+            flip_zone=level.get("flip_zone"),
+            features_json=json.dumps({"distances": level.get("distances", {})}),
+        )
+
+    # Combined-across-expiries map: the single source of truth the arbiter reads.
+    if combined_levels:
+        snapshots.append(_record("combined", combined_levels, None))
+
     for expiry in sorted(expiry_levels.keys()):
         if not expiry:
             continue
-
         level = expiry_levels[expiry]
         bucket = refresh.grouped_chain.get(expiry, {})
         dte = bucket.get("dte_min") if bucket.get("dte_min") is not None else bucket.get("dte_max")
-
-        snapshots.append(
-            FeatureSnapshotRecord(
-                snapshot_ts=utc_now_iso(),
-                symbol=symbol,
-                expiry=expiry,
-                dte=dte,
-                spot=float(level.get("spot") or 0.0),
-                regime=str(level.get("regime") or "neutral"),
-                king_node=float(level.get("king_node") or 0.0),
-                call_wall=level.get("call_wall"),
-                put_wall=level.get("put_wall"),
-                flip_zone=level.get("flip_zone"),
-                features_json=json.dumps({"distances": level.get("distances", {})}),
-            )
-        )
+        snapshots.append(_record(expiry, level, dte))
 
     return snapshots
 
@@ -173,6 +182,7 @@ def main() -> int:
                 else:
                     logger.info("no expiries available; skipping feature snapshot")
 
+                inferred_bias: str | None = None
                 if not args.no_setups and refresh.levels:
                     technical_features, technical_state = build_technical_features(_load_daily_bars(conn, symbol), "D")
                     setups = evaluate_symbol_snapshot(
@@ -208,9 +218,25 @@ def main() -> int:
                     except Exception as exc:
                         logger.exception("setup candidate insertion failed symbol=%s err=%s", symbol, exc)
 
+                    inferred_bias = infer_bias(
+                        setup_bias=setups[0].bias if setups else None,
+                        technical_state=technical_state,
+                        dealer_features=refresh.levels.get("combined_levels") or refresh.levels,
+                    )[0]
+
                 if not args.no_contracts and refresh.quote_price is not None:
-                    rec = score_and_rank_contracts(conn, symbol=symbol, bias="bullish", spot=refresh.quote_price)
-                    top_ranking = rec.best.contract_symbol if rec.best else None
+                    bias_for_contracts = inferred_bias
+                    if bias_for_contracts is None and refresh.levels:
+                        bias_for_contracts = infer_bias(
+                            dealer_features=refresh.levels.get("combined_levels") or refresh.levels,
+                        )[0]
+                    if bias_for_contracts in ("bullish", "bearish"):
+                        rec = score_and_rank_contracts(
+                            conn, symbol=symbol, bias=bias_for_contracts, spot=refresh.quote_price
+                        )
+                        top_ranking = rec.best.contract_symbol if rec.best else None
+                    else:
+                        logger.info("neutral bias for symbol=%s; skipping contract scoring", symbol)
 
                 success = refresh.ok
             except Exception as exc:

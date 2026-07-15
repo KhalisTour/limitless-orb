@@ -32,11 +32,29 @@ def _safe_dict(blob: Any) -> dict | None:
     return None
 
 
-def _load_ranking(conn: sqlite3.Connection, symbol: str) -> dict | None:
-    feat_row = conn.execute(
-        "SELECT * FROM feature_snapshots WHERE symbol = ? ORDER BY snapshot_ts DESC LIMIT 1",
+def _latest_combined_feature_snapshot(conn: sqlite3.Connection, symbol: str):
+    """Return the latest combined-across-expiries feature snapshot for a symbol.
+
+    The arbiter must score the *combined* dealer map — the same object the
+    ranking service and UI present — never an arbitrary per-expiry row. Falls
+    back to the most recent row only for legacy data written before the combined
+    snapshot existed.
+    """
+    row = conn.execute(
+        "SELECT * FROM feature_snapshots WHERE symbol = ? AND expiry = 'combined' "
+        "ORDER BY snapshot_ts DESC LIMIT 1",
         (symbol,),
     ).fetchone()
+    if row is None:
+        row = conn.execute(
+            "SELECT * FROM feature_snapshots WHERE symbol = ? ORDER BY snapshot_ts DESC LIMIT 1",
+            (symbol,),
+        ).fetchone()
+    return row
+
+
+def _load_ranking(conn: sqlite3.Connection, symbol: str) -> dict | None:
+    feat_row = _latest_combined_feature_snapshot(conn, symbol)
     level_row = conn.execute(
         "SELECT * FROM computed_levels WHERE symbol = ? ORDER BY timestamp DESC LIMIT 1",
         (symbol,),
@@ -74,10 +92,7 @@ def _load_setup_candidates(conn: sqlite3.Connection, symbol: str) -> list[dict]:
 
 
 def _load_features(conn: sqlite3.Connection, symbol: str) -> dict | None:
-    row = conn.execute(
-        "SELECT * FROM feature_snapshots WHERE symbol = ? ORDER BY snapshot_ts DESC LIMIT 1",
-        (symbol,),
-    ).fetchone()
+    row = _latest_combined_feature_snapshot(conn, symbol)
     if not row:
         return None
     return dict(row)

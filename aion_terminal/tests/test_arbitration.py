@@ -34,15 +34,32 @@ def conn(tmp_path):
 # ------------- scoring -------------
 
 def test_technical_agreement_bullish_stack():
-    f = {"ema_stack": "bullish", "trend": "up", "rvol": 1.2}
+    f = {"ema_stack": "bullish_stack", "trend": "uptrend", "rvol": 1.2}
     s = scoring.score_technical_agreement(f, "bullish")
     assert s > 0.7
 
 
 def test_technical_agreement_bearish_stack():
-    f = {"ema_stack": "bearish", "trend": "down"}
+    f = {"ema_stack": "bearish_stack", "trend": "downtrend"}
     s = scoring.score_technical_agreement(f, "bullish")
     assert s < 0.4
+
+
+def test_technical_agreement_ema_stack_uses_producer_vocabulary():
+    """P0-2 regression: the producer emits ``bullish_stack``/``bearish_stack``.
+
+    The stale literal ``"bullish"`` must NOT move the score (that mismatch is the
+    original bug), while the real producer value must apply the EMA term.
+    """
+    from aion_terminal.models.enums import EMAStack
+
+    stale = scoring.score_technical_agreement({"ema_stack": "bullish"}, "bullish")
+    real = scoring.score_technical_agreement({"ema_stack": EMAStack.BULLISH.value}, "bullish")
+    assert stale == 0.5  # unmatched -> no EMA contribution
+    assert real == pytest.approx(0.7)  # 0.5 base + 0.2 EMA bonus
+    # Every producible value round-trips to a non-0.5 (or explicitly-neutral) result.
+    assert scoring.score_technical_agreement({"ema_stack": EMAStack.BEARISH.value}, "bullish") < 0.5
+    assert scoring.score_technical_agreement({"ema_stack": EMAStack.BEARISH.value}, "bearish") > 0.5
 
 
 def test_dealer_agreement_acceleration_bullish():
@@ -52,9 +69,42 @@ def test_dealer_agreement_acceleration_bullish():
 
 
 def test_dealer_agreement_near_call_wall_penalty():
-    near = {"spot": 100, "regime": "trending_up", "dealer_structure": {"call_wall": 101, "put_wall": 90, "king_node": 95}}
-    far = {"spot": 100, "regime": "trending_up", "dealer_structure": {"call_wall": 110, "put_wall": 90, "king_node": 95}}
+    near = {"spot": 100, "regime": "trend", "dealer_structure": {"call_wall": 101, "put_wall": 90, "king_node": 95}}
+    far = {"spot": 100, "regime": "trend", "dealer_structure": {"call_wall": 110, "put_wall": 90, "king_node": 95}}
     assert scoring.score_dealer_agreement(near, "bullish") < scoring.score_dealer_agreement(far, "bullish")
+
+
+def test_dealer_agreement_regime_symmetric_across_bias():
+    """P0-3 regression: regime is directionless and must contribute identically
+    to bullish and bearish. Use a structurally neutral map (walls equidistant,
+    king node offset) so only the regime term differs between the two calls."""
+    base = {"spot": 100, "dealer_structure": {"call_wall": 108, "put_wall": 92, "king_node": 96}}
+    for regime in ("acceleration", "trend", "range"):
+        r = {**base, "regime": regime}
+        bull = scoring.score_dealer_agreement(r, "bullish")
+        bear = scoring.score_dealer_agreement(r, "bearish")
+        assert bull == pytest.approx(bear), f"regime {regime} asymmetric: {bull} vs {bear}"
+
+
+def test_dealer_agreement_trend_regime_not_noop():
+    """P0-3 regression: the ``trend`` value the producer emits must be scored,
+    not silently ignored (previously it matched no branch and stayed 0.5)."""
+    accel = {"spot": 100, "regime": "acceleration", "dealer_structure": {"call_wall": 108, "put_wall": 92, "king_node": 96}}
+    trend = {"spot": 100, "regime": "trend", "dealer_structure": {"call_wall": 108, "put_wall": 92, "king_node": 96}}
+    rng = {"spot": 100, "regime": "range", "dealer_structure": {"call_wall": 108, "put_wall": 92, "king_node": 96}}
+    s_accel = scoring.score_dealer_agreement(accel, "bullish")
+    s_trend = scoring.score_dealer_agreement(trend, "bullish")
+    s_range = scoring.score_dealer_agreement(rng, "bullish")
+    # acceleration (+0.25) > trend (+0.10) > range (-0.05), and trend != the neutral base.
+    assert s_accel > s_trend > s_range
+    assert s_trend != pytest.approx(0.5)
+
+
+def test_dealer_agreement_bearish_reward_reachable():
+    """P0-3 regression: a bearish thesis with favourable structure must be able
+    to score above the 0.5 neutral base (previously the bearish path was starved)."""
+    r = {"spot": 100, "regime": "acceleration", "dealer_structure": {"call_wall": 103, "put_wall": 92, "king_node": 96}}
+    assert scoring.score_dealer_agreement(r, "bearish") > 0.6
 
 
 def test_macro_agreement_risk_on_bullish():
@@ -168,7 +218,7 @@ def _full_inputs(symbol, spot=100.0):
         "dealer_structure": {"call_wall": spot * 1.1, "put_wall": spot * 0.95, "king_node": spot},
         "top_ranked_setup": {"bias": "bullish"},
     }
-    features = {"ema_stack": "bullish", "trend": "up", "rvol": 1.5, "spot": spot, "regime": "acceleration"}
+    features = {"ema_stack": "bullish_stack", "trend": "uptrend", "rvol": 1.5, "spot": spot, "regime": "acceleration"}
     contracts = {
         "best": {
             "contract_symbol": f"{symbol}_C",
@@ -324,7 +374,7 @@ def test_candidates_sorted_by_composite_score(conn, monkeypatch):
                king_node, call_wall, put_wall, features_json, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (now, sym, "combined", spot, "acceleration", spot, spot * 1.1, spot * 0.95,
-             json.dumps({"ema_stack": "bullish", "trend": "up", "rvol": 1.5}), now, now),
+             json.dumps({"ema_stack": "bullish_stack", "trend": "uptrend", "rvol": 1.5}), now, now),
         )
     conn.commit()
     out = svc.get_arbitration_candidates(conn, limit=5, watchlist=["AAA", "BBB"])
@@ -343,7 +393,7 @@ def test_candidates_generalize_across_symbols(conn):
                king_node, call_wall, put_wall, features_json, created_at, updated_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (now, sym, "combined", 100.0, "acceleration", 100.0, 110.0, 95.0,
-             json.dumps({"ema_stack": "bullish"}), now, now),
+             json.dumps({"ema_stack": "bullish_stack"}), now, now),
         )
     conn.commit()
     out = svc.get_arbitration_candidates(conn, limit=10, watchlist=["AMD", "NVDA", "COIN", "IONQ"])

@@ -19,6 +19,7 @@ from aion_terminal.arbitration.schemas import (
     HoldPolicy,
     TriggerSpec,
 )
+from aion_terminal.models.enums import EMAStack
 from aion_terminal.utils.time_utils import utc_now_iso
 
 
@@ -124,7 +125,7 @@ def _supporting_factors(matrix: AgreementMatrix, bias: str, features: dict, regi
         out.append("memory_supportive")
     if matrix.expectancy >= 0.6:
         out.append("expectancy_positive")
-    if (features or {}).get("ema_stack") in ("bullish", "stacked_bullish") and bias == "bullish":
+    if (features or {}).get("ema_stack") == EMAStack.BULLISH.value and bias == "bullish":
         out.append("bullish_ema_stack")
     if regime in ("acceleration", "trending_up") and bias == "bullish":
         out.append("acceleration_regime")
