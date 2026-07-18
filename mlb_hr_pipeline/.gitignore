@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 data/snapshots/
 logs/
+*/terminal-research/

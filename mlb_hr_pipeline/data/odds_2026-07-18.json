@@ -1,0 +1,142 @@
+{
+  "date": "2026-07-18",
+  "book": "betrivers",
+  "pulled_at": "2026-07-18T17:47:54.100587Z",
+  "lines": [
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 480,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 12500,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 6600,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Ryan Jeffers",
+      "american": 18000,
+      "batter_id": "680777"
+    },
+    {
+      "name": "Ryan Jeffers",
+      "american": 3500,
+      "batter_id": "680777"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 3000,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 18000,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Ryan Jeffers",
+      "american": 340,
+      "batter_id": "680777"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 295,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 18000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 1700,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 11000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 3000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 320,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 200,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 4500,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 2500,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 3300,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 310,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 410,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 360,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Mickey Moniak",
+      "american": 2000,
+      "batter_id": "666160"
+    },
+    {
+      "name": "Mickey Moniak",
+      "american": 12000,
+      "batter_id": "666160"
+    },
+    {
+      "name": "Mickey Moniak",
+      "american": 230,
+      "batter_id": "666160"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 15000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2800,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 275,
+      "batter_id": "670541"
+    }
+  ]
+}
