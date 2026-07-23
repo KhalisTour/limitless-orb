@@ -1,0 +1,77 @@
+{
+  "date": "2026-07-23",
+  "book": "betrivers",
+  "pulled_at": "2026-07-23T19:49:50.538185Z",
+  "lines": [
+    {
+      "name": "Yandy Diaz",
+      "american": 900,
+      "batter_id": "650490"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 7500,
+      "batter_id": "666018"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 18000,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 12500,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Yandy Diaz",
+      "american": 9000,
+      "batter_id": "650490"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 5000,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 4000,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 390,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 320,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Yandy Diaz",
+      "american": 600,
+      "batter_id": "650490"
+    },
+    {
+      "name": "Jonathan Aranda",
+      "american": 575,
+      "batter_id": "666018"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 4000,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 19900,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 335,
+      "batter_id": "682985"
+    }
+  ]
+}
