@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from aion_terminal.arbitration.adaptive import (
     rebuild_expectancy_summaries,
@@ -34,6 +37,19 @@ def _safe_dict(blob: Any) -> dict | None:
         except Exception:
             return None
     return None
+
+
+def _safe_list(blob: Any) -> list:
+    """Decode a JSON list column, tolerating nulls and malformed values."""
+    if isinstance(blob, list):
+        return blob
+    if isinstance(blob, str) and blob.strip():
+        try:
+            out = json.loads(blob)
+            return out if isinstance(out, list) else []
+        except Exception:
+            return []
+    return []
 
 
 def _latest_combined_feature_snapshot(conn: sqlite3.Connection, symbol: str):
@@ -143,10 +159,47 @@ def _load_contracts(conn: sqlite3.Connection, symbol: str) -> dict | None:
     return {"best": scored[0], "all_scored": scored[:10]}
 
 
-def _load_macro_brief() -> dict | None:
+def _load_macro_brief(conn: sqlite3.Connection | None = None) -> dict | None:
+    """Load the most recent morning brief for the macro channel.
+
+    Prefers ``morning_briefs``, which is where the brief agent writes and which
+    carries a populated ``regime`` column alongside a real ``generated_at``.
+    The on-disk JSON is a secondary copy: fewer briefs, several with a null
+    regime, and — because it was selected by file mtime — non-deterministic.
+    A git checkout stamps every file with the same mtime, so the "latest" brief
+    was whichever one the filesystem happened to return first, and differed
+    between machines.
+    """
+    if conn is not None:
+        try:
+            row = conn.execute(
+                "SELECT regime, risk_level, dominant_signal, sector_leaders_json, "
+                "sector_laggards_json, narrative_tags_json FROM morning_briefs "
+                "WHERE regime IS NOT NULL AND TRIM(regime) <> '' "
+                "ORDER BY generated_at DESC LIMIT 1"
+            ).fetchone()
+        except sqlite3.Error:
+            logger.exception("morning_briefs read failed; falling back to on-disk briefs")
+            row = None
+        if row is not None:
+            d = dict(row)
+            return {
+                "regime": d.get("regime"),
+                "risk_level": d.get("risk_level"),
+                "dominant_signal": d.get("dominant_signal"),
+                "sector_leaders": _safe_list(d.get("sector_leaders_json")),
+                "sector_laggards": _safe_list(d.get("sector_laggards_json")),
+                "narrative_tags": _safe_list(d.get("narrative_tags_json")),
+            }
+
     if not BRIEF_DIR.exists():
         return None
-    files = sorted(BRIEF_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    # Ordered by the date in the filename, not mtime. Weekly rollups are a
+    # different artifact and carry no regime, so they are excluded.
+    files = sorted(
+        (p for p in BRIEF_DIR.glob("*.json") if not p.name.startswith("week_")),
+        reverse=True,
+    )
     if not files:
         return None
     try:
@@ -216,7 +269,7 @@ def get_arbitration(symbol: str, conn: sqlite3.Connection, rs_conn: sqlite3.Conn
     setup_candidates = _load_setup_candidates(conn, symbol)
     features = _load_features(conn, symbol)
     contracts = _load_contracts(conn, symbol)
-    macro_brief = _load_macro_brief()
+    macro_brief = _load_macro_brief(conn)
     memory = _load_memory_summary(conn, symbol)
     setup_class = setup_candidates[0]["setup_class"] if setup_candidates else "technical_dealer_watch"
     expectancy = _load_expectancy(conn, setup_class)

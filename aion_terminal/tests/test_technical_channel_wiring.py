@@ -211,3 +211,57 @@ def test_macro_directional_regimes_stay_directional():
     assert score_macro_agreement({"regime": "risk_off"}, "bearish") > score_macro_agreement(
         {"regime": "risk_off"}, "bullish"
     )
+
+
+def _briefs_conn():
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute(
+        "CREATE TABLE morning_briefs (brief_id TEXT, brief_date TEXT, generated_at TEXT, "
+        "regime TEXT, dominant_signal TEXT, risk_level TEXT, sector_leaders_json TEXT, "
+        "sector_laggards_json TEXT, narrative_tags_json TEXT)"
+    )
+    conn.executemany(
+        "INSERT INTO morning_briefs (brief_id, brief_date, generated_at, regime, risk_level, "
+        "sector_leaders_json) VALUES (?,?,?,?,?,?)",
+        [
+            ("a", "2026-06-01", "2026-06-01T13:00:00", "reflationary", "medium", '["XLK"]'),
+            ("b", "2026-07-13", "2026-07-13T22:59:05", "stagflationary", "high", '["XLE"]'),
+            ("c", "2026-05-01", "2026-05-01T13:00:00", "risk_on", "low", None),
+        ],
+    )
+    conn.commit()
+    return conn
+
+
+def test_macro_brief_prefers_database_and_takes_the_newest():
+    """The DB is where the brief agent writes and carries a real timestamp."""
+    from aion_terminal.arbitration.service import _load_macro_brief
+
+    brief = _load_macro_brief(_briefs_conn())
+    assert brief is not None
+    assert brief["regime"] == "stagflationary", "did not take the newest brief"
+    assert brief["risk_level"] == "high"
+    assert brief["sector_leaders"] == ["XLE"]
+
+
+def test_macro_brief_skips_rows_with_no_regime():
+    """A null regime scores a flat 0.5 — prefer an older brief that has one."""
+    from aion_terminal.arbitration.service import _load_macro_brief
+
+    conn = _briefs_conn()
+    conn.execute(
+        "INSERT INTO morning_briefs (brief_id, brief_date, generated_at, regime) "
+        "VALUES ('d', '2026-08-01', '2026-08-01T13:00:00', NULL)"
+    )
+    conn.commit()
+    assert _load_macro_brief(conn)["regime"] == "stagflationary"
+
+
+def test_macro_brief_survives_a_missing_table():
+    """Must degrade to the on-disk fallback, not raise."""
+    from aion_terminal.arbitration.service import _load_macro_brief
+
+    empty = sqlite3.connect(":memory:")
+    empty.row_factory = sqlite3.Row
+    _load_macro_brief(empty)  # must not raise
