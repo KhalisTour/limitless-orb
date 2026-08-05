@@ -313,7 +313,13 @@ def get_arbitration_candidates(conn: sqlite3.Connection, limit: int = 20, watchl
             arb = get_arbitration(sym, conn)
         except Exception:
             continue
-        score = (arb.confidence or 0.0) * arb.agreement_matrix.average() * (arb.sizing_modifier or 0.0)
+        # Sizing is None when there is no expectancy history to size from
+        # (P1-5). Coercing it to 0.0 here would zero every candidate's score and
+        # collapse the ranking into insertion order, so an absent modifier is
+        # simply left out of the product rather than treated as zero size.
+        score = (arb.confidence or 0.0) * arb.agreement_matrix.average()
+        if arb.sizing_modifier is not None:
+            score *= arb.sizing_modifier
         results.append((score, _arb_to_json(arb)))
     results.sort(key=lambda x: x[0], reverse=True)
     return [r[1] for r in results[:limit]]

@@ -395,7 +395,13 @@ def test_candidates_sorted_by_composite_score(conn, monkeypatch):
     out = svc.get_arbitration_candidates(conn, limit=5, watchlist=["AAA", "BBB"])
     assert isinstance(out, list)
     assert len(out) <= 5
-    scores = [o["confidence"] * o["sizing_modifier"] for o in out]
+    # sizing_modifier is None with no expectancy history (P1-5), so it is
+    # excluded from the composite rather than coerced to zero — which would
+    # flatten every score and make the ordering meaningless.
+    scores = [
+        o["confidence"] * (o["sizing_modifier"] if o["sizing_modifier"] is not None else 1.0)
+        for o in out
+    ]
     assert scores == sorted(scores, reverse=True)
 
 

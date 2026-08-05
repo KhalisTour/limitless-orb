@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import uuid
 from typing import Any
 
 from aion_terminal.arbitration.schemas import AgreementMatrix
 from aion_terminal.utils.time_utils import utc_now_iso
+
+logger = logging.getLogger(__name__)
 
 
 _CRITICAL_CONFLICTS = {
@@ -45,10 +48,16 @@ def compute_expectancy_modifier(
         f"setup:{setup_class}",
     ]
     for scope in candidate_scopes:
-        row = conn.execute(
-            "SELECT expectancy_modifier FROM adaptive_expectancy WHERE scope = ?",
-            (scope,),
-        ).fetchone()
+        try:
+            row = conn.execute(
+                "SELECT expectancy_modifier FROM adaptive_expectancy WHERE scope = ?",
+                (scope,),
+            ).fetchone()
+        except sqlite3.Error:
+            # A missing or partially migrated table means "no history", not a
+            # failed arbitration. Logged so it cannot pass unnoticed.
+            logger.exception("adaptive_expectancy lookup failed for scope=%s", scope)
+            return 0.0
         if row and row["expectancy_modifier"] is not None:
             try:
                 return max(-1.0, min(1.0, float(row["expectancy_modifier"])))
@@ -64,10 +73,14 @@ def compute_memory_penalty(conn: sqlite3.Connection, symbol: str, setup_class: s
     reasons: list[str] = []
     seen_reasons: set[str] = set()
     for scope in scopes:
-        row = conn.execute(
-            "SELECT summary_json FROM agent_memory_summaries WHERE scope = ? ORDER BY updated_at DESC LIMIT 1",
-            (scope,),
-        ).fetchone()
+        try:
+            row = conn.execute(
+                "SELECT summary_json FROM agent_memory_summaries WHERE scope = ? ORDER BY updated_at DESC LIMIT 1",
+                (scope,),
+            ).fetchone()
+        except sqlite3.Error:
+            logger.exception("agent_memory_summaries lookup failed for scope=%s", scope)
+            continue
         if not row:
             continue
         summary = _safe_parse(row["summary_json"])
@@ -115,7 +128,25 @@ def compute_sizing_modifier(
     memory_penalty: float,
     regime: str,
     has_acceptance: bool,
-) -> float:
+    has_expectancy_data: bool = True,
+) -> float | None:
+    """Position-size multiplier, or ``None`` when there is nothing to size from.
+
+    Returning ``None`` is the point. This number is derived from confidence and
+    agreement, not from realised expectancy, so with an empty
+    ``adaptive_expectancy`` table it is a plausible-looking figure computed from
+    no evidence about how these setups actually performed. A caller cannot
+    distinguish "sized small because history says so" from "sized small because
+    there is no history" — and the old ``max(0.1, ...)`` floor manufactured a
+    non-zero position out of nothing, which is precisely the failure mode that
+    matters when sizing becomes automatic.
+
+    Callers must treat ``None`` as "unsized — no expectancy data" and must not
+    coerce it to a default.
+    """
+    if not has_expectancy_data:
+        return None
+
     base = 1.0
     base *= max(0.0, min(1.0, confidence or 0.0))
     base *= max(0.0, min(1.0, agreement_avg or 0.0))
@@ -125,6 +156,15 @@ def compute_sizing_modifier(
     if (regime or "").lower() in ("range", "ranging"):
         base *= 0.7
     return max(0.1, min(1.0, base))
+
+
+def has_expectancy_history(conn: sqlite3.Connection) -> bool:
+    """True when adaptive_expectancy holds at least one row to size from."""
+    try:
+        return bool(conn.execute("SELECT 1 FROM adaptive_expectancy LIMIT 1").fetchone())
+    except sqlite3.Error:
+        logger.exception("adaptive_expectancy availability check failed")
+        return False
 
 
 def _bucket_dte(dte: Any) -> str:

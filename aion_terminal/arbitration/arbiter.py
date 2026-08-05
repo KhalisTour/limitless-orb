@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 import uuid
 from typing import Any
@@ -8,6 +9,7 @@ from typing import Any
 from aion_terminal.arbitration import scoring
 from aion_terminal.arbitration.adaptive import (
     compute_expectancy_modifier,
+    has_expectancy_history,
     compute_memory_penalty,
     compute_sizing_modifier,
     determine_contract_role,
@@ -21,6 +23,26 @@ from aion_terminal.arbitration.schemas import (
 )
 from aion_terminal.models.enums import EMAStack
 from aion_terminal.utils.time_utils import utc_now_iso
+
+
+DEGRADED_SETUP_CLASS = "technical_dealer_watch"
+NO_SETUP_CLASS = "none"
+
+logger = logging.getLogger(__name__)
+
+# Incremented whenever an arbitration row fails to persist. Read by diagnostics:
+# a non-zero value means decisions were produced without a reasoning record.
+_PERSIST_FAILURES = 0
+
+
+def persistence_failure_count() -> int:
+    """Number of arbitration rows that failed to persist this process."""
+    return _PERSIST_FAILURES
+
+
+def reset_persistence_failure_count() -> None:
+    global _PERSIST_FAILURES
+    _PERSIST_FAILURES = 0
 
 
 def _confidence_bucket(c: float) -> str:
@@ -63,11 +85,17 @@ def _features_dict(features: dict | None) -> dict:
 
 
 def _derive_setup_class(setup_candidates: list[dict] | None) -> str:
+    """Setup class of the leading candidate, or the explicit no-setup marker.
+
+    Defaulting to ``technical_dealer_watch`` made the degraded fallback the
+    system's identity whenever no candidate existed at all, which is a
+    different condition entirely and must stay distinguishable (P1-1).
+    """
     if setup_candidates:
         sc = setup_candidates[0].get("setup_class")
         if sc:
             return str(sc)
-    return "technical_dealer_watch"
+    return NO_SETUP_CLASS
 
 
 def _derive_regime(features: dict, ranking: dict | None) -> str:
@@ -223,7 +251,11 @@ def run_arbitration(
     bucket = _confidence_bucket(confidence)
 
     role = determine_contract_role(matrix, conflicts, expectancy_mod, memory_penalty)
-    sizing = compute_sizing_modifier(confidence, avg, memory_penalty, regime, has_acc)
+    # None when adaptive_expectancy is empty: a size derived from confidence
+    # alone is not a size, and consumers must render "unsized" rather than a
+    # number that looks calibrated (P1-5).
+    has_exp = has_expectancy_history(conn)
+    sizing = compute_sizing_modifier(confidence, avg, memory_penalty, regime, has_acc, has_expectancy_data=has_exp)
 
     required_trigger = _build_required_trigger(bias, has_acc, ranking, feats, conflicts)
     kill_switch = _build_kill_switch(bias, ranking)
@@ -246,6 +278,13 @@ def run_arbitration(
         warnings.append(f"memory:{r}")
     if not has_acc and bias == "bullish":
         warnings.append("s2_state_not_above_call_wall")
+    if not has_exp:
+        warnings.append("unsized_no_expectancy_data")
+    if setup_class == DEGRADED_SETUP_CLASS:
+        # The degraded fallback is not a peer of the eight real evaluators;
+        # consumers must be able to branch on that rather than reading it as an
+        # ordinary setup class (P1-1).
+        warnings.append("degraded_setup_class")
 
     supporting = _supporting_factors(matrix, bias, feats, regime)
     rejection = _rejection_factors(matrix, conflicts)
@@ -337,4 +376,16 @@ def _persist(conn: sqlite3.Connection, result: ArbResult) -> None:
         )
         conn.commit()
     except sqlite3.Error:
-        pass
+        # Previously `pass`. A silent failure here stops the reasoning log
+        # being written while every caller still sees a normal ArbResult, so
+        # the record an autonomous system is audited against can disappear
+        # with no signal at all. Counted and surfaced via
+        # `persistence_failure_count` so diagnostics can assert on it (P2-4).
+        global _PERSIST_FAILURES
+        _PERSIST_FAILURES += 1
+        logger.exception(
+            "arbitration persistence failed symbol=%s arb_id=%s (total failures=%s)",
+            result.symbol,
+            arb_id,
+            _PERSIST_FAILURES,
+        )
