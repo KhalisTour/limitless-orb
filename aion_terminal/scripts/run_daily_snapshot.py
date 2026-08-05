@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from aion_terminal.app.config import settings
 from aion_terminal.features.contracts import score_and_rank_contracts
+from aion_terminal.features.narrative import propagate_sector_tags
 from aion_terminal.features.technical import build_technical_features
 from aion_terminal.services.ingestion_service import refresh_one_symbol, refresh_one_symbol_from_db
 from aion_terminal.services.ranking_service import infer_bias, rank_universe
@@ -161,6 +162,27 @@ def _build_feature_snapshots_for_refresh(symbol: str, refresh, technical: dict |
     return snapshots
 
 
+NARRATIVE_TAG_LOOKBACK_DAYS = 5
+
+
+def _narrative_tags_for(conn, symbol: str) -> list[dict]:
+    """Recent narrative tags for a symbol, plus attenuated sector inheritance.
+
+    Tags are loaded across all symbols so a sector ETF's tag can reach its
+    constituents; ``propagate_sector_tags`` then narrows to this symbol.
+    """
+    try:
+        cutoff = (datetime.now() - timedelta(days=NARRATIVE_TAG_LOOKBACK_DAYS)).date().isoformat()
+        rows = conn.execute(
+            "SELECT symbol, tag_key, tag_value, tag_date FROM manual_narrative_tags WHERE tag_date >= ?",
+            (cutoff,),
+        ).fetchall()
+    except Exception:
+        logger.exception("narrative tag load failed symbol=%s", symbol)
+        return []
+    return propagate_sector_tags(symbol, [dict(r) for r in rows])
+
+
 def _open_conn():
     conn = get_connection(settings.db_path)
     bootstrap_schema(conn, "aion_terminal/storage/schema.sql")
@@ -270,7 +292,12 @@ def main() -> int:
                         dealer_features=refresh.levels.get("combined_levels") or refresh.levels,
                         technical_features=technical_features,
                         technical_state=technical_state,
-                        narrative_tags=[],
+                        # Real tags, including any inherited from the symbol's
+                        # sector ETFs. This was hardcoded to [], so the
+                        # narrative gate on both event_rerating evaluators could
+                        # never open in the snapshot path — even for the ETFs
+                        # that did carry tags (P1-2).
+                        narrative_tags=_narrative_tags_for(conn, symbol),
                     )
                     setup_records = []
                     for idx, sig in enumerate(setups, start=1):

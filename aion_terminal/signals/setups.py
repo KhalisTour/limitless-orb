@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Any
 
+from aion_terminal.features.narrative import tag_weight
 from aion_terminal.features.technical import TechnicalFeatures, TechnicalState
 from aion_terminal.utils.math_utils import as_float
 
@@ -54,6 +55,20 @@ class SetupSignal:
     invalidation_price: float | None
     invalidation_rule: str | None
     warnings: list[str]
+
+
+def _narrative_strength(narrative_tags: list[dict[str, Any]], wanted: set[str] | frozenset[str]) -> float:
+    """Strongest weight among the tags that satisfy the narrative gate.
+
+    Tags placed directly on the symbol weigh 1.0; tags inherited from a sector
+    ETF weigh less (see ``features.narrative``). Taking the maximum means one
+    direct tag is enough for full credit, while a symbol carrying only
+    inherited evidence scores proportionally lower rather than identically.
+    """
+    strengths = [
+        tag_weight(t) for t in narrative_tags if str(t.get("tag_key", "")) in wanted
+    ]
+    return max(strengths) if strengths else 0.0
 
 
 def _base_components() -> dict[str, float]:
@@ -393,6 +408,9 @@ def evaluate_event_rerating_bullish(
 
     # Positive catalyst tags are required for rerating thesis.
     narrative_ok = bool(tag_keys & BULLISH_EVENT_TAGS)
+    # A tag inherited from a sector ETF is real evidence but weaker than one
+    # placed on this symbol directly, so it earns a fraction of the weight.
+    narrative_strength = _narrative_strength(narrative_tags, BULLISH_EVENT_TAGS)
     # Spot above king node suggests structure not suppressing upside.
     above_king = spot > king
     # Reject if trend is strongly bearish.
@@ -405,7 +423,7 @@ def evaluate_event_rerating_bullish(
     if trend_ok:
         components["technical_alignment"] = WEIGHTS["technical_alignment"]
     if narrative_ok:
-        components["narrative_alignment"] = WEIGHTS["narrative_alignment"]
+        components["narrative_alignment"] = WEIGHTS["narrative_alignment"] * narrative_strength
     if technical_state.high_rvol:
         components["rvol_confirmation"] = WEIGHTS["rvol_confirmation"]
     else:
@@ -438,6 +456,7 @@ def evaluate_event_rerating_bearish(
 
     # Negative catalyst tags are required for bearish rerating thesis.
     narrative_ok = bool(tag_keys & BEARISH_EVENT_TAGS)
+    narrative_strength = _narrative_strength(narrative_tags, BEARISH_EVENT_TAGS)
     # Spot below king node suggests structural overhead pressure.
     below_king = spot < king
     # Reject if trend is strongly bullish.
@@ -450,7 +469,7 @@ def evaluate_event_rerating_bearish(
     if trend_ok:
         components["technical_alignment"] = WEIGHTS["technical_alignment"]
     if narrative_ok:
-        components["narrative_alignment"] = WEIGHTS["narrative_alignment"]
+        components["narrative_alignment"] = WEIGHTS["narrative_alignment"] * narrative_strength
     if technical_state.high_rvol:
         components["rvol_confirmation"] = WEIGHTS["rvol_confirmation"]
     else:
