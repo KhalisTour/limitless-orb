@@ -16,8 +16,14 @@ changed system behaviour, rather than merely changing code:
 Run it before and after each stage and diff the output. A stage that claims
 to fix a channel but leaves its ``distinct`` count at 1 did not land.
 
+Because a pipeline run *appends* to the existing tables, an unfiltered
+re-run blends pre- and post-fix rows and washes out the very signal we are
+measuring. Pass ``--since`` with a timestamp taken immediately before the
+run to isolate only the rows the new code wrote.
+
 Usage:
     python -m aion_terminal.scripts.run_instrumentation [--db PATH] [--json]
+    python -m aion_terminal.scripts.run_instrumentation --since 2026-08-05T00:00:00
 """
 
 from __future__ import annotations
@@ -34,6 +40,20 @@ TRADE_THRESHOLD = 0.70
 DEGRADED_SETUP_CLASS = "technical_dealer_watch"
 
 
+def _where(column: str, since: str | None) -> tuple[str, tuple]:
+    """Build an optional ``since`` filter for a timestamp column."""
+    if not since:
+        return "", ()
+    return f" WHERE {column} >= ?", (since,)
+
+
+def _and(column: str, since: str | None) -> tuple[str, tuple]:
+    """Same filter, for queries that already have a WHERE clause."""
+    if not since:
+        return "", ()
+    return f" AND {column} >= ?", (since,)
+
+
 def _table_counts(conn: sqlite3.Connection) -> dict[str, int]:
     names = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")]
     out: dict[str, int] = {}
@@ -42,9 +62,10 @@ def _table_counts(conn: sqlite3.Connection) -> dict[str, int]:
     return out
 
 
-def measure_setups(conn: sqlite3.Connection) -> dict[str, Any]:
+def measure_setups(conn: sqlite3.Connection, since: str | None = None) -> dict[str, Any]:
     """(1) Are the real evaluators firing, or only the degraded fallback?"""
-    by_class = dict(conn.execute("SELECT setup_class, COUNT(*) FROM setup_candidates GROUP BY setup_class"))
+    w, p = _where("as_of_ts", since)
+    by_class = dict(conn.execute(f"SELECT setup_class, COUNT(*) FROM setup_candidates{w} GROUP BY setup_class", p))
     total = sum(by_class.values())
     degraded = by_class.get(DEGRADED_SETUP_CLASS, 0)
     return {
@@ -56,17 +77,19 @@ def measure_setups(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-def measure_decisions(conn: sqlite3.Connection) -> dict[str, Any]:
+def measure_decisions(conn: sqlite3.Connection, since: str | None = None) -> dict[str, Any]:
     """(2) What does the arbiter decide, and can it reach ``trade``?"""
-    total = conn.execute("SELECT COUNT(*) FROM arbitration_snapshots").fetchone()[0]
+    w, p = _where("generated_at", since)
+    a, ap = _and("generated_at", since)
+    total = conn.execute(f"SELECT COUNT(*) FROM arbitration_snapshots{w}", p).fetchone()[0]
     if not total:
         return {"total": 0}
 
     def group(col: str) -> dict[str, int]:
-        return dict(conn.execute(f"SELECT {col}, COUNT(*) FROM arbitration_snapshots GROUP BY {col}"))
+        return dict(conn.execute(f"SELECT {col}, COUNT(*) FROM arbitration_snapshots{w} GROUP BY {col}", p))
 
     with_trigger = conn.execute(
-        "SELECT COUNT(*) FROM arbitration_snapshots WHERE required_trigger_json IS NOT NULL"
+        f"SELECT COUNT(*) FROM arbitration_snapshots WHERE required_trigger_json IS NOT NULL{a}", ap
     ).fetchone()[0]
 
     # The mechanical path: bias -> trigger presence -> decision. If every
@@ -74,15 +97,18 @@ def measure_decisions(conn: sqlite3.Connection) -> dict[str, Any]:
     # it is following a fixed rule.
     mechanism = Counter()
     for bias, trig, decision in conn.execute(
-        """SELECT final_bias,
-                  CASE WHEN required_trigger_json IS NULL THEN 'no_trigger' ELSE 'has_trigger' END,
-                  arb_decision
-           FROM arbitration_snapshots"""
+        f"""SELECT final_bias,
+                   CASE WHEN required_trigger_json IS NULL THEN 'no_trigger' ELSE 'has_trigger' END,
+                   arb_decision
+            FROM arbitration_snapshots{w}""",
+        p,
     ):
         mechanism[(bias, trig, decision)] += 1
 
     conflicts: Counter[str] = Counter()
-    for (raw,) in conn.execute("SELECT conflicts_json FROM arbitration_snapshots WHERE conflicts_json IS NOT NULL"):
+    for (raw,) in conn.execute(
+        f"SELECT conflicts_json FROM arbitration_snapshots WHERE conflicts_json IS NOT NULL{a}", ap
+    ):
         try:
             for c in json.loads(raw):
                 conflicts[c] += 1
@@ -102,14 +128,17 @@ def measure_decisions(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-def measure_channels(conn: sqlite3.Connection) -> dict[str, Any]:
+def measure_channels(conn: sqlite3.Connection, since: str | None = None) -> dict[str, Any]:
     """(3) Which scoring channels carry information, and which are constants?
 
     ``distinct == 1`` means the channel contributed nothing to any decision
     ever made — it is a constant wearing a score's clothing.
     """
+    a, ap = _and("generated_at", since)
     rows: list[dict] = []
-    for (raw,) in conn.execute("SELECT agreement_json FROM arbitration_snapshots WHERE agreement_json IS NOT NULL"):
+    for (raw,) in conn.execute(
+        f"SELECT agreement_json FROM arbitration_snapshots WHERE agreement_json IS NOT NULL{a}", ap
+    ):
         try:
             parsed = json.loads(raw)
             if isinstance(parsed, dict):
@@ -171,20 +200,22 @@ def measure_channels(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-def measure_dealer_map(conn: sqlite3.Connection) -> dict[str, Any]:
+def measure_dealer_map(conn: sqlite3.Connection, since: str | None = None) -> dict[str, Any]:
     """(4) Does the arbiter read the same dealer map the UI renders? (P0-1)"""
+    w, p = _where("snapshot_ts", since)
+    a, ap = _and("snapshot_ts", since)
     by_expiry = dict(
-        conn.execute("SELECT expiry, COUNT(*) FROM feature_snapshots GROUP BY expiry ORDER BY COUNT(*) DESC")
+        conn.execute(f"SELECT expiry, COUNT(*) FROM feature_snapshots{w} GROUP BY expiry ORDER BY COUNT(*) DESC", p)
     )
     combined = by_expiry.get("combined", 0)
 
     # Per symbol: is there a combined snapshot at all?
-    symbols = [r[0] for r in conn.execute("SELECT DISTINCT symbol FROM feature_snapshots")]
+    symbols = [r[0] for r in conn.execute(f"SELECT DISTINCT symbol FROM feature_snapshots{w}", p)]
     with_combined = [
         s
         for s in symbols
         if conn.execute(
-            "SELECT COUNT(*) FROM feature_snapshots WHERE symbol=? AND expiry='combined'", (s,)
+            f"SELECT COUNT(*) FROM feature_snapshots WHERE symbol=? AND expiry='combined'{a}", (s, *ap)
         ).fetchone()[0]
     ]
 
@@ -199,16 +230,17 @@ def measure_dealer_map(conn: sqlite3.Connection) -> dict[str, Any]:
     }
 
 
-def collect(db_path: str) -> dict[str, Any]:
+def collect(db_path: str, since: str | None = None) -> dict[str, Any]:
     conn = sqlite3.connect(db_path)
     try:
         return {
             "db": db_path,
+            "since": since,
             "tables": _table_counts(conn),
-            "setups": measure_setups(conn),
-            "decisions": measure_decisions(conn),
-            "channels": measure_channels(conn),
-            "dealer_map": measure_dealer_map(conn),
+            "setups": measure_setups(conn, since),
+            "decisions": measure_decisions(conn, since),
+            "channels": measure_channels(conn, since),
+            "dealer_map": measure_dealer_map(conn, since),
         }
     finally:
         conn.close()
@@ -224,6 +256,7 @@ def render(report: dict[str, Any]) -> str:
 
     add("=== AION PHASE 0 INSTRUMENTATION ===")
     add(f"db: {report['db']}")
+    add(f"since: {report.get('since') or '(all rows)'}")
     add("")
 
     s = report["setups"]
@@ -301,9 +334,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Phase 0 remediation instrumentation")
     parser.add_argument("--db", default="options_terminal.db", help="path to the SQLite DB")
     parser.add_argument("--json", action="store_true", help="emit raw JSON instead of the rendered report")
+    parser.add_argument(
+        "--since",
+        default=None,
+        help="ISO timestamp; count only rows written at or after it. Take it "
+        "immediately before a pipeline run to isolate that run's output.",
+    )
     args = parser.parse_args()
 
-    report = collect(args.db)
+    report = collect(args.db, args.since)
     if args.json:
         print(json.dumps(report, indent=2, default=str))
     else:
