@@ -27,7 +27,10 @@ def test_rankings_contract_and_fields(monkeypatch):
     assert "missing_top_contract" in by["BBB"].warnings
     assert by["AAA"].actionability == "high"
     assert by["BBB"].actionability == "medium"
-    assert by["AAA"].has_trade_plan is True
+    # has_trade_plan was `bool(symbol)` — always True and therefore useless to a
+    # consumer. It now reflects whether a plan actually exists, and none has
+    # been generated in this fixture (P2-6).
+    assert by["AAA"].has_trade_plan is False
 
 
 def test_rankings_secondary_sort(monkeypatch):

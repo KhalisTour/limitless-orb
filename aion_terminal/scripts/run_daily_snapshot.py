@@ -355,7 +355,11 @@ def main() -> int:
             print(
                 f"{symbol} | skipped_recent={skipped_recent} | refreshed={refreshed} | "
                 f"chain_rows={contracts_inserted} | bars_used={bars_used} | setups={setup_count} | "
-                f"contracts={1 if top_ranking else 0} | errors={summary_errors}"
+                # Labelled distinctly: `chain_rows` is every contract ingested
+                # while `selected_contract` is the single best one. Both were
+                # previously printed as "contracts", so one line reported two
+                # different numbers under the same name (P3-1).
+                f"selected_contract={1 if top_ranking else 0} | errors={summary_errors}"
             )
 
             if index < len(symbols) - 1 and args.sleep_seconds > 0:

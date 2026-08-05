@@ -51,8 +51,18 @@ python -m aion_terminal.scripts.run_daily_snapshot \
   --verbose >> "$LOG_FILE" 2>&1
 
 echo "[3/4] Invalidating cache..." | tee -a "$LOG_FILE"
-curl -s -X POST http://localhost:8000/cache/invalidate >> "$LOG_FILE" 2>&1 || \
-  echo "Cache invalidate skipped (server may not be running)" | tee -a "$LOG_FILE"
+# The ranking cache is an in-memory dict owned by the API process, so it can
+# only be cleared through that process — and there is nothing to clear when it
+# is not running. Previously this fired blind and reported "skipped (server may
+# not be running)" on any failure, which read as a problem whether or not one
+# existed. Reachability is checked first so the outcome is stated accurately.
+if curl -sf -o /dev/null --max-time 3 http://localhost:8000/rankings/health 2>/dev/null; then
+  curl -s -X POST http://localhost:8000/cache/invalidate >> "$LOG_FILE" 2>&1 && \
+    echo "Cache invalidated" | tee -a "$LOG_FILE" || \
+    echo "WARNING: server reachable but cache invalidation failed" | tee -a "$LOG_FILE"
+else
+  echo "No server running - no in-process cache to invalidate" | tee -a "$LOG_FILE"
+fi
 
 echo "[4/4] Running morning brief..." | tee -a "$LOG_FILE"
 python -m aion_terminal.scripts.run_morning_brief >> "$LOG_FILE" 2>&1

@@ -39,7 +39,11 @@ class RankedItem:
 
 SCHEMA_PATH = "aion_terminal/storage/schema.sql"
 DEFAULT_DTE_MIN = 0
-DEFAULT_DTE_MAX = 21
+# Sourced from configuration rather than hardcoded. Three different values were
+# live simultaneously — README said 60, .env said 30, and this module used 21
+# regardless — so the documented contract, the operator's setting and the actual
+# behaviour all disagreed (P2-2).
+DEFAULT_DTE_MAX = settings.dte_max
 DEFAULT_MIN_CONFIDENCE = 0.30
 BARS_LOOKBACK = 60
 
@@ -198,9 +202,9 @@ def rank_symbol(
         chain_rows = query_latest_chain(conn, symbol)
         if not chain_rows:
             result.errors.extend(["cache_miss", "refresh_required"])
-            logger.info("ranking cache-only symbol=%s cache_hit=%s", symbol, False)
+            logger.info("rank_symbol symbol=%s cache_hit=%s mode=%s", symbol, False, "cache-only" if settings.cache_only else "live")
             return result
-        logger.info("ranking cache-only symbol=%s cache_hit=%s", symbol, True)
+        logger.info("rank_symbol symbol=%s cache_hit=%s mode=%s", symbol, True, "cache-only" if settings.cache_only else "live")
 
         spot = as_float(chain_rows[0].get("underlying_price"))
         dealer = compute_levels(chain_rows, spot=spot, symbol=symbol)
@@ -283,20 +287,10 @@ def rank_universe(
     watchlist = [s.upper() for s in (symbols or settings.watchlist)]
     tags_lookup = narrative_tags_by_symbol or {}
 
-    if settings.cache_only:
-        rankings = [
-            rank_symbol(
-                symbol=s,
-                narrative_tags=tags_lookup.get(s),
-                dte_min=dte_min,
-                dte_max=dte_max,
-                budget=budget,
-                min_confidence=min_confidence,
-            )
-            for s in watchlist
-        ]
-    else:
-        rankings = [
+    # The cache_only branch used to exist here with a byte-identical body, which
+    # read as though the two modes differed when they did not. rank_symbol reads
+    # from the DB either way; the setting governs ingestion, not ranking (P2-3).
+    rankings = [
         rank_symbol(
             symbol=s,
             narrative_tags=tags_lookup.get(s),
@@ -306,7 +300,7 @@ def rank_universe(
             min_confidence=min_confidence,
         )
         for s in watchlist
-        ]
+    ]
 
     def _highest_conf(r: SymbolRanking) -> float:
         if not r.signals:
@@ -315,6 +309,25 @@ def rank_universe(
 
     rankings.sort(key=lambda r: (1 if r.signals else 0, _highest_conf(r)), reverse=True)
     return rankings
+
+
+def _symbol_has_trade_plan(symbol: str) -> bool:
+    """Whether a trade plan has actually been generated for this symbol."""
+    if not symbol or not symbol.strip():
+        return False
+    conn: sqlite3.Connection | None = None
+    try:
+        conn = _open_connection()
+        row = conn.execute(
+            "SELECT 1 FROM trade_plans WHERE UPPER(symbol) = ? LIMIT 1", (symbol.upper(),)
+        ).fetchone()
+        return bool(row)
+    except sqlite3.Error:
+        logger.exception("trade_plans lookup failed symbol=%s", symbol)
+        return False
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedItem:
@@ -378,7 +391,9 @@ def _to_ranked_item(ranking: SymbolRanking, degraded: bool = False) -> RankedIte
     else:
         actionability = "medium"
 
-    has_trade_plan = bool(ranking.symbol and ranking.symbol.strip())
+    # Was `bool(symbol)` — always True, so the field told a consumer nothing.
+    # Now answers the question it claims to (P2-6).
+    has_trade_plan = _symbol_has_trade_plan(ranking.symbol)
 
     return RankedItem(
         symbol=ranking.symbol,

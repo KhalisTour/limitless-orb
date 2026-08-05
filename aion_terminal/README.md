@@ -69,7 +69,7 @@ Loaded via `python-dotenv` from `.env` and consumed in `aion_terminal/app/config
 | `ANTHROPIC_API_KEY` | _(empty)_ | Optional secondary LLM provider key |
 | `WATCHLIST` | `SPY,QQQ,AAPL` | Comma-separated universe of symbols |
 | `POLL_SECONDS` | `600` | Background pipeline poll interval (seconds) |
-| `DTE_MAX` | `60` | Maximum days-to-expiry considered |
+| `DTE_MAX` | `60` | Maximum days-to-expiry considered. Threaded through `ranking_service.DEFAULT_DTE_MAX`; previously the ranking layer used a hardcoded `21` regardless of this setting. |
 | `AION_CACHE_ONLY` | `true` | If true, disables background ingestion (read DB only) |
 | `AION_ALLOW_ROUTE_REFRESH` | `false` | If true, ranking routes may trigger live refresh |
 | `AION_MARKETDATA_ENABLED` | `true` | Master kill switch for MarketData calls |
@@ -186,7 +186,10 @@ Located in `aion_terminal/scripts/`:
 - `run_backfill.py` — Backfill historical bars and optional contract history for a symbol list.
 - `run_backtest.py` — Run options expectancy backtests across the universe using a chosen method.
 - `run_daily_snapshot.py` — End-of-loop snapshot: refresh, feature compute, setup scoring, persist.
-- `run_diagnostics.py` — Pre-flight checks: DB connectivity, schema, freshness, agents, env, server.
+- `run_arbitration.py` — Run arbitration across the watchlist headlessly and persist results.
+- `run_diagnostics.py` — Pre-flight checks: DB connectivity, schema, freshness, agents, env, server, plus semantic checks that assert the system is producing usable output.
+- `run_instrumentation.py` — Report setup production, decision distribution, agreement-channel liveness and dealer-map coherence.
+- `run_outcome_scoring.py` — Score matured candidates and rebuild the adaptive expectancy layer.
 - `run_morning_brief.py` — Generate the morning brief and write weekly JSON rollups on Fridays.
 - `run_morning_refresh.sh` — Shell sequence: backfill → snapshot → cache invalidate → brief.
 - `run_rs_scan.py` — Run the relative strength screener scan and log leadership events.

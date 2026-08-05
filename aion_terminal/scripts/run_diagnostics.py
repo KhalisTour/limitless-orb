@@ -173,8 +173,11 @@ def main() -> int:
                     print("  [WARN] RS scan — no results")
                     warns += 1
             else:
-                print("  [WARN] RS scan — rs_scan_results table missing")
-                warns += 1
+                # Informational, not a warning. rs_scan_results is created by
+                # run_rs_scan in its own database; its absence before the first
+                # scan is the expected state, and a permanent WARN here trains
+                # the operator to ignore warnings generally (P2-10).
+                print("  [INFO] RS scan — no scan has run yet (rs_scan_results not created)")
             rs_conn.close()
         except Exception as exc:
             print(f"  [WARN] RS scan — {exc}")
