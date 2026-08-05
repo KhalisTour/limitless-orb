@@ -11,7 +11,7 @@ from aion_terminal.features.contracts import ContractScore, score_and_rank_contr
 from aion_terminal.features.dealer import compute_levels
 from aion_terminal.features.technical import TechnicalFeatures, TechnicalState, build_technical_features
 from aion_terminal.models.dto import UnderlyingBarRecord
-from aion_terminal.models.enums import EMAStack
+from aion_terminal.models.enums import EMAStack, StructuralBias
 from aion_terminal.signals.setups import SetupSignal, evaluate_symbol_snapshot
 from aion_terminal.storage.db import bootstrap_schema, get_connection
 from aion_terminal.storage.repositories import query_latest_chain
@@ -106,9 +106,18 @@ def infer_bias(
             return "bullish", []
         if technical_state.ema_stack == EMAStack.BEARISH.value or technical_state.trend in {"downtrend", "strong_downtrend"}:
             return "bearish", []
+    # Dealer structure may only contribute a bias through the *signed* read.
+    # The previous rule — regime in {trend, acceleration} and put_wall <= spot —
+    # was directionless masquerading as directional: a gamma vacuum accelerates
+    # whichever way price is already going. Worse, as_float(None) == 0.0, so a
+    # missing put wall satisfied `0.0 <= spot` and returned bullish for any
+    # symbol with no put wall at all.
     dealer = dealer_features or {}
-    if str(dealer.get("regime", "")).lower() in {"trend", "acceleration"} and as_float(dealer.get("put_wall")) <= as_float(dealer.get("spot")):
-        return "bullish", []
+    structural = str(dealer.get("structural_bias", "")).lower()
+    if structural == StructuralBias.SUPPORTED.value:
+        return "bullish", ["dealer_structure_supported"]
+    if structural == StructuralBias.CAPPED.value:
+        return "bearish", ["dealer_structure_capped"]
     return "neutral", ["bias_defaulted"]
 
 

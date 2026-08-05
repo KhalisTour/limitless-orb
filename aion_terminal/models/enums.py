@@ -22,6 +22,33 @@ class EMAStack(str, Enum):
     MIXED = "mixed"
 
 
+class GammaState(str, Enum):
+    """Unsigned gamma-structure read.
+
+    Describes *how* price is likely to move, never *which way*. A vacuum
+    accelerates whichever direction price is already going; a pin resists
+    movement in both directions. Consumers must not infer direction from
+    this — see ``StructuralBias`` for the signed read.
+    """
+
+    VACUUM = "vacuum"
+    PINNED = "pinned"
+    NORMAL = "normal"
+
+
+class StructuralBias(str, Enum):
+    """Signed dealer-structure read: where the asymmetry actually points.
+
+    Derived from spot's position relative to the call wall, put wall and king
+    node. This is the field a directional consumer should read; ``GammaState``
+    is deliberately directionless.
+    """
+
+    CAPPED = "capped"        # pinned under resistance — asymmetry points down
+    SUPPORTED = "supported"  # sitting above support — asymmetry points up
+    NEUTRAL = "neutral"
+
+
 class TrendState(str, Enum):
     """Canonical trend vocabulary.
 

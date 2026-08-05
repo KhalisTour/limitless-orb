@@ -88,6 +88,11 @@ def _load_ranking(conn: sqlite3.Connection, symbol: str) -> dict | None:
     call_wall = feat.get("call_wall") or lvl.get("call_wall")
     put_wall = feat.get("put_wall") or lvl.get("put_wall")
     king_node = feat.get("king_node") or lvl.get("king_node")
+    # The signed structure read lives in features_json (P0-4). Surfaced onto the
+    # ranking dict so the dealer scorer can weigh direction instead of inferring
+    # it from the collapsed `regime` string.
+    fj = _safe_dict(feat.get("features_json")) or {}
+
     return {
         "symbol": symbol,
         "spot": spot,
@@ -95,10 +100,17 @@ def _load_ranking(conn: sqlite3.Connection, symbol: str) -> dict | None:
         "call_wall": call_wall,
         "put_wall": put_wall,
         "king_node": king_node,
+        "gamma_state": fj.get("gamma_state"),
+        "structural_bias": fj.get("structural_bias"),
+        "king_proximity_pct": fj.get("king_proximity_pct"),
+        "flip_zone": feat.get("flip_zone"),
+        "flip_zone_status": fj.get("flip_zone_status"),
         "dealer_structure": {
             "call_wall": call_wall,
             "put_wall": put_wall,
             "king_node": king_node,
+            "structural_bias": fj.get("structural_bias"),
+            "gamma_state": fj.get("gamma_state"),
         },
     }
 

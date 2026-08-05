@@ -122,7 +122,20 @@ def _build_feature_snapshots_for_refresh(symbol: str, refresh, technical: dict |
             call_wall=level.get("call_wall"),
             put_wall=level.get("put_wall"),
             flip_zone=level.get("flip_zone"),
-            features_json=json.dumps({"distances": level.get("distances", {}), **(technical or {})}),
+            features_json=json.dumps(
+                {
+                    "distances": level.get("distances", {}),
+                    # The signed structure read (P0-4). Without these the arbiter
+                    # only sees the collapsed `regime` string and has to
+                    # re-derive direction from raw levels.
+                    "gamma_state": level.get("gamma_state"),
+                    "structural_bias": level.get("structural_bias"),
+                    "king_proximity_pct": level.get("king_proximity_pct"),
+                    "local_gamma_ratio": level.get("local_gamma_ratio"),
+                    "flip_zone_status": level.get("flip_zone_status"),
+                    **(technical or {}),
+                }
+            ),
         )
 
     # Combined-across-expiries map: the single source of truth the arbiter reads.

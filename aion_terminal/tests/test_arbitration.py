@@ -141,10 +141,25 @@ def test_conflict_no_liquid_contracts():
     assert "no_liquid_contracts" in c2
 
 
-def test_conflict_acceptance_not_confirmed():
+def test_pullback_long_below_call_wall_has_no_acceptance_conflict():
+    """P0-6: being below the call wall is not, by itself, a conflict.
+
+    The old rule fired on every bullish setup trading under its call wall —
+    100% of bullish rows in the historical data (521/521) — which built a
+    required_trigger and pinned them all at wait_for_trigger. Genuine
+    proximity to resistance is covered by `near_call_wall_resistance`.
+    """
     r = {"spot": 100, "dealer_structure": {"call_wall": 110, "put_wall": 90}}
     c = scoring.detect_conflicts(r, {}, None, {"best": {"spread_pct": 0.03, "volume": 500}}, "bullish")
-    assert "acceptance_not_confirmed" in c
+    assert "acceptance_not_confirmed" not in c
+    assert "near_call_wall_resistance" not in c, "10% below the wall is not 'near'"
+
+
+def test_bullish_pinned_under_call_wall_still_flags_resistance():
+    """The proximity signal must survive the removal above."""
+    r = {"spot": 100, "dealer_structure": {"call_wall": 101, "put_wall": 90}}
+    c = scoring.detect_conflicts(r, {}, None, {"best": {"spread_pct": 0.03, "volume": 500}}, "bullish")
+    assert "near_call_wall_resistance" in c
 
 
 def test_conflict_low_rvol_momentum():

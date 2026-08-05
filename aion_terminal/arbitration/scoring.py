@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from aion_terminal.models.enums import EMAStack, Regime, TrendState
+from aion_terminal.models.enums import EMAStack, Regime, StructuralBias, TrendState
 
 
 def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
@@ -128,6 +128,16 @@ def score_dealer_agreement(ranking: dict | None, bias: str) -> float:
     # neither side gets a free long/short bias, and every producible regime value
     # (acceleration/trend/range) is handled — no silent no-op fall-through.
     score += _regime_alignment(regime)
+
+    # The signed structure read, when the producer supplies it. Unlike `regime`
+    # this genuinely has a direction, so it is applied directionally: a capped
+    # structure (pinned under resistance) favours the short side, a supported
+    # one favours the long side, by equal magnitude.
+    structural = (ranking.get("structural_bias") or dealer.get("structural_bias") or "").lower()
+    if structural == StructuralBias.CAPPED.value:
+        score += 0.1 if bias == "bearish" else (-0.1 if bias == "bullish" else 0.0)
+    elif structural == StructuralBias.SUPPORTED.value:
+        score += 0.1 if bias == "bullish" else (-0.1 if bias == "bearish" else 0.0)
 
     if bias == "bullish":
         if cw_d is not None and 0 < cw_d < 0.02:
@@ -353,11 +363,12 @@ def detect_conflicts(
         if "momentum" in setup_hint or "continuation" in setup_hint:
             conflicts.append("regime_mismatch")
 
-    if bias == "bullish" and cw_d is not None and cw_d > 0 and spot and call_wall:
-        try:
-            if float(spot) < float(call_wall):
-                conflicts.append("acceptance_not_confirmed")
-        except (TypeError, ValueError):
-            pass
-
+    # `acceptance_not_confirmed` used to be raised here for any bullish setup
+    # trading below its call wall. `cw_d > 0` already means call_wall > spot, so
+    # the inner spot < call_wall test was redundant and the conflict fired on
+    # 100% of bullish rows (521/521 measured) — which built a required_trigger
+    # and pinned every one of them at `wait_for_trigger`. Being below the call
+    # wall is a conflict only for a breakout thesis, not a pullback-into-support
+    # long, and genuine proximity to resistance is already covered by
+    # `near_call_wall_resistance` above.
     return list(dict.fromkeys(conflicts))
