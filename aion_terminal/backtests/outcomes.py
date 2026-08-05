@@ -415,10 +415,17 @@ def run_backtest_for_universe(
     symbols: list[str],
     horizon_days: int = 5,
     method: str = METHOD_SYNTHETIC_GREEKS,
+    lookback_days: int = 30,
 ) -> list[OutcomeResult]:
-    """Run batch backtest with approximate_delta_proxy method."""
+    """Run batch backtest with approximate_delta_proxy method.
+
+    ``lookback_days`` bounds how far back candidates are drawn from. The
+    scheduled path uses the default; backfilling an empty ``setup_outcomes``
+    table needs the full history, which the previously hardcoded 30 days made
+    impossible.
+    """
     now = datetime.now(timezone.utc)
-    from_ts = (now - timedelta(days=30)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    from_ts = (now - timedelta(days=lookback_days)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
     results: list[OutcomeResult] = []
     for symbol in symbols:

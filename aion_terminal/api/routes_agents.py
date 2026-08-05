@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import asyncio
 import json
 from collections import deque
@@ -386,7 +387,30 @@ async def create_trade_plan(payload: TradePlanRequest):
     except Exception as arb_exc:
         warnings.append(f"arbitration_unavailable: {arb_exc}")
 
-    result = await asyncio.to_thread(generate_trade_plan, payload.symbol, payload.user_requested_bias, payload.user_requested_style, payload.user_thesis_text, payload.account_buying_power, payload.portfolio_value, payload.cash_account, rankings_payload, contract_recommendations, macro_context, payload.chart_context, payload.current_positions, payload.session_prior_trades, memory_payload, payload.weekly_pattern_summary, arbitration_result)
+    # Passed by keyword: sixteen positional arguments made argument order a
+    # silent correctness hazard — a single insertion shifts every downstream
+    # value into the wrong parameter with no error.
+    result = await asyncio.to_thread(
+        functools.partial(
+            generate_trade_plan,
+            payload.symbol,
+            user_requested_bias=payload.user_requested_bias,
+            user_requested_style=payload.user_requested_style,
+            user_thesis_text=payload.user_thesis_text,
+            account_buying_power=payload.account_buying_power,
+            portfolio_value=payload.portfolio_value,
+            cash_account=payload.cash_account,
+            rankings_payload=rankings_payload,
+            contract_recommendations=contract_recommendations,
+            macro_context=macro_context,
+            chart_context=payload.chart_context,
+            current_positions=payload.current_positions,
+            session_prior_trades=payload.session_prior_trades,
+            user_historical_outcomes=memory_payload,
+            weekly_pattern_summary=payload.weekly_pattern_summary,
+            arbitration_result=arbitration_result,
+        )
+    )
     if isinstance(result, dict):
         out = result
     else:

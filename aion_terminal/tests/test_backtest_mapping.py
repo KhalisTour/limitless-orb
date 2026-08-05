@@ -252,7 +252,13 @@ def test_spot_selection_uses_bar_close_not_strike(tmp_path, monkeypatch):
         return Rec()
 
     monkeypatch.setattr("aion_terminal.backtests.outcomes.score_and_rank_contracts", fake_score)
-    run_backtest_for_universe(conn, ["SPY"], 5)
+    # Lookback derived from the fixture date rather than hardcoded, so the test
+    # does not silently stop exercising anything as the fixtures age past the
+    # default 30-day window.
+    from datetime import datetime, timezone
+
+    age_days = (datetime.now(timezone.utc) - datetime.fromisoformat(candidate.as_of_ts)).days
+    run_backtest_for_universe(conn, ["SPY"], 5, lookback_days=age_days + 2)
     assert round(captured["spot"], 2) == round(make_bars(n=1, start_price=123.0, trend="flat")[0]["close"], 2)
     conn.close()
 

@@ -108,8 +108,8 @@ def test_trade_plan_route_wires_rankings_and_contracts(monkeypatch):
     monkeypatch.setattr(routes_agents, "rank_symbol", lambda *_args, **_kwargs: ranking)
 
     def fake_generate_trade_plan(*args, **kwargs):
-        captured["rankings_payload"] = args[7]
-        captured["contract_recommendations"] = args[8]
+        captured["rankings_payload"] = kwargs.get("rankings_payload")
+        captured["contract_recommendations"] = kwargs.get("contract_recommendations")
         return SimpleNamespace(
             generated_at="2026-05-01T00:00:00Z",
             symbol="META",
@@ -161,7 +161,11 @@ def test_trade_plan_saved_and_memory_injected(monkeypatch, tmp_path):
     monkeypatch.setattr(routes_agents, "rank_symbol", lambda *_args, **_kwargs: SimpleNamespace(symbol="AMD", spot=100.0, call_wall=101.0, put_wall=99.0, king_node=100.0, signals=[{"bias":"bullish"}], best_contract=None, safer_contract=None, convex_contract=None))
     monkeypatch.setattr(routes_agents, "get_contract_recommendation", lambda *args, **kwargs: {"best": {"contract_symbol": "AMD1"}, "safer": None, "convex": None, "all_scored": [], "warnings": []})
     def fake_gtp(*args, **kwargs):
-        captured["user_historical_outcomes"] = args[14]
+        # Captured by name. The positional index this used to read was off by
+        # one — it picked up weekly_pattern_summary (None) instead of the
+        # memory payload, which is exactly the failure mode that motivated
+        # passing these arguments by keyword.
+        captured["user_historical_outcomes"] = kwargs.get("user_historical_outcomes")
         return SimpleNamespace(generated_at="2026-05-01T00:00:00Z", symbol="AMD", decision="conditional_trade", bias="bullish", confidence=0.6, confidence_label="medium", narrative="n", json_plan={"best_plan": {"setup_class": "s1", "selected_contract": {"contract_symbol": "AMD1", "moneyness_bucket": "ATM"}}}, decision_engine={}, model="m", tokens_used=1, error=None)
     monkeypatch.setattr(routes_agents, "generate_trade_plan", fake_gtp)
     first = asyncio.run(routes_agents.create_trade_plan(routes_agents.TradePlanRequest(symbol="AMD")))
