@@ -17,7 +17,11 @@ from aion_terminal.agents.brief_agent import (
     save_brief_to_db,
     save_brief_to_file,
 )
-from aion_terminal.agents.chart_agent import analyze_chart_from_bytes
+from aion_terminal.agents.chart_agent import (
+    analyze_chart_computed,
+    analyze_chart_from_bytes,
+    save_chart_analysis,
+)
 from aion_terminal.agents.prompts import TRADE_PLAN_SYSTEM_PROMPT_V3
 from aion_terminal.agents.trade_plan_agent import generate_trade_plan
 from aion_terminal.app.config import settings
@@ -207,7 +211,45 @@ async def create_chart_analysis(
 
     payload = asdict(result)
     CHART_HISTORY.appendleft(payload)
+
+    # Persisted as well as cached: the deque holds 50 entries and dies with the
+    # process, so nothing could be audited later (P2-9).
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        payload["analysis_id"] = await asyncio.to_thread(save_chart_analysis, conn, result)
+    finally:
+        conn.close()
     return payload
+
+
+class ComputedChartRequest(BaseModel):
+    symbol: str
+    timeframe: str = "D"
+
+
+@router.post("/agents/chart/computed")
+async def create_computed_chart_analysis(payload: ComputedChartRequest):
+    """Chart read derived from bars rather than from an uploaded image.
+
+    Every field the vision path extracts from a picture is already computed
+    exactly in features.technical, so this needs no image, no model call and no
+    API key — and is reproducible, which an image read is not.
+    """
+    conn = get_connection(settings.db_path)
+    bootstrap_schema(conn, SCHEMA_PATH)
+    try:
+        dealer_context = await asyncio.to_thread(_dealer_context_for_symbol, payload.symbol)
+        result = await asyncio.to_thread(
+            analyze_chart_computed, conn, payload.symbol, payload.timeframe, dealer_context
+        )
+        out = asdict(result)
+        out["analysis_id"] = await asyncio.to_thread(save_chart_analysis, conn, result)
+    finally:
+        conn.close()
+
+    CHART_HISTORY.appendleft(out)
+    return out
 
 
 @router.get("/agents/chart/history")

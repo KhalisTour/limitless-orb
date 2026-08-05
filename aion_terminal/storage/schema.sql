@@ -346,3 +346,30 @@ ON user_trades(symbol, trade_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_user_trades_date
 ON user_trades(trade_date DESC);
+
+-- Chart analyses. Previously held only in an in-memory deque(maxlen=50) inside
+-- the API process, so every analysis was lost on restart and none could be
+-- audited or compared against what price subsequently did (P2-9).
+CREATE TABLE IF NOT EXISTS chart_analyses (
+    analysis_id TEXT PRIMARY KEY,
+    generated_at TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    timeframe TEXT,
+    source TEXT NOT NULL,            -- 'computed' or the vision model id
+    bias TEXT,
+    setup_score INTEGER,
+    ema_stack TEXT,
+    trend TEXT,
+    rvol_state TEXT,
+    compressed INTEGER,
+    setup_class TEXT,
+    invalidation_price REAL,
+    invalidation_note TEXT,
+    brief TEXT,
+    warnings_json TEXT,
+    dealer_context_json TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chart_analyses_symbol_ts
+    ON chart_analyses (symbol, generated_at DESC);

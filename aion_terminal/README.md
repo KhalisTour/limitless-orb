@@ -113,7 +113,8 @@ All endpoints registered on the FastAPI app in `aion_terminal/app/main.py`.
 - `POST /agents/brief` — Generate a morning brief.
 - `GET /agents/brief/history` — Brief history (default 14 days).
 - `GET /agents/brief/latest` — Most recent brief.
-- `POST /agents/chart` — Chart analysis agent run.
+- `POST /agents/chart` — Chart analysis from an uploaded image (vision model).
+- `POST /agents/chart/computed` — Chart read derived from `underlying_bars`. No image, no model call, no API key; deterministic and reproducible.
 - `GET /agents/chart/history` — Chart analysis history.
 - `POST /agents/trade-plan` — Generate a trade plan for a symbol.
 - `GET /agents/trade-plan/history` — Trade plan history.
@@ -173,6 +174,7 @@ Defined in `aion_terminal/storage/schema.sql`:
 | `trade_plan_outcomes` | Realized outcomes logged against trade plans. |
 | `agent_memory_summaries` | Rolled-up agent memory keyed by scope. |
 | `arbitration_snapshots` | Final arbitration decision per symbol with confidence and sizing. |
+| `chart_analyses` | Persisted chart reads (computed or vision), previously in-memory only. |
 | `adaptive_expectancy` | Rolling expectancy stats per scope used as sizing modifier. |
 | `setup_performance_stats` | Win-rate and expectancy aggregated by setup class slice. |
 | `morning_briefs` | Saved morning brief output with exec summary and full text. |

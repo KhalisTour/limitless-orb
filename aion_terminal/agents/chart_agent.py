@@ -326,3 +326,237 @@ def analyze_chart_from_bytes(
         primary.generated_at = utc_now_iso()
         primary.dealer_context = dc
         return primary
+
+
+# ---------------------------------------------------------------------------
+# Computed chart read (P2-9)
+#
+# Every field the vision model was asked to read off a chart image — EMA stack,
+# trend, RVOL state, compression, support/resistance — is already computed from
+# `underlying_bars` in features.technical, exactly and without ambiguity.
+# Reading them back out of a rendered picture adds a model call, latency and
+# cost in exchange for a less reliable answer, and it cannot be reproduced or
+# audited after the fact.
+#
+# Relative strength comes from the RS scanner's `rs_score` rather than a
+# recomputed oscillator: it is the measure this system already maintains, so
+# duplicating it with a second indicator would risk the two disagreeing.
+# ---------------------------------------------------------------------------
+
+COMPUTED_MODEL = "computed:technical"
+
+
+def _rvol_state(rvol: float) -> str:
+    if rvol >= 1.5:
+        return "high"
+    if rvol < 0.5:
+        return "low"
+    return "normal"
+
+
+def _load_rs_score(symbol: str) -> tuple[float | None, float | None]:
+    """(rs_score, rs_percentile) from the RS scanner, or (None, None).
+
+    The scanner keeps its own database; its absence before a first scan is a
+    normal state, so this reports "unknown" rather than substituting a value.
+    """
+    try:
+        from aion_terminal.storage.rs_repositories import get_rs_connection
+
+        conn = get_rs_connection()
+    except Exception:
+        return None, None
+    try:
+        row = conn.execute(
+            "SELECT rs_score, rs_percentile FROM rs_scan_results WHERE UPPER(ticker) = ? "
+            "ORDER BY scan_ts DESC LIMIT 1",
+            (symbol.upper(),),
+        ).fetchone()
+    except Exception:
+        logger.debug("rs_scan_results unavailable for %s", symbol)
+        return None, None
+    finally:
+        conn.close()
+    if not row:
+        return None, None
+    try:
+        return float(row[0]), (float(row[1]) if row[1] is not None else None)
+    except (TypeError, ValueError):
+        return None, None
+
+
+def analyze_chart_computed(
+    conn,
+    symbol: str,
+    timeframe: str = "D",
+    dealer_context: dict[str, Any] | None = None,
+) -> ChartAnalysisResult:
+    """Derive the chart read from bars instead of from an image.
+
+    No vision model, no API key, no network. Deterministic and reproducible:
+    the same bars always yield the same answer.
+    """
+    from aion_terminal.features.technical import build_technical_features
+    from aion_terminal.models.dto import UnderlyingBarRecord
+    from aion_terminal.models.enums import EMAStack, TrendState
+    from aion_terminal.utils.bars import load_recent_daily_bars
+    from aion_terminal.utils.math_utils import as_float
+
+    symbol = symbol.upper()
+    warnings: list[str] = []
+
+    rows = load_recent_daily_bars(conn, symbol, 60)
+    bars = [
+        UnderlyingBarRecord(
+            symbol=r["symbol"], timeframe=r["timeframe"], bar_ts=r["bar_ts"],
+            open=as_float(r["open"]), high=as_float(r["high"]), low=as_float(r["low"]),
+            close=as_float(r["close"]), volume=r["volume"], vwap=as_float(r["vwap"]),
+        )
+        for r in rows
+    ]
+
+    if not bars:
+        return ChartAnalysisResult(
+            symbol=symbol, timeframe=timeframe, bias="neutral", setup_score=0,
+            ema_stack="mixed", trend="neutral", rvol_state="unknown", rsi_level=None,
+            rsi_divergence="not_computed", compressed=False, gap_fills_visible=[],
+            setup_class="none", invalidation_note="no bars available",
+            invalidation_price_estimate=None, warnings=["no_bars"], brief="",
+            dealer_context=dealer_context or {}, generated_at=utc_now_iso(),
+            model=COMPUTED_MODEL, error=None,
+        )
+
+    if len(bars) < 55:
+        warnings.append(f"only_{len(bars)}_bars")
+
+    features, state = build_technical_features(bars, timeframe)
+    rs_score, rs_percentile = _load_rs_score(symbol)
+    if rs_score is None:
+        warnings.append("rs_score_unavailable")
+
+    # Direction follows the EMA stack, with trend as the tiebreak. Neither is
+    # inferred from the dealer map: that read is directionless (see
+    # features.dealer) and treating it as signed is the defect P0-4 removed.
+    if features.ema_stack_state == EMAStack.BULLISH.value:
+        bias = "bullish"
+    elif features.ema_stack_state == EMAStack.BEARISH.value:
+        bias = "bearish"
+    elif features.trend_state in TrendState.bullish_values():
+        bias = "bullish"
+    elif features.trend_state in TrendState.bearish_values():
+        bias = "bearish"
+    else:
+        bias = "neutral"
+
+    # Score is a plain count of confirming conditions out of five, reported on
+    # a 0-100 scale. It is a summary of what was observed, not a probability —
+    # nothing here has been calibrated against outcomes.
+    confirmations = 0
+    if features.ema_stack_state in (EMAStack.BULLISH.value, EMAStack.BEARISH.value):
+        confirmations += 1
+    if features.trend_state != TrendState.NEUTRAL.value:
+        confirmations += 1
+    if state.high_rvol:
+        confirmations += 1
+    if features.compressed:
+        confirmations += 1
+    if rs_percentile is not None and rs_percentile >= 70.0:
+        confirmations += 1
+    setup_score = int(round(confirmations / 5 * 100))
+
+    if bias == "bullish":
+        setup_class = "pullback_into_support" if state.recovering_from_pullback else "momentum_continuation"
+        invalidation = features.support or None
+        invalidation_note = "close below computed support"
+    elif bias == "bearish":
+        setup_class = "momentum_continuation"
+        invalidation = features.resistance or None
+        invalidation_note = "close above computed resistance"
+    else:
+        setup_class = "none"
+        invalidation = None
+        invalidation_note = "no directional thesis"
+
+    if rs_score is None:
+        rs_text = "RS unavailable"
+    else:
+        rs_text = f"RS {rs_score:.1f}" + (f" (p{rs_percentile:.0f})" if rs_percentile is not None else "")
+
+    brief = (
+        f"{symbol} {timeframe}: {features.ema_stack_state}, {features.trend_state}, "
+        f"RVOL {features.rvol:.2f} ({_rvol_state(features.rvol)}), "
+        f"{'compressed' if features.compressed else 'not compressed'}, "
+        f"{rs_text}. "
+        f"Computed from {len(bars)} daily bars."
+    )
+
+    return ChartAnalysisResult(
+        symbol=symbol,
+        timeframe=timeframe,
+        bias=bias,
+        setup_score=setup_score,
+        ema_stack=features.ema_stack_state,
+        trend=features.trend_state,
+        rvol_state=_rvol_state(features.rvol),
+        # This system measures relative strength with the RS scanner's score,
+        # not an oscillator. Left explicitly uncomputed rather than filled with
+        # a second, potentially disagreeing indicator.
+        rsi_level=None,
+        rsi_divergence="not_computed",
+        compressed=features.compressed,
+        gap_fills_visible=[],
+        setup_class=setup_class,
+        invalidation_note=invalidation_note,
+        invalidation_price_estimate=invalidation,
+        warnings=warnings,
+        brief=brief,
+        dealer_context={
+            **(dealer_context or {}),
+            "rs_score": rs_score,
+            "rs_percentile": rs_percentile,
+            "vwap": features.vwap,
+            "atr": features.atr,
+            "support": features.support,
+            "resistance": features.resistance,
+        },
+        generated_at=utc_now_iso(),
+        model=COMPUTED_MODEL,
+        error=None,
+    )
+
+
+def save_chart_analysis(conn, result: ChartAnalysisResult) -> str | None:
+    """Persist a chart analysis. Returns the row id, or None on failure.
+
+    Failures are logged rather than swallowed: a lost analysis is a gap in the
+    record this system is meant to be audited against.
+    """
+    import json as _json
+    import sqlite3 as _sqlite3
+    import uuid as _uuid
+
+    analysis_id = str(_uuid.uuid4())
+    try:
+        conn.execute(
+            """
+            INSERT INTO chart_analyses (
+                analysis_id, generated_at, symbol, timeframe, source, bias, setup_score,
+                ema_stack, trend, rvol_state, compressed, setup_class, invalidation_price,
+                invalidation_note, brief, warnings_json, dealer_context_json, created_at
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                analysis_id, result.generated_at, result.symbol, result.timeframe,
+                result.model, result.bias, result.setup_score, result.ema_stack,
+                result.trend, result.rvol_state, int(bool(result.compressed)),
+                result.setup_class, result.invalidation_price_estimate,
+                result.invalidation_note, result.brief,
+                _json.dumps(result.warnings), _json.dumps(result.dealer_context, default=str),
+                result.generated_at,
+            ),
+        )
+        conn.commit()
+        return analysis_id
+    except _sqlite3.Error:
+        logger.exception("chart analysis persistence failed symbol=%s", result.symbol)
+        return None
