@@ -239,6 +239,12 @@ def score_macro_agreement(macro_brief: dict | None, bias: str) -> float:
             score = 0.75
         elif regime in ("risk_on", "risk-on", "expansion"):
             score = 0.3
+        elif regime in ("neutral", "mixed"):
+            # Mirrors the bullish branch. Without it, a neutral macro regime
+            # handed the long side a free +0.05 and the short side nothing —
+            # the same directionless-read-as-signed bias P0-3 removed from the
+            # dealer channel.
+            score = 0.55
     if risk in ("high", "elevated") and bias == "bullish":
         score -= 0.05
     return _clamp(score)

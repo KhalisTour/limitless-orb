@@ -16,11 +16,18 @@ guarded here:
 from __future__ import annotations
 
 import json
+import sqlite3
 
 from aion_terminal.arbitration.scoring import score_technical_agreement
-from aion_terminal.features.technical import TechnicalFeatures, TechnicalState, classify_trend
+from aion_terminal.features.technical import (
+    TechnicalFeatures,
+    TechnicalState,
+    classify_trend,
+    compute_atr,
+)
+from aion_terminal.models.dto import UnderlyingBarRecord
 from aion_terminal.models.enums import EMAStack, TrendState
-from aion_terminal.scripts.run_daily_snapshot import _technical_payload
+from aion_terminal.scripts.run_daily_snapshot import _load_daily_bars, _technical_payload
 
 
 def test_classify_trend_only_emits_known_vocabulary():
@@ -111,3 +118,96 @@ def test_persisted_payload_moves_the_channel_off_its_default():
 def test_distances_only_payload_scores_the_default():
     """The pre-fix shape is what a dead channel looks like — documented."""
     assert score_technical_agreement({"distances": {"call_wall": 1.2}}, "bullish") == 0.5
+
+
+def _bars_conn():
+    """A bar table carrying both corruptions seen in production data."""
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute(
+        "CREATE TABLE underlying_bars (symbol TEXT, timeframe TEXT, bar_ts TEXT, "
+        "open REAL, high REAL, low REAL, close REAL, volume REAL, vwap REAL)"
+    )
+    rows = []
+    for i in range(30):
+        day = f"2026-06-{i + 1:02d}"
+        price = 100.0 + i
+        # Same calendar day written twice under two daily labels, with the
+        # slightly different values two separate fetches produce.
+        rows.append(("T", "D", f"{day}T00:00:00", price, price + 1, price - 1, price, 1_000_000, price))
+        rows.append(("T", "1D", f"{day}T00:00:01", price, price + 1.1, price - 1.1, price + 0.05, 1_000_500, price))
+        # Intraday bars that must never enter a daily series.
+        rows.append(("T", "1H", f"{day}T15:00:00", price, price, price, price, 50_000, price))
+    conn.executemany("INSERT INTO underlying_bars VALUES (?,?,?,?,?,?,?,?,?)", rows)
+    conn.commit()
+    return conn
+
+
+def test_daily_bar_loader_excludes_intraday_timeframes():
+    bars = _load_daily_bars(_bars_conn(), "T")
+    assert bars, "loader returned no bars"
+    assert all(b.timeframe.upper() in ("D", "1D", "DAILY") for b in bars)
+
+
+def test_daily_bar_loader_returns_one_bar_per_calendar_day():
+    """A duplicated day corrupts every downstream indicator."""
+    bars = _load_daily_bars(_bars_conn(), "T")
+    days = [b.bar_ts[:10] for b in bars]
+    assert len(days) == len(set(days)), f"{len(days) - len(set(days))} duplicate days in series"
+
+
+def test_daily_bar_loader_returns_oldest_first():
+    """Indicator functions assume chronological order."""
+    bars = _load_daily_bars(_bars_conn(), "T")
+    assert [b.bar_ts for b in bars] == sorted(b.bar_ts for b in bars)
+
+
+def test_deduplication_changes_indicator_output():
+    """Guards the fix: duplicated days must not survive into the indicators.
+
+    Zero-range repeat days deflate ATR; against production data this shifted
+    ATR by 9-19% and flipped one symbol's trend classification.
+    """
+    conn = _bars_conn()
+    clean = _load_daily_bars(conn, "T")
+
+    raw = conn.execute(
+        "SELECT symbol,timeframe,bar_ts,open,high,low,close,volume,vwap "
+        "FROM underlying_bars ORDER BY bar_ts DESC LIMIT 60"
+    ).fetchall()
+    corrupted = [
+        UnderlyingBarRecord(
+            symbol=r["symbol"], timeframe=r["timeframe"], bar_ts=r["bar_ts"],
+            open=r["open"], high=r["high"], low=r["low"], close=r["close"],
+            volume=r["volume"], vwap=r["vwap"],
+        )
+        for r in reversed(raw)
+    ]
+
+    assert compute_atr(clean) != compute_atr(corrupted)
+
+
+def test_macro_neutral_regime_is_symmetric():
+    """A directionless macro regime must not favour one side.
+
+    Same defect class as P0-3: `neutral`/`mixed` gave bullish +0.05 and
+    bearish nothing, a free long bias on every neutral-macro day.
+    """
+    from aion_terminal.arbitration.scoring import score_macro_agreement
+
+    for regime in ("neutral", "mixed"):
+        bull = score_macro_agreement({"regime": regime}, "bullish")
+        bear = score_macro_agreement({"regime": regime}, "bearish")
+        assert bull == bear, f"{regime}: bullish={bull} bearish={bear}"
+
+
+def test_macro_directional_regimes_stay_directional():
+    """Symmetry on neutral must not flatten genuinely directional regimes."""
+    from aion_terminal.arbitration.scoring import score_macro_agreement
+
+    assert score_macro_agreement({"regime": "risk_on"}, "bullish") > score_macro_agreement(
+        {"regime": "risk_on"}, "bearish"
+    )
+    assert score_macro_agreement({"regime": "risk_off"}, "bearish") > score_macro_agreement(
+        {"regime": "risk_off"}, "bullish"
+    )

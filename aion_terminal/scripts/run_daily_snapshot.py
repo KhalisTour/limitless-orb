@@ -146,14 +146,57 @@ def _open_conn():
     return conn
 
 
-def _load_daily_bars(conn, symbol: str):
-    rows = conn.execute(
-        "SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap FROM underlying_bars WHERE symbol = ? ORDER BY bar_ts DESC LIMIT 60",
-        (symbol,),
-    ).fetchall()
+def _load_daily_bars(conn, symbol: str, limit: int = 60):
+    """Load a clean daily bar series for technical computation.
+
+    Two corruptions have to be filtered out before the series is usable:
+
+    * The table mixes timeframes (``1H``, ``4H``, ``15M`` alongside daily), and
+      an unfiltered read would compute "daily" EMAs across intraday bars.
+    * The same trading day is stored under more than one daily label (``D`` and
+      ``1D``) from separate fetches, with slightly different closes and volumes.
+      Unfiltered, a 60-row read returned as few as 35 distinct days, so ~40% of
+      the series was repeats — smoothing the EMAs, deflating ATR through
+      zero-range duplicate days, double-counting VWAP volume, and depressing
+      RVOL against a corrupted average.
+
+    Deduplicated newest-first by calendar day so the most recent write for a
+    day wins, then returned oldest-first for the indicator functions.
+    """
     from aion_terminal.models.dto import UnderlyingBarRecord
 
-    return [UnderlyingBarRecord(symbol=r["symbol"], timeframe=r["timeframe"], bar_ts=r["bar_ts"], open=as_float(r["open"]), high=as_float(r["high"]), low=as_float(r["low"]), close=as_float(r["close"]), volume=r["volume"], vwap=as_float(r["vwap"])) for r in reversed(rows)]
+    rows = conn.execute(
+        "SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap "
+        "FROM underlying_bars WHERE symbol = ? AND UPPER(timeframe) IN ('D', '1D', 'DAILY') "
+        "ORDER BY bar_ts DESC LIMIT ?",
+        (symbol, limit * 4),
+    ).fetchall()
+
+    seen: set[str] = set()
+    kept = []
+    for r in rows:
+        day = str(r["bar_ts"])[:10]
+        if day in seen:
+            continue
+        seen.add(day)
+        kept.append(r)
+        if len(kept) >= limit:
+            break
+
+    return [
+        UnderlyingBarRecord(
+            symbol=r["symbol"],
+            timeframe=r["timeframe"],
+            bar_ts=r["bar_ts"],
+            open=as_float(r["open"]),
+            high=as_float(r["high"]),
+            low=as_float(r["low"]),
+            close=as_float(r["close"]),
+            volume=r["volume"],
+            vwap=as_float(r["vwap"]),
+        )
+        for r in reversed(kept)
+    ]
 
 
 def main() -> int:
