@@ -15,7 +15,11 @@ from aion_terminal.arbitration.schemas import ArbResult
 from aion_terminal.utils.time_utils import utc_now_iso
 
 
-BRIEF_DIR = Path("aion_terminal/data/briefs")
+# Resolved from the package, not the process working directory. A cwd-relative
+# path silently yields no brief — and a flat 0.5 macro score — whenever the
+# caller runs from anywhere but the repo root, which is the normal case for a
+# deployed worker.
+BRIEF_DIR = Path(__file__).resolve().parent.parent / "data" / "briefs"
 
 
 def _safe_dict(blob: Any) -> dict | None:
