@@ -118,3 +118,37 @@ def test_malformed_weight_falls_back_to_full():
 def test_weight_is_clamped():
     assert tag_weight({"weight": 5.0}) == 1.0
     assert tag_weight({"weight": -2.0}) == 0.0
+
+
+# --------------------- P3-4: contract symbol extraction ---------------------
+
+
+def test_backfill_extracts_real_contract_symbols_not_field_names():
+    """The loop iterated the bucket's keys, passing "expiry"/"dte_min" as contracts.
+
+    That is why option history 404'd on every call and option_rows was 0
+    everywhere — the API was being handed parameter names.
+    """
+    grouped_chain = {
+        "2026-08-07": {
+            "expiry": "2026-08-07",
+            "dte_min": 2,
+            "dte_max": 2,
+            "contract_count": 2,
+            "contracts": [
+                {"option_symbol": "TSLA260807C00400000", "side": "call", "strike": 400.0},
+                {"option_symbol": "TSLA260807P00380000", "side": "put", "strike": 380.0},
+            ],
+        }
+    }
+
+    extracted = []
+    for bucket in grouped_chain.values():
+        for contract in bucket.get("contracts", []):
+            sym = contract.get("option_symbol")
+            if sym:
+                extracted.append(sym)
+
+    assert extracted == ["TSLA260807C00400000", "TSLA260807P00380000"]
+    for field_name in ("expiry", "dte_min", "dte_max", "contracts", "contract_count"):
+        assert field_name not in extracted

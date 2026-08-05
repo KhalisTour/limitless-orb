@@ -60,10 +60,19 @@ def run_backfill(
                 print(f"[dry-run] {symbol} option history up to {contracts_per_symbol} contracts")
             else:
                 refresh = refresh_one_symbol(symbol)
+                # Each grouped_chain value is a bucket dict — {expiry, dte_min,
+                # dte_max, contracts, contract_count} — so iterating its keys
+                # yielded those literal field names and passed "expiry",
+                # "dte_min" and "contracts" to the API as contract symbols. That
+                # is why option history 404'd on every request and option_rows
+                # was 0 everywhere: it was being called with parameter names,
+                # not contracts. The symbols live one level down (P3-4).
                 contract_symbols = []
-                for exp in refresh.grouped_chain.values():
-                    for option_symbol in exp.keys():
-                        contract_symbols.append(option_symbol)
+                for bucket in refresh.grouped_chain.values():
+                    for contract in bucket.get("contracts", []):
+                        option_symbol = contract.get("option_symbol")
+                        if option_symbol:
+                            contract_symbols.append(option_symbol)
                 contract_symbols = contract_symbols[: max(0, contracts_per_symbol)]
                 if not contract_symbols:
                     logger.info("Option candle backfill unavailable/no contracts for %s", symbol)
