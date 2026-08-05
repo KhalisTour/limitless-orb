@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from pathlib import Path
 
 from aion_terminal.features.technical import TechnicalState
@@ -175,7 +177,9 @@ def test_build_feature_snapshots_for_refresh_creates_one_snapshot_per_expiry():
     per_expiry = by_expiry["2026-05-01"]
     assert per_expiry.symbol == "IONQ"
     assert per_expiry.dte == 5
-    assert per_expiry.features_json == '{"distances": {}}'
+    # Parsed rather than string-compared: features_json carries the dealer
+    # structure read and the technical payload alongside distances.
+    assert json.loads(per_expiry.features_json)["distances"] == {}
 
 
 def test_run_daily_snapshot_skips_feature_snapshot_without_expiries(monkeypatch):

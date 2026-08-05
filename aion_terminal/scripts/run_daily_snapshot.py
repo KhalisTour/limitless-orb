@@ -67,6 +67,15 @@ def _symbol_recently_refreshed(conn, symbol: str, minutes: int) -> bool:
     return datetime.now(last_refresh.tzinfo or None) - last_refresh < timedelta(minutes=minutes)
 
 
+_STRUCTURE_KEYS = (
+    "gamma_state",
+    "structural_bias",
+    "king_proximity_pct",
+    "local_gamma_ratio",
+    "flip_zone_status",
+)
+
+
 def _technical_payload(features, state) -> dict:
     """Shape technical features into the keys the arbiter's scorer reads.
 
@@ -125,14 +134,12 @@ def _build_feature_snapshots_for_refresh(symbol: str, refresh, technical: dict |
             features_json=json.dumps(
                 {
                     "distances": level.get("distances", {}),
-                    # The signed structure read (P0-4). Without these the arbiter
-                    # only sees the collapsed `regime` string and has to
-                    # re-derive direction from raw levels.
-                    "gamma_state": level.get("gamma_state"),
-                    "structural_bias": level.get("structural_bias"),
-                    "king_proximity_pct": level.get("king_proximity_pct"),
-                    "local_gamma_ratio": level.get("local_gamma_ratio"),
-                    "flip_zone_status": level.get("flip_zone_status"),
+                    # The signed structure read (P0-4). Without it the arbiter
+                    # sees only the collapsed `regime` string and has to
+                    # re-derive direction from raw levels. Only keys the
+                    # producer actually computed are written, so an absent key
+                    # stays distinguishable from a computed null.
+                    **{k: level[k] for k in _STRUCTURE_KEYS if k in level},
                     **(technical or {}),
                 }
             ),
