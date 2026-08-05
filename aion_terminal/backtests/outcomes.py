@@ -10,6 +10,7 @@ from typing import Any
 from aion_terminal.features.contracts import ContractScore, score_and_rank_contracts
 from aion_terminal.models.dto import SetupCandidateRecord, SetupOutcomeRecord
 from aion_terminal.storage import repositories
+from aion_terminal.utils.bars import load_daily_bars_after
 from aion_terminal.utils.math_utils import as_float, as_int
 from aion_terminal.utils.time_utils import utc_now_iso
 
@@ -201,17 +202,14 @@ def compute_excursions(
 
 
 def _load_bars_after(conn: sqlite3.Connection, symbol: str, as_of_ts: str, horizon_days: int) -> list[dict[str, Any]]:
-    rows = conn.execute(
-        """
-        SELECT bar_ts, open, high, low, close, volume, vwap
-        FROM underlying_bars
-        WHERE symbol = ? AND bar_ts >= ?
-        ORDER BY bar_ts ASC
-        LIMIT ?
-        """,
-        (symbol, as_of_ts, horizon_days + 10),
-    ).fetchall()
-    return [dict(r) for r in rows]
+    """Forward daily bars used to score a candidate.
+
+    Delegates to the shared loader so intraday rows and duplicate calendar days
+    are excluded. A duplicated day here would count as two days of holding
+    period, understating the horizon and inflating the apparent result — and
+    these outcomes are what expectancy, and therefore sizing, is built from.
+    """
+    return load_daily_bars_after(conn, symbol, as_of_ts, horizon_days + 10)
 
 
 def evaluate_candidate_outcome(
@@ -428,6 +426,7 @@ def run_backtest_for_universe(
     from_ts = (now - timedelta(days=lookback_days)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
     results: list[OutcomeResult] = []
+    skipped_no_spot = 0
     for symbol in symbols:
         candidates = repositories.query_ranked_candidates_by_date_range(
             conn,
@@ -443,8 +442,20 @@ def run_backtest_for_universe(
             if spot <= 0:
                 spot = as_float(getattr(candidate, "underlying_price", None), default=0.0) or as_float(getattr(candidate, "spot", None), default=0.0)
             if spot <= 0:
-                spot = as_float(candidate.strike, default=0.0) or 100.0
-                logger.warning("Using strike as fallback spot for candidate_id=%s symbol=%s", candidate.candidate_id, candidate.symbol)
+                # Previously fell back to `strike or 100.0`. A strike is not a
+                # spot, and 100.0 is not anything: contracts selected against an
+                # invented underlying produce an outcome that is noise, and
+                # these outcomes are exactly what expectancy — and therefore
+                # position sizing — is computed from. Skipped and counted
+                # instead, so an unscoreable candidate is visible rather than
+                # silently contributing a fabricated result.
+                skipped_no_spot += 1
+                logger.warning(
+                    "Skipping candidate_id=%s symbol=%s: no usable spot (no forward bars, no recorded underlying price)",
+                    candidate.candidate_id,
+                    candidate.symbol,
+                )
+                continue
             rec = score_and_rank_contracts(
                 conn,
                 symbol=candidate.symbol,
@@ -459,10 +470,11 @@ def run_backtest_for_universe(
         repositories.insert_setup_outcomes(conn, [_to_setup_outcome_row(r) for r in results])
 
     logger.info(
-        "Backtest complete: method=%s symbols=%s outcomes=%s horizon_days=%s",
+        "Backtest complete: method=%s symbols=%s outcomes=%s skipped_no_spot=%s horizon_days=%s",
         method,
         len(symbols),
         len(results),
+        skipped_no_spot,
         horizon_days,
     )
     return results

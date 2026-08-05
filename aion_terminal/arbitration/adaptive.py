@@ -183,9 +183,32 @@ def _bucket_dte(dte: Any) -> str:
     return "30+"
 
 
-def _modifier_from_pnl(avg_pnl_pct: float) -> float:
-    # Map ±50% avg pnl → ±1.0 modifier
-    return max(-1.0, min(1.0, (avg_pnl_pct or 0.0) / 50.0))
+# Sample count at which an expectancy estimate is trusted at full strength.
+# Below it the modifier is shrunk toward zero in proportion to how little
+# evidence there is.
+EXPECTANCY_FULL_CONFIDENCE_N = 30
+MIN_EXPECTANCY_SAMPLES = 5
+
+
+def _modifier_from_pnl(avg_pnl_pct: float, sample_count: int | None = None) -> float:
+    """Map average PnL to a [-1, 1] sizing modifier, shrunk by sample size.
+
+    Mapping ±50% average PnL to ±1.0 saturates almost immediately: with the
+    synthetic-greeks estimator a handful of large winners takes a scope to the
+    maximum, so a 6-sample group produced a maxed-out +1.0 and drove the
+    expectancy channel to 1.00. That is a confident number computed from
+    almost no evidence, which is precisely what must not reach position sizing.
+
+    The raw estimate is therefore scaled by ``n / (n + k)``: at n=6 roughly a
+    fifth of full strength, at n=30 half, approaching full weight only with
+    real history. Shrinkage toward zero is the neutral direction, so a thin
+    sample can no longer argue strongly for or against a setup.
+    """
+    raw = max(-1.0, min(1.0, (avg_pnl_pct or 0.0) / 50.0))
+    if sample_count is None:
+        return raw
+    n = max(0, int(sample_count))
+    return raw * (n / (n + EXPECTANCY_FULL_CONFIDENCE_N))
 
 
 def rebuild_expectancy_summaries(conn: sqlite3.Connection) -> int:
@@ -217,7 +240,7 @@ def rebuild_expectancy_summaries(conn: sqlite3.Connection) -> int:
     updated = 0
     now = utc_now_iso()
     for scope, items in groups.items():
-        if len(items) < 5:
+        if len(items) < MIN_EXPECTANCY_SAMPLES:
             continue
         wins = sum(1 for x in items if x["is_winner"])
         win_rate = wins / len(items)
@@ -229,7 +252,7 @@ def rebuild_expectancy_summaries(conn: sqlite3.Connection) -> int:
         avg_mfe = sum(mfes) / len(mfes) if mfes else 0.0
         avg_mae = sum(maes) / len(maes) if maes else 0.0
         avg_hold = sum(holds) / len(holds) if holds else 0.0
-        modifier = _modifier_from_pnl(avg_pnl)
+        modifier = _modifier_from_pnl(avg_pnl, sample_count=len(items))
         existing = conn.execute(
             "SELECT exp_id FROM adaptive_expectancy WHERE scope = ?",
             (scope,),
@@ -326,7 +349,7 @@ def rebuild_setup_performance_stats(conn: sqlite3.Connection) -> int:
                 len(items),
                 win_rate,
                 avg_pnl,
-                _modifier_from_pnl(avg_pnl),
+                _modifier_from_pnl(avg_pnl, sample_count=len(items)),
             ),
         )
         updated += 1

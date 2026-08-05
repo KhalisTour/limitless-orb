@@ -22,6 +22,7 @@ from aion_terminal.storage.repositories import (
     query_underlying_bars_count,
 )
 from aion_terminal.models.dto import FeatureSnapshotRecord, SetupCandidateRecord
+from aion_terminal.utils.bars import load_recent_daily_bars
 from aion_terminal.utils.time_utils import utc_now_iso
 from aion_terminal.utils.math_utils import as_float
 
@@ -185,24 +186,6 @@ def _load_daily_bars(conn, symbol: str, limit: int = 60):
     """
     from aion_terminal.models.dto import UnderlyingBarRecord
 
-    rows = conn.execute(
-        "SELECT symbol, timeframe, bar_ts, open, high, low, close, volume, vwap "
-        "FROM underlying_bars WHERE symbol = ? AND UPPER(timeframe) IN ('D', '1D', 'DAILY') "
-        "ORDER BY bar_ts DESC LIMIT ?",
-        (symbol, limit * 4),
-    ).fetchall()
-
-    seen: set[str] = set()
-    kept = []
-    for r in rows:
-        day = str(r["bar_ts"])[:10]
-        if day in seen:
-            continue
-        seen.add(day)
-        kept.append(r)
-        if len(kept) >= limit:
-            break
-
     return [
         UnderlyingBarRecord(
             symbol=r["symbol"],
@@ -215,7 +198,7 @@ def _load_daily_bars(conn, symbol: str, limit: int = 60):
             volume=r["volume"],
             vwap=as_float(r["vwap"]),
         )
-        for r in reversed(kept)
+        for r in load_recent_daily_bars(conn, symbol, limit)
     ]
 
 
