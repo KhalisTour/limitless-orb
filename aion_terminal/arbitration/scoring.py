@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from aion_terminal.models.enums import EMAStack, Regime
+from aion_terminal.models.enums import EMAStack, Regime, TrendState
 
 
 def _clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
@@ -47,23 +47,31 @@ def score_technical_agreement(features: dict | None, bias: str) -> float:
     compressed = bool(f.get("compressed"))
     pullback_depth = f.get("pullback_depth")
 
+    # Trend vocabulary comes from TrendState (see models.enums). Matching only
+    # the plain up/downtrend literals silently discarded `strong_uptrend` and
+    # `strong_downtrend` — the highest-conviction readings the producer emits.
+    # `bullish`/`bearish` are accepted as legacy aliases for rows written before
+    # the vocabulary was pinned down.
+    bullish_trend = TrendState.bullish_values() | {"up", "bullish"}
+    bearish_trend = TrendState.bearish_values() | {"down", "bearish"}
+
     if bias == "bullish":
         if ema_stack == EMAStack.BULLISH.value:
             score += 0.2
         elif ema_stack == EMAStack.BEARISH.value:
             score -= 0.25
-        if trend in ("up", "uptrend", "bullish"):
+        if trend in bullish_trend:
             score += 0.1
-        elif trend in ("down", "downtrend", "bearish"):
+        elif trend in bearish_trend:
             score -= 0.15
     else:
         if ema_stack == EMAStack.BEARISH.value:
             score += 0.2
         elif ema_stack == EMAStack.BULLISH.value:
             score -= 0.25
-        if trend in ("down", "downtrend", "bearish"):
+        if trend in bearish_trend:
             score += 0.1
-        elif trend in ("up", "uptrend", "bullish"):
+        elif trend in bullish_trend:
             score -= 0.15
 
     try:

@@ -22,6 +22,32 @@ class EMAStack(str, Enum):
     MIXED = "mixed"
 
 
+class TrendState(str, Enum):
+    """Canonical trend vocabulary.
+
+    Single source of truth for the values produced by
+    ``features.technical.classify_trend`` and consumed by the arbitration
+    scoring layer. The ``STRONG_*`` variants are the highest-conviction
+    readings and must be matched wherever the plain variants are — scoring
+    that only recognises ``uptrend``/``downtrend`` silently discards exactly
+    the setups it should weigh most.
+    """
+
+    STRONG_UP = "strong_uptrend"
+    UP = "uptrend"
+    STRONG_DOWN = "strong_downtrend"
+    DOWN = "downtrend"
+    NEUTRAL = "neutral"
+
+    @classmethod
+    def bullish_values(cls) -> frozenset[str]:
+        return frozenset({cls.STRONG_UP.value, cls.UP.value})
+
+    @classmethod
+    def bearish_values(cls) -> frozenset[str]:
+        return frozenset({cls.STRONG_DOWN.value, cls.DOWN.value})
+
+
 class AlertType(str, Enum):
     REGIME_CHANGE = "REGIME_CHANGE"
     KING_NODE_SHIFT = "KING_NODE_SHIFT"

@@ -67,7 +67,35 @@ def _symbol_recently_refreshed(conn, symbol: str, minutes: int) -> bool:
     return datetime.now(last_refresh.tzinfo or None) - last_refresh < timedelta(minutes=minutes)
 
 
-def _build_feature_snapshots_for_refresh(symbol: str, refresh) -> list[FeatureSnapshotRecord]:
+def _technical_payload(features, state) -> dict:
+    """Shape technical features into the keys the arbiter's scorer reads.
+
+    ``arbitration.scoring.score_technical_agreement`` looks up ``ema_stack``,
+    ``trend``, ``rvol``, ``compressed`` and ``pullback_depth``. Persisting the
+    raw dataclass field names instead would leave every lookup returning None,
+    which is what pinned the technical channel at a constant 0.5.
+    """
+    # An unavailable technical read must not stop the dealer snapshot being
+    # persisted — the two are independent. Absent technicals simply leave the
+    # channel at its neutral default rather than failing the whole symbol.
+    if features is None or not hasattr(features, "ema_stack_state"):
+        return {}
+    return {
+        "ema_stack": features.ema_stack_state,
+        "trend": features.trend_state,
+        "rvol": features.rvol,
+        "compressed": bool(features.compressed),
+        # The scorer tests `0 < pullback_depth < 0.05`, i.e. a fraction, while
+        # the feature is carried as a percentage. Convert rather than emit a
+        # value that is 100x out of range and can never match.
+        "pullback_depth": (features.pullback_pct / 100.0) if features.pullback_pct else 0.0,
+        "above_vwap": bool(getattr(state, "above_vwap", False)),
+        "vwap_distance_pct": features.vwap_distance_pct,
+        "atr": features.atr,
+    }
+
+
+def _build_feature_snapshots_for_refresh(symbol: str, refresh, technical: dict | None = None) -> list[FeatureSnapshotRecord]:
     if not refresh.grouped_chain or not refresh.levels:
         return []
 
@@ -94,7 +122,7 @@ def _build_feature_snapshots_for_refresh(symbol: str, refresh) -> list[FeatureSn
             call_wall=level.get("call_wall"),
             put_wall=level.get("put_wall"),
             flip_zone=level.get("flip_zone"),
-            features_json=json.dumps({"distances": level.get("distances", {})}),
+            features_json=json.dumps({"distances": level.get("distances", {}), **(technical or {})}),
         )
 
     # Combined-across-expiries map: the single source of truth the arbiter reads.
@@ -173,7 +201,14 @@ def main() -> int:
                 bars_used = refresh.bars_upserted > 0 or query_underlying_bars_count(conn, symbol) > 0
                 errors = list(refresh.errors)
 
-                feature_snapshots = _build_feature_snapshots_for_refresh(symbol, refresh)
+                # Computed before the snapshot is built so the technical read can
+                # be persisted alongside the dealer map — the arbiter scores what
+                # is written here, not what is recomputed later for setups.
+                technical_features, technical_state = build_technical_features(_load_daily_bars(conn, symbol), "D")
+
+                feature_snapshots = _build_feature_snapshots_for_refresh(
+                    symbol, refresh, _technical_payload(technical_features, technical_state)
+                )
                 if feature_snapshots:
                     try:
                         insert_feature_snapshots(conn, feature_snapshots)
@@ -184,7 +219,6 @@ def main() -> int:
 
                 inferred_bias: str | None = None
                 if not args.no_setups and refresh.levels:
-                    technical_features, technical_state = build_technical_features(_load_daily_bars(conn, symbol), "D")
                     setups = evaluate_symbol_snapshot(
                         symbol=symbol,
                         dealer_features=refresh.levels.get("combined_levels") or refresh.levels,

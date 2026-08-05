@@ -5,7 +5,7 @@ import logging
 from typing import Any
 
 from aion_terminal.models.dto import UnderlyingBarRecord
-from aion_terminal.models.enums import EMAStack
+from aion_terminal.models.enums import EMAStack, TrendState
 from aion_terminal.utils.math_utils import as_float, as_int
 from aion_terminal.utils.time_utils import utc_now_iso
 
@@ -211,15 +211,15 @@ def classify_trend(ema8: float, ema21: float, ema55: float, vwap: float, close: 
     stack = classify_ema_stack(ema8, ema21, ema55)
     above_vwap = close > vwap if vwap > 0.0 else False
 
-    if stack == "bullish_stack" and above_vwap:
-        return "strong_uptrend"
+    if stack == EMAStack.BULLISH.value and above_vwap:
+        return TrendState.STRONG_UP.value
     if ema8 > ema21 and above_vwap:
-        return "uptrend"
-    if stack == "bearish_stack" and not above_vwap:
-        return "strong_downtrend"
+        return TrendState.UP.value
+    if stack == EMAStack.BEARISH.value and not above_vwap:
+        return TrendState.STRONG_DOWN.value
     if ema8 < ema21 and not above_vwap:
-        return "downtrend"
-    return "neutral"
+        return TrendState.DOWN.value
+    return TrendState.NEUTRAL.value
 
 
 def _safe_zero_state(symbol: str, timeframe: str) -> tuple[TechnicalFeatures, TechnicalState]:
