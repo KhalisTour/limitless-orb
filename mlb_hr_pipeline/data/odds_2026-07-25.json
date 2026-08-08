@@ -1,0 +1,152 @@
+{
+  "date": "2026-07-25",
+  "book": "betrivers",
+  "pulled_at": "2026-07-25T17:39:18.047506Z",
+  "lines": [
+    {
+      "name": "Andrew Velazquez",
+      "american": 13000,
+      "batter_id": null
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 8000,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 15000,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 7000,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 4500,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Andrew Velazquez",
+      "american": 950,
+      "batter_id": null
+    },
+    {
+      "name": "Jac Caglianone",
+      "american": 525,
+      "batter_id": "695506"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 375,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Corbin Carroll",
+      "american": 6000,
+      "batter_id": "682998"
+    },
+    {
+      "name": "James Wood",
+      "american": 16000,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 18000,
+      "batter_id": "606466"
+    },
+    {
+      "name": "James Wood",
+      "american": 2800,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Corbin Carroll",
+      "american": 19900,
+      "batter_id": "682998"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 3300,
+      "batter_id": "606466"
+    },
+    {
+      "name": "Ketel Marte",
+      "american": 310,
+      "batter_id": "606466"
+    },
+    {
+      "name": "James Wood",
+      "american": 275,
+      "batter_id": "695578"
+    },
+    {
+      "name": "Corbin Carroll",
+      "american": 525,
+      "batter_id": "682998"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 18000,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 4000,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 360,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 5000,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 19900,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 19900,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 3500,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 440,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 350,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 4000,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 19900,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 340,
+      "batter_id": "681715"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "date": "2026-08-08",
+  "book": "betrivers",
+  "pulled_at": "2026-08-08T22:14:21.258589Z",
+  "lines": [
+    {
+      "name": "Mike Trout",
+      "american": 900,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 19900,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 1900,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Jesus Sanchez",
+      "american": 3300,
+      "batter_id": "660821"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 1300,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Jesus Sanchez",
+      "american": 16000,
+      "batter_id": "660821"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 7000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Jesus Sanchez",
+      "american": 310,
+      "batter_id": "660821"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 160,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Christian Encarnacion-Strand",
+      "american": 6600,
+      "batter_id": "687952"
+    },
+    {
+      "name": "Christian Encarnacion-Strand",
+      "american": 19900,
+      "batter_id": "687952"
+    },
+    {
+      "name": "Christian Encarnacion-Strand",
+      "american": 510,
+      "batter_id": "687952"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 18000,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 19900,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 5500,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 3000,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 310,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 460,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2200,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 13000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 245,
+      "batter_id": "670541"
+    }
+  ]
+}
