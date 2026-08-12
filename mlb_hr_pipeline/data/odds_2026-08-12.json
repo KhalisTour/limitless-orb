@@ -1,0 +1,112 @@
+{
+  "date": "2026-08-12",
+  "book": "betrivers",
+  "pulled_at": "2026-08-12T19:23:45.493315Z",
+  "lines": [
+    {
+      "name": "Christian Encarnacion-Strand",
+      "american": 800,
+      "batter_id": "687952"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 6600,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 900,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 480,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 2900,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 340,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 12000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 240,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 19900,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Griffin Conine",
+      "american": 19900,
+      "batter_id": "665052"
+    },
+    {
+      "name": "Griffin Conine",
+      "american": 4500,
+      "batter_id": "665052"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 4000,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Griffin Conine",
+      "american": 380,
+      "batter_id": "665052"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 380,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 2500,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Dominic Canzone",
+      "american": 3000,
+      "batter_id": "686527"
+    },
+    {
+      "name": "Dominic Canzone",
+      "american": 16000,
+      "batter_id": "686527"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 16000,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 255,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Dominic Canzone",
+      "american": 325,
+      "batter_id": "686527"
+    }
+  ]
+}

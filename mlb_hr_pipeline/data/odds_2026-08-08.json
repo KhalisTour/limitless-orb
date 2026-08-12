@@ -1,31 +1,16 @@
 {
   "date": "2026-08-08",
   "book": "betrivers",
-  "pulled_at": "2026-08-08T22:14:21.258589Z",
+  "pulled_at": "2026-08-08T22:50:32.656469Z",
   "lines": [
     {
-      "name": "Mike Trout",
-      "american": 900,
-      "batter_id": "545361"
-    },
-    {
-      "name": "Mike Trout",
-      "american": 19900,
-      "batter_id": "545361"
-    },
-    {
-      "name": "Mike Trout",
-      "american": 1900,
-      "batter_id": "545361"
-    },
-    {
       "name": "Jesus Sanchez",
-      "american": 3300,
+      "american": 5000,
       "batter_id": "660821"
     },
     {
       "name": "Kyle Schwarber",
-      "american": 1300,
+      "american": 2200,
       "batter_id": "656941"
     },
     {
@@ -35,17 +20,17 @@
     },
     {
       "name": "Kyle Schwarber",
-      "american": 7000,
+      "american": 12000,
       "batter_id": "656941"
     },
     {
       "name": "Jesus Sanchez",
-      "american": 310,
+      "american": 400,
       "batter_id": "660821"
     },
     {
       "name": "Kyle Schwarber",
-      "american": 160,
+      "american": 225,
       "batter_id": "656941"
     },
     {
