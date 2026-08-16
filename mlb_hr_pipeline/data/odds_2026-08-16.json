@@ -1,0 +1,127 @@
+{
+  "date": "2026-08-16",
+  "book": "betrivers",
+  "pulled_at": "2026-08-16T18:47:46.434459Z",
+  "lines": [
+    {
+      "name": "Matt Olson",
+      "american": 9000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 550,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 11000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 800,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 6600,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 6000,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 510,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Francisco Lindor",
+      "american": 13000,
+      "batter_id": "596019"
+    },
+    {
+      "name": "Abimelec Ortiz",
+      "american": 900,
+      "batter_id": "694673"
+    },
+    {
+      "name": "Francisco Lindor",
+      "american": 5500,
+      "batter_id": "596019"
+    },
+    {
+      "name": "Abimelec Ortiz",
+      "american": 12000,
+      "batter_id": "694673"
+    },
+    {
+      "name": "Francisco Lindor",
+      "american": 420,
+      "batter_id": "596019"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 410,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 310,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 15000,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 18000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Byron Buxton",
+      "american": 5000,
+      "batter_id": "621439"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 3300,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 19900,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 3500,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 350,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 2900,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 18000,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 285,
+      "batter_id": "660271"
+    }
+  ]
+}
