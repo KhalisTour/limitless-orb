@@ -1,0 +1,117 @@
+{
+  "date": "2026-08-13",
+  "book": "betrivers",
+  "pulled_at": "2026-08-13T16:22:30.120116Z",
+  "lines": [
+    {
+      "name": "Miguel Vargas",
+      "american": 3000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 18000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 300,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Eduardo Valencia",
+      "american": 9000,
+      "batter_id": "680664"
+    },
+    {
+      "name": "Eduardo Valencia",
+      "american": 600,
+      "batter_id": "680664"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 6000,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Griffin Conine",
+      "american": 6000,
+      "batter_id": "665052"
+    },
+    {
+      "name": "Esmerlyn Valdez",
+      "american": 500,
+      "batter_id": "699013"
+    },
+    {
+      "name": "Griffin Conine",
+      "american": 500,
+      "batter_id": "665052"
+    },
+    {
+      "name": "Dominic Canzone",
+      "american": 4500,
+      "batter_id": "686527"
+    },
+    {
+      "name": "Trent Grisham",
+      "american": 3000,
+      "batter_id": "663757"
+    },
+    {
+      "name": "Trent Grisham",
+      "american": 330,
+      "batter_id": "663757"
+    },
+    {
+      "name": "Dominic Canzone",
+      "american": 420,
+      "batter_id": "686527"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 19900,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 14000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 2500,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 4500,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 19900,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 3000,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 390,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 290,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 260,
+      "batter_id": "677800"
+    }
+  ]
+}
