@@ -1,6 +1,6 @@
 {
   "date": "2026-08-21",
-  "generated_at": "2026-08-21T00:01:20.107334Z",
+  "generated_at": "2026-08-21T13:49:55.197958Z",
   "games": [
     {
       "game_id": 823746,
@@ -42,7 +42,7 @@
       "game_id": 823510,
       "away": "Toronto Blue Jays",
       "home": "New York Yankees",
-      "away_sp": null,
+      "away_sp": "Mason Fluharty",
       "home_sp": "Cam Schlittler",
       "game_datetime": "2026-08-21T23:05:00Z",
       "venue": "Yankee Stadium",

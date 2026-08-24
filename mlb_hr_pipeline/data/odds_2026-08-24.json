@@ -1,0 +1,112 @@
+{
+  "date": "2026-08-24",
+  "book": "betrivers",
+  "pulled_at": "2026-08-24T21:17:57.118398Z",
+  "lines": [
+    {
+      "name": "Wilyer Abreu",
+      "american": 4500,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 19900,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 19900,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 4500,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 19900,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 6600,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 550,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 420,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 420,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 2900,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 320,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Mickey Moniak",
+      "american": 7500,
+      "batter_id": "666160"
+    },
+    {
+      "name": "Abimelec Ortiz",
+      "american": 7000,
+      "batter_id": "694673"
+    },
+    {
+      "name": "Abimelec Ortiz",
+      "american": 525,
+      "batter_id": "694673"
+    },
+    {
+      "name": "Mickey Moniak",
+      "american": 525,
+      "batter_id": "666160"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 5500,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 2500,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 19900,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 16000,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 430,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 260,
+      "batter_id": "808959"
+    }
+  ]
+}
