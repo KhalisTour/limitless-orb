@@ -1,0 +1,72 @@
+{
+  "date": "2026-08-25",
+  "book": "betrivers",
+  "pulled_at": "2026-08-25T23:46:54.133725Z",
+  "lines": [
+    {
+      "name": "Junior Caminero",
+      "american": 525,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Eduardo Valencia",
+      "american": 800,
+      "batter_id": "680664"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 15000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2800,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 260,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 6600,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Francisco Lindor",
+      "american": 10000,
+      "batter_id": "596019"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 6000,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 510,
+      "batter_id": "694192"
+    },
+    {
+      "name": "Francisco Lindor",
+      "american": 700,
+      "batter_id": "596019"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 14000,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 4500,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 390,
+      "batter_id": "678246"
+    }
+  ]
+}
