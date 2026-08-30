@@ -1,0 +1,137 @@
+{
+  "date": "2026-08-30",
+  "book": "betrivers",
+  "pulled_at": "2026-08-30T15:30:10.503304Z",
+  "lines": [
+    {
+      "name": "Heriberto Hernandez",
+      "american": 19900,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 4000,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Heriberto Hernandez",
+      "american": 375,
+      "batter_id": "681715"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 18000,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 16000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 3000,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 2800,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 300,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 275,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 2900,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 4500,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 15000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 19900,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Willson Contreras",
+      "american": 400,
+      "batter_id": "575929"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 295,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 5000,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Kazuma Okamoto",
+      "american": 475,
+      "batter_id": "672960"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 19900,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 5500,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 440,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 2500,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 300,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 2800,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 4500,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 330,
+      "batter_id": "808959"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 430,
+      "batter_id": "678246"
+    }
+  ]
+}

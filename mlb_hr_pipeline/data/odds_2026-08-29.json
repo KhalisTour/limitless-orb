@@ -1,0 +1,117 @@
+{
+  "date": "2026-08-29",
+  "book": "betrivers",
+  "pulled_at": "2026-08-29T19:05:30.254214Z",
+  "lines": [
+    {
+      "name": "Ben Rice",
+      "american": 12500,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 15000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 1100,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 1900,
+      "batter_id": "700250"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 12000,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 19900,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Shohei Ohtani",
+      "american": 750,
+      "batter_id": "660271"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 370,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 3000,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 18000,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 2900,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 16000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 300,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 310,
+      "batter_id": "696100"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 3300,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 18000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2500,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 16000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 325,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 270,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 2200,
+      "batter_id": "691406"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 280,
+      "batter_id": "691406"
+    }
+  ]
+}
