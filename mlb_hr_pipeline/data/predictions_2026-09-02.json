@@ -1,0 +1,276 @@
+{
+  "date": "2026-09-02",
+  "generated_at": "2026-09-02T01:09:02.666494Z",
+  "games": [
+    {
+      "game_id": 824470,
+      "away": "San Diego Padres",
+      "home": "Cincinnati Reds",
+      "away_sp": "Casey Mize",
+      "home_sp": "Brandon Williamson",
+      "game_datetime": "2026-09-02T16:40:00Z",
+      "venue": "Great American Ball Park",
+      "park_factor": 1.0108,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 822686,
+      "away": "Atlanta Braves",
+      "home": "Washington Nationals",
+      "away_sp": "Grant Holmes",
+      "home_sp": null,
+      "game_datetime": "2026-09-02T17:05:00Z",
+      "venue": "Nationals Park",
+      "park_factor": 0.9109,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 822851,
+      "away": "Athletics",
+      "home": "Texas Rangers",
+      "away_sp": "Jacob Lopez",
+      "home_sp": "Cody Bradford",
+      "game_datetime": "2026-09-02T18:35:00Z",
+      "venue": "Globe Life Field",
+      "park_factor": 0.8118,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824312,
+      "away": "Baltimore Orioles",
+      "home": "Colorado Rockies",
+      "away_sp": "Trevor Rogers",
+      "home_sp": "Tomoyuki Sugano",
+      "game_datetime": "2026-09-02T19:10:00Z",
+      "venue": "Coors Field",
+      "park_factor": 1.103,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 825037,
+      "away": "Philadelphia Phillies",
+      "home": "Arizona Diamondbacks",
+      "away_sp": "Andrew Painter",
+      "home_sp": null,
+      "game_datetime": "2026-09-02T19:40:00Z",
+      "venue": "Chase Field",
+      "park_factor": 0.9471,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824717,
+      "away": "Seattle Mariners",
+      "home": "Boston Red Sox",
+      "away_sp": "Bryce Miller",
+      "home_sp": "Patrick Sandoval",
+      "game_datetime": "2026-09-02T20:10:00Z",
+      "venue": "Fenway Park",
+      "park_factor": 0.8266,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823339,
+      "away": "San Francisco Giants",
+      "home": "Pittsburgh Pirates",
+      "away_sp": "Landen Roupp",
+      "home_sp": "Jared Jones",
+      "game_datetime": "2026-09-02T22:40:00Z",
+      "venue": "PNC Park",
+      "park_factor": 0.6241,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 822931,
+      "away": "New York Mets",
+      "home": "Tampa Bay Rays",
+      "away_sp": "Justin Hagenman",
+      "home_sp": "Griffin Jax",
+      "game_datetime": "2026-09-02T22:40:00Z",
+      "venue": "Tropicana Field",
+      "park_factor": 1.1531,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824390,
+      "away": "Toronto Blue Jays",
+      "home": "Cleveland Guardians",
+      "away_sp": "Dylan Cease",
+      "home_sp": "Joey Cantillo",
+      "game_datetime": "2026-09-02T22:40:00Z",
+      "venue": "Progressive Field",
+      "park_factor": 0.8831,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823660,
+      "away": "Detroit Tigers",
+      "home": "Minnesota Twins",
+      "away_sp": "Drew Anderson",
+      "home_sp": "Dean Kremer",
+      "game_datetime": "2026-09-02T23:40:00Z",
+      "venue": "Target Field",
+      "park_factor": 0.9282,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824068,
+      "away": "Miami Marlins",
+      "home": "Kansas City Royals",
+      "away_sp": "Eury P\u00e9rez",
+      "home_sp": "Noah Cameron",
+      "game_datetime": "2026-09-02T23:40:00Z",
+      "venue": "Kauffman Stadium",
+      "park_factor": 0.8167,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824634,
+      "away": "Milwaukee Brewers",
+      "home": "Chicago Cubs",
+      "away_sp": "Jacob Misiorowski",
+      "home_sp": "David Peterson",
+      "game_datetime": "2026-09-02T23:40:00Z",
+      "venue": "Wrigley Field",
+      "park_factor": 1.1185,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 824147,
+      "away": "Chicago White Sox",
+      "home": "Houston Astros",
+      "away_sp": null,
+      "home_sp": "Hayden Wesneski",
+      "game_datetime": "2026-09-03T00:10:00Z",
+      "venue": "Daikin Park",
+      "park_factor": 1.0914,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823983,
+      "away": "New York Yankees",
+      "home": "Los Angeles Angels",
+      "away_sp": "Cam Schlittler",
+      "home_sp": "Reid Detmers",
+      "game_datetime": "2026-09-03T01:38:00Z",
+      "venue": "Angel Stadium",
+      "park_factor": 1.1948,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    },
+    {
+      "game_id": 823906,
+      "away": "St. Louis Cardinals",
+      "home": "Los Angeles Dodgers",
+      "away_sp": null,
+      "home_sp": "Yoshinobu Yamamoto",
+      "game_datetime": "2026-09-03T02:10:00Z",
+      "venue": "UNIQLO Field at Dodger Stadium",
+      "park_factor": 1.3408,
+      "sides": {
+        "away": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        },
+        "home": {
+          "error": "No lineup.csv in /Users/khaliwilliams/limitless-orb/mlb_hr_pipeline/data/snapshots/2026-09-02 \u2014 lineups likely not posted yet"
+        }
+      }
+    }
+  ]
+}
