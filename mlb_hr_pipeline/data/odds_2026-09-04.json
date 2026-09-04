@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-04",
+  "book": "betrivers",
+  "pulled_at": "2026-09-04T22:15:41.492083Z",
+  "lines": [
+    {
+      "name": "Matt Olson",
+      "american": 8000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 3300,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 575,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 370,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Jake Bauers",
+      "american": 1900,
+      "batter_id": "641343"
+    },
+    {
+      "name": "Jake Bauers",
+      "american": 275,
+      "batter_id": "641343"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 4000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 3300,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 410,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 370,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 3300,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 360,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 2800,
+      "batter_id": "678246"
+    },
+    {
+      "name": "Miguel Vargas",
+      "american": 330,
+      "batter_id": "678246"
+    }
+  ]
+}

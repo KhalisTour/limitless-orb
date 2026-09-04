@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-01",
+  "book": "betrivers",
+  "pulled_at": "2026-09-02T01:12:10.021970Z",
+  "lines": [
+    {
+      "name": "Jake Bauers",
+      "american": 14000,
+      "batter_id": "641343"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 6600,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 900,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Jake Bauers",
+      "american": 950,
+      "batter_id": "641343"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 475,
+      "batter_id": "691718"
+    }
+  ]
+}
