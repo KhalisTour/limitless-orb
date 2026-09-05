@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-05",
+  "book": "betrivers",
+  "pulled_at": "2026-09-05T20:28:17.291216Z",
+  "lines": [
+    {
+      "name": "Juan Soto",
+      "american": 400,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 4000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 2000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 420,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 285,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 4500,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 3000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Mickey Gasper",
+      "american": 9000,
+      "batter_id": "681508"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 410,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Mickey Gasper",
+      "american": 575,
+      "batter_id": "681508"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 360,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 2500,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 15000,
+      "batter_id": "670541"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 265,
+      "batter_id": "670541"
+    }
+  ]
+}
