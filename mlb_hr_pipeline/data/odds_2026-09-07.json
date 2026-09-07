@@ -1,0 +1,142 @@
+{
+  "date": "2026-09-07",
+  "book": "betrivers",
+  "pulled_at": "2026-09-07T17:13:34.750006Z",
+  "lines": [
+    {
+      "name": "Matt Olson",
+      "american": 5500,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 14000,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 3300,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 16000,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 430,
+      "batter_id": "621566"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 285,
+      "batter_id": "656941"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 5000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 13000,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 390,
+      "batter_id": "665742"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 4000,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Jo Adell",
+      "american": 19900,
+      "batter_id": "666176"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 19900,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Jo Adell",
+      "american": 6000,
+      "batter_id": "666176"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 380,
+      "batter_id": "624413"
+    },
+    {
+      "name": "Jo Adell",
+      "american": 480,
+      "batter_id": "666176"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 19900,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 19900,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 7500,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 5000,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 420,
+      "batter_id": "677800"
+    },
+    {
+      "name": "Mike Trout",
+      "american": 600,
+      "batter_id": "545361"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 3500,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Pete Crow-Armstrong",
+      "american": 390,
+      "batter_id": "691718"
+    },
+    {
+      "name": "Ryan Jeffers",
+      "american": 7500,
+      "batter_id": "680777"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 5000,
+      "batter_id": "682985"
+    },
+    {
+      "name": "Ryan Jeffers",
+      "american": 600,
+      "batter_id": "680777"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 450,
+      "batter_id": "682985"
+    }
+  ]
+}
