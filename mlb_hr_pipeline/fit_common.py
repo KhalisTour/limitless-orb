@@ -264,7 +264,7 @@ def fit_target(target: str, features, out_name: str, tag: str = "fit"):
     out = {
         "target": target,
         "season": season,
-        "fit_at": dt.datetime.utcnow().isoformat() + "Z",
+        "fit_at": dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat() + "Z",
         "features": feats,
         "C": C,
         "feature_means": dict(zip(feats, MU.tolist())),

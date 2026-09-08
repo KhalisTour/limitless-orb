@@ -11,7 +11,7 @@ import logging
 import math
 import subprocess
 import time
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -862,8 +862,26 @@ def accuracy(days: int = Query(default=30, ge=1, le=365)) -> dict:
     df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
     cutoff = pd.Timestamp.today().normalize() - pd.Timedelta(days=days)
     recent = df[df["game_date"] >= cutoff]
+
+    # Prefer rows produced by the model that is actually running. The log spans
+    # model generations, and pooling them makes this page a verdict on whichever
+    # generation has the most rows — right after a model change, that is the old
+    # one, for weeks. Fall back to the mixed history while the new generation is
+    # still filling in, and say which is being shown.
+    generation = None
+    generation_only = False
+    if "model_generation" in recent.columns:
+        gens = recent["model_generation"].dropna()
+        if not gens.empty:
+            generation = int(gens.max())
+            cur = recent[recent["model_generation"] == generation]
+            if len(cur) >= 50:
+                recent = cur
+                generation_only = True
+
     if len(recent) < 50:
-        return _sanitize({"status": "insufficient_data", "n": int(len(recent)), "period_days": days})
+        return _sanitize({"status": "insufficient_data", "n": int(len(recent)),
+                          "period_days": days, "model_generation": generation})
 
     recent = recent.copy()
     recent["p_game"] = _per_game_p(recent)
@@ -915,6 +933,10 @@ def accuracy(days: int = Query(default=30, ge=1, le=365)) -> dict:
         "brier": brier,
         "baseline_brier": baseline_brier,
         "beats_baseline": brier < baseline_brier,
+        "model_generation": generation,
+        # False means the window still contains predictions from older model
+        # generations, so these numbers are not purely about the running model.
+        "current_generation_only": generation_only,
         "auc": auc,
         "log_loss": log_loss,
         "calibration_bins": _calibration_bins(recent),
@@ -949,7 +971,7 @@ def refresh_game(game_id: int) -> dict:
     if now - last < _REFRESH_COOLDOWN_S:
         wait = int(_REFRESH_COOLDOWN_S - (now - last))
         log.info("refresh %s rate-limited (%ds remaining)", game_id, wait)
-        _REFRESH_LOG.append({"ts": datetime.utcnow().isoformat() + "Z", "game_id": game_id, "outcome": "rate_limited"})
+        _REFRESH_LOG.append({"ts": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z", "game_id": game_id, "outcome": "rate_limited"})
         # Still return current game state, with a flag.
         try:
             current = get_game(game_id)
@@ -986,7 +1008,7 @@ def refresh_game(game_id: int) -> dict:
 
     _LAST_REFRESH[game_id] = now
     _REFRESH_LOG.append({
-        "ts": datetime.utcnow().isoformat() + "Z",
+        "ts": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
         "game_id": game_id,
         "outcome": "ok" if ok else "fail",
     })
@@ -1000,7 +1022,7 @@ def refresh_game(game_id: int) -> dict:
         return _sanitize({
             "game_id": game_id,
             "refreshed": True,
-            "refreshed_at": datetime.utcnow().isoformat() + "Z",
+            "refreshed_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
             "game": updated,
         })
 

@@ -345,7 +345,7 @@ def main(date: str = None):
     platoon_factors_map = _load_platoon_factors()
 
     import models as _m
-    out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z",
+    out = {"date": date, "generated_at": dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat() + "Z",
            # Stamped so score.py can tell which model generation produced a row
            # and calibrate.py will not fit constants across a model change.
            "model_generation": _m.MODEL_GENERATION,

@@ -75,6 +75,14 @@ export default async function AccuracyPage() {
             : `does NOT beat a flat league-rate forecast (${a.baseline_brier.toFixed(3)} Brier)`}
         </p>
       )}
+      {/* Don't let a model change read as a model failure: after one, this
+          window is still mostly the previous model's predictions. */}
+      {a.current_generation_only === false && (
+        <p className="mt-1 font-mono text-xs text-text-muted/80">
+          Includes predictions from an earlier model version — not yet a read on
+          the current one.
+        </p>
+      )}
 
       <section className="mt-6">
         <h2 className="mb-3 font-mono text-xs uppercase tracking-wide text-text-muted">

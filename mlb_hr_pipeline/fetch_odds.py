@@ -290,7 +290,7 @@ def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
     out_path.write_text(json.dumps({
         "date": date,
         "book": used_book or "unknown",
-        "pulled_at": dt.datetime.utcnow().isoformat() + "Z",
+        "pulled_at": dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat() + "Z",
         "lines": all_lines,
     }, indent=2))
     matched = sum(1 for ln in all_lines if ln.get("batter_id"))

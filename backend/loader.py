@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import threading
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -240,7 +240,7 @@ def load_all() -> None:
             "latest_date": latest_date,
             "stale": stale,
             "stale_reason": stale_reason,
-            "loaded_at": datetime.utcnow().isoformat() + "Z",
+            "loaded_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
             "calibration_log": cal_log,
             "calibration_metrics": cal_metrics,
             "park_factors": park,

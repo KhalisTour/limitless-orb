@@ -169,7 +169,7 @@ def main(start_dt: str = None, end_dt: str = None):
     summary = base_rates(pa)
     summary["start_dt"] = start_dt
     summary["end_dt"] = end_dt
-    summary["generated_at"] = dt.datetime.utcnow().isoformat() + "Z"
+    summary["generated_at"] = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat() + "Z"
     rates_path = DATA_DIR / "base_rates.json"
     rates_path.write_text(json.dumps(summary, indent=2))
     print(f"[backtest] wrote {rates_path}")

@@ -103,13 +103,28 @@ def calibrate_target(target: str, log: pd.DataFrame, base: float, generation: in
             print(f"[calibrate] {target}: dropped {n_all - len(df)} rows from "
                   f"other model generations ({len(df)} at generation {generation})")
     else:
-        print(f"[calibrate] {target}: log carries no model_generation column, so "
-              f"every row predates the current models — nothing to fit against")
+        print(f"[calibrate] {target}: the log carries no model_generation column, "
+              f"so every row in it predates the current models. Nothing to fit "
+              f"against yet; rows logged from here on will be stamped.")
         return None
 
     if len(df) < MIN_ROWS:
-        print(f"[calibrate] {target}: only {len(df)} scored rows (need {MIN_ROWS}) "
-              f"— keeping the shipped defaults")
+        # Say how far off this is, not just that it failed. After a model
+        # generation bump this is expected to read 0 and climb slate by slate;
+        # without the rate it looks like a permanent error.
+        per_slate = 0
+        if "game_date" in df.columns and len(df):
+            days = df["game_date"].nunique()
+            per_slate = len(df) / days if days else 0
+        eta = ""
+        if per_slate > 0:
+            eta = f", ~{max(1, round((MIN_ROWS - len(df)) / per_slate))} more slate(s)"
+        elif len(df) == 0:
+            eta = " — expected right after a model change; it fills in as slates are scored"
+        print(f"[calibrate] {target}: {len(df)}/{MIN_ROWS} scored rows at "
+              f"generation {generation}{eta}. Keeping the shipped defaults "
+              f"(damp/shift in models*.py), which are calibrated priors, not "
+              f"placeholders.")
         return None
 
     df["game_date"] = pd.to_datetime(df["game_date"])
@@ -172,7 +187,7 @@ def calibrate_target(target: str, log: pd.DataFrame, base: float, generation: in
     p_fit = rows[-1][3]
     out = {
         "target": target,
-        "fit_at": dt.datetime.utcnow().isoformat() + "Z",
+        "fit_at": dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat() + "Z",
         "model_generation": generation,
         "base_rate": base,
         "damp": damp,

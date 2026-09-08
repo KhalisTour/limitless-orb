@@ -265,6 +265,10 @@ export interface AccuracyResponse {
    *  A model that does not beat it is not adding information. */
   baseline_brier?: number;
   beats_baseline?: boolean;
+  /** Model generation these numbers describe, when the log records one. */
+  model_generation?: number | null;
+  /** False when the window still mixes in older model generations. */
+  current_generation_only?: boolean;
   auc: number;
   log_loss: number;
   calibration_bins: CalibrationBin[];

@@ -44,6 +44,49 @@ def _per_game(ppa, exp_pa):
     return 1.0 - (1.0 - ppa) ** float(exp_pa or 4.2)
 
 
+TARGETS = (("hr", "p_hr", "actual_hr"),
+           ("xbh", "p_xbh", "actual_xbh"),
+           ("hit", "p_hit", "actual_hit"))
+
+MIN_SCORED_FOR_METRICS = 25
+
+
+def metrics_for(frame: pd.DataFrame, pcol: str, ycol: str) -> dict | None:
+    """Scoring metrics for one target over `frame`, against a constant-rate baseline.
+
+    Returns None when the column is absent or there are too few scored rows for
+    the numbers to mean anything.
+    """
+    if pcol not in frame.columns or ycol not in frame.columns:
+        return None
+    sub = frame[[pcol, ycol]].dropna()
+    if len(sub) < MIN_SCORED_FOR_METRICS:
+        return None
+    y = sub[ycol].values.astype(int)
+    p = sub[pcol].clip(1e-6, 1 - 1e-6).values.astype(float)
+    base = np.full(len(y), y.mean())
+    m = {
+        "n": int(len(y)),
+        "rate_actual": float(y.mean()),
+        "rate_pred": float(p.mean()),
+        "bias_pct": float((p.mean() / y.mean() - 1) * 100) if y.mean() else None,
+        "brier": float(brier_score_loss(y, p)),
+        "baseline_brier": float(brier_score_loss(y, base)),
+        "log_loss": float(log_loss(y, p, labels=[0, 1])),
+        "baseline_log_loss": float(log_loss(y, base, labels=[0, 1])),
+    }
+    m["auc"] = float(roc_auc_score(y, p)) if len(set(y)) >= 2 else None
+    m["beats_baseline"] = m["log_loss"] < m["baseline_log_loss"]
+    return m
+
+
+def split_by_generation(full: pd.DataFrame, generation) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """(all rows, rows from `generation`). Empty current frame when none match."""
+    if "model_generation" in full.columns and generation is not None:
+        return full, full[full["model_generation"] == generation]
+    return full, full.iloc[0:0]
+
+
 def _pred_p_hr_in_game(per_hitter_entry, sim_block, hitter):
     if sim_block and isinstance(sim_block, dict) and "p_at_least_one_hr" in sim_block:
         v = sim_block["p_at_least_one_hr"].get(hitter)
@@ -246,43 +289,54 @@ def score_for_date(date: str):
     full.to_csv(LOG_PATH, index=False)
     print(f"[score] appended {len(new_df)} rows to {LOG_PATH}  (total={len(full)})")
 
-    # Running metrics, per target. Each is reported against the metric a
-    # constant league-rate prediction would earn — a model that does not beat
-    # that number is not adding information, and the HR model shipped in that
-    # state (Brier 0.11096 against a 0.10830 baseline) until the calibration was
-    # re-estimated.
-    metrics = {}
-    for t, pcol, ycol in (("hr", "p_hr", "actual_hr"),
-                          ("xbh", "p_xbh", "actual_xbh"),
-                          ("hit", "p_hit", "actual_hit")):
-        if pcol not in full.columns or ycol not in full.columns:
-            continue
-        sub = full[[pcol, ycol]].dropna()
-        if len(sub) < 25:
-            continue
-        y = sub[ycol].values.astype(int)
-        p = sub[pcol].clip(1e-6, 1 - 1e-6).values.astype(float)
-        base = np.full(len(y), y.mean())
-        m = {
-            "n": int(len(y)),
-            "rate_actual": float(y.mean()),
-            "rate_pred": float(p.mean()),
-            "bias_pct": float((p.mean() / y.mean() - 1) * 100) if y.mean() else None,
-            "brier": float(brier_score_loss(y, p)),
-            "baseline_brier": float(brier_score_loss(y, base)),
-            "log_loss": float(log_loss(y, p, labels=[0, 1])),
-            "baseline_log_loss": float(log_loss(y, base, labels=[0, 1])),
-        }
-        m["auc"] = float(roc_auc_score(y, p)) if len(set(y)) >= 2 else None
-        m["beats_baseline"] = m["log_loss"] < m["baseline_log_loss"]
-        if not m["beats_baseline"]:
-            print(f"[score] WARNING: {t} predictions score worse than a constant "
-                  f"league-rate guess (log-loss {m['log_loss']:.5f} vs "
-                  f"{m['baseline_log_loss']:.5f}). Re-run calibrate.py.")
-        metrics[t] = m
-    # Keep the flat HR keys the older log consumers read.
-    if "hr" in metrics:
-        metrics.update({k: metrics["hr"][k] for k in
+    # Running metrics, per target, against what a constant league-rate forecast
+    # would score. A model that does not beat that number is not adding
+    # information.
+    #
+    # Split by model generation. Pooling every row ever logged makes the running
+    # numbers a verdict on whichever model dominates the log, not on the one
+    # currently running — right after a model change that is entirely the OLD
+    # model, and it takes weeks of slates before the new one shows through. The
+    # "current" block is the only one that says anything about today's model;
+    # "all_time" is kept because that is what the log has always reported.
+    import models as _models
+    generation = getattr(_models, "MODEL_GENERATION", None)
+
+    full, current = split_by_generation(full, generation)
+
+    metrics = {"model_generation": generation,
+               "n_current_generation": int(len(current)),
+               "all_time": {}, "current": {}}
+    for t, pcol, ycol in TARGETS:
+        m_all = metrics_for(full, pcol, ycol)
+        if m_all:
+            metrics["all_time"][t] = m_all
+        m_cur = metrics_for(current, pcol, ycol)
+        if m_cur:
+            metrics["current"][t] = m_cur
+
+    # Warn on the running model only. Warning off all-time numbers after a model
+    # change means warning about a model that is no longer in the pipeline.
+    if metrics["current"]:
+        for t, m in metrics["current"].items():
+            if not m["beats_baseline"]:
+                print(f"[score] WARNING: {t} predictions from the current model "
+                      f"(generation {generation}, n={m['n']}) score worse than a "
+                      f"constant league-rate guess (log-loss {m['log_loss']:.5f} "
+                      f"vs {m['baseline_log_loss']:.5f}). Re-run calibrate.py.")
+    else:
+        older = {t: m["n"] for t, m in metrics["all_time"].items()}
+        print(f"[score] no scored rows yet from model generation {generation}; "
+              f"the running metrics below describe earlier generations "
+              f"({older}) and say nothing about the model now in the pipeline. "
+              f"They will turn over as new slates are scored.")
+
+    # Keep the flat HR keys the older log consumers read. Prefer the current
+    # generation once it has rows, so the API's accuracy page tracks the model
+    # that is actually running.
+    hr = metrics["current"].get("hr") or metrics["all_time"].get("hr")
+    if hr:
+        metrics.update({k: hr[k] for k in
                         ("n", "rate_actual", "rate_pred", "brier", "log_loss", "auc")})
     print(f"[score] running metrics: {json.dumps(metrics, indent=2)}")
     (DATA_DIR / "calibration_metrics.json").write_text(json.dumps(metrics, indent=2))
