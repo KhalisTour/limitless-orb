@@ -136,10 +136,39 @@ export function earliestFirstPitch(picks: Pick[]): number | null {
   return times.length ? Math.min(...times) : null;
 }
 
-export function isSlateLocked(slate: DaySlate | undefined, now = Date.now()): boolean {
-  if (!slate) return false;
-  if (slate.lockedAt) return true;
-  const fp = earliestFirstPitch(slate.picks);
+/** First pitch for one game group, as epoch ms (or null when unknown). */
+export function gameFirstPitch(g: GameGroup): number | null {
+  const t = g.hitters[0]?.gameDatetime;
+  if (!t) return null;
+  const ms = new Date(t).getTime();
+  return Number.isFinite(ms) ? ms : null;
+}
+
+/** A game is closed for picks once it has started. */
+export function isGameLocked(g: GameGroup, now = Date.now()): boolean {
+  const fp = gameFirstPitch(g);
+  return fp !== null && now >= fp;
+}
+
+/**
+ * Whether the whole slate is closed for editing.
+ *
+ * `games` matters. Without it the lock was derived only from the games the user
+ * had already picked, so an empty slate was never locked — open Pick'em after
+ * first pitch and the first pick was always allowed, and the moment it landed
+ * the earliest first pitch jumped into the past, flipped this to true, and
+ * unmounted the entire game list with no explanation. One pick, then the board
+ * silently emptied. The slate is locked when the user locked it in, or when
+ * every game on the board has already started.
+ */
+export function isSlateLocked(
+  slate: DaySlate | undefined,
+  now = Date.now(),
+  games: GameGroup[] = [],
+): boolean {
+  if (slate?.lockedAt) return true;
+  if (games.length > 0) return games.every((g) => isGameLocked(g, now));
+  const fp = slate ? earliestFirstPitch(slate.picks) : null;
   return fp !== null && now >= fp;
 }
 

@@ -8,6 +8,7 @@ import {
   MAX_PICKS,
   computeStats,
   expectedHits,
+  isGameLocked,
   isSlateLocked,
   loadStore,
   poissonBinomial,
@@ -63,7 +64,9 @@ export default function PicksBoard({ games, today }: { games: GameGroup[]; today
 
   const todaySlate = store[today];
   const selected = useMemo(() => todaySlate?.picks ?? [], [todaySlate]);
-  const locked = isSlateLocked(todaySlate, now);
+  // Lock reads the board, not just the user's picks — see isSlateLocked.
+  const locked = isSlateLocked(todaySlate, now, games);
+  const openGames = games.filter((g) => !isGameLocked(g, now));
   const stats = useMemo(() => computeStats(store), [store]);
   const selectedIds = new Set(selected.map((p) => p.batterId));
 
@@ -78,6 +81,9 @@ export default function PicksBoard({ games, today }: { games: GameGroup[]; today
 
   function toggle(h: PoolHitter) {
     if (locked) return;
+    // A started game is closed even while the rest of the slate is live.
+    const g = games.find((x) => x.gameId === h.gameId);
+    if (g && isGameLocked(g, now) && !selectedIds.has(h.batterId)) return;
     if (selectedIds.has(h.batterId)) {
       persist(selected.filter((x) => x.batterId !== h.batterId), todaySlate?.lockedAt ?? null);
     } else if (selected.length < MAX_PICKS) {
@@ -105,7 +111,7 @@ export default function PicksBoard({ games, today }: { games: GameGroup[]; today
     return <div className="py-16 text-center font-mono text-sm text-text-muted">Loading your slate…</div>;
   }
 
-  const activeGame = games.find((g) => g.gameId === openGame) ?? null;
+  const activeGame = openGames.find((g) => g.gameId === openGame) ?? null;
 
   return (
     <div className="space-y-5">
@@ -138,7 +144,10 @@ export default function PicksBoard({ games, today }: { games: GameGroup[]; today
 
         {selected.length === 0 ? (
           <p className="rounded-lg border border-dashed border-white/10 bg-card/50 p-4 text-center font-sans text-sm text-text-muted">
-            Tap a game below and pick up to {MAX_PICKS} hitters to homer tonight.
+            {/* Don't tell someone to tap a game when the game list is gone. */}
+            {locked
+              ? "This slate is closed — every game has started. Check back tomorrow."
+              : `Tap a game below and pick up to ${MAX_PICKS} hitters to homer tonight.`}
           </p>
         ) : (
           <>
@@ -191,15 +200,17 @@ export default function PicksBoard({ games, today }: { games: GameGroup[]; today
       {!locked && (
         <section>
           <h2 className="mb-2 font-sans font-semibold text-text-pri">Tonight&apos;s games</h2>
-          {games.length === 0 ? (
+          {openGames.length === 0 ? (
             <p className="rounded-lg border border-dashed border-white/10 bg-card/50 p-4 text-center font-sans text-sm text-text-muted">
-              No games with posted lineups yet.
+              {games.length === 0
+                ? "No games with posted lineups yet."
+                : "Every game on this slate has started — picks are closed."}
             </p>
           ) : (
             <>
               {/* horizontal game nav — each game is a collapsible column */}
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
-                {games.map((g) => {
+                {openGames.map((g) => {
                   const active = g.gameId === openGame;
                   const inThis = selected.filter((p) => p.gameId === g.gameId).length;
                   return (
