@@ -1,6 +1,6 @@
 {
   "date": "2026-09-08",
-  "generated_at": "2026-09-08T21:35:36.408902Z",
+  "generated_at": "2026-09-08T21:56:39.222329Z",
   "model_generation": 2,
   "games": [
     {
@@ -13406,13 +13406,13 @@
       "away": "Texas Rangers",
       "home": "Seattle Mariners",
       "away_sp": "Cal Quantrill",
-      "home_sp": null,
+      "home_sp": "Bryce Miller",
       "game_datetime": "2026-09-09T01:40:00Z",
       "venue": "T-Mobile Park",
       "park_factor": 1.0329,
       "sides": {
         "away": {
-          "error": "No probable pitcher for home side of game 823092"
+          "error": "No away lineup yet for game 823092"
         },
         "home": {
           "per_hitter": {

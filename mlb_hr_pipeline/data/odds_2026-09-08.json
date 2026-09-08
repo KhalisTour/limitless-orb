@@ -1,7 +1,7 @@
 {
   "date": "2026-09-08",
   "book": "betrivers",
-  "pulled_at": "2026-09-08T21:35:39.253660Z",
+  "pulled_at": "2026-09-08T21:56:42.072870Z",
   "lines": [
     {
       "name": "Coby Mayo",
@@ -19,7 +19,7 @@
     },
     {
       "name": "Riley Greene",
-      "american": 525,
+      "american": 550,
       "point": 0.5,
       "market": "batter_home_runs",
       "batter_id": "682985"
