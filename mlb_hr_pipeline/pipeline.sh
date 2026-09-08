@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Daily orchestrator. Runs in order: score yesterday -> ingest today ->
-# predict today. Backtest + fit are run weekly (Sundays) since they're heavy.
+# Daily orchestrator. Runs in order: score yesterday -> recalibrate ->
+# ingest today -> predict today. Backtest + the three fits run weekly (Sundays)
+# since they're heavy.
 #
 # Usage: ./pipeline.sh [YYYY-MM-DD]   (defaults to today's date)
 set -euo pipefail
@@ -29,17 +30,26 @@ else
   echo "no predictions_${YESTERDAY}.json — skipping scoring" | tee -a "$LOG"
 fi
 
-# 2. Weekly refit on Sundays (heavy)
+# 2. Re-estimate the calibration constants from everything scored so far.
+# Cheap, and calibrate.py refuses to write a calibration that scores worse than
+# a constant league-rate forecast, so a bad day cannot poison the model.
+run python calibrate.py || true
+
+# 3. Weekly refit on Sundays (heavy). All three targets, not just HR — only
+# fit_model.py used to run here, so the XBH and hit coefficients were whatever
+# the last manual run left behind while the HR ones moved underneath them.
 if [[ "$DOW" == "7" ]]; then
   run python backtest.py || true
   run python fit_model.py || true
+  run python fit_model_xbh.py || true
+  run python fit_model_hit.py || true
 fi
 
-# 3. Today's ingest + predictions
+# 4. Today's ingest + predictions
 run python ingest_live.py "$DATE"
 run python predict_today.py "$DATE"
 
-# 4. Free HR-prop odds via The-Odds-API (best-effort; never fails the pipeline).
+# 5. Free HR-prop odds via The-Odds-API (best-effort; never fails the pipeline).
 run python fetch_odds.py "$DATE" || true
 
 # Best-effort: tell the local API to reload from disk. Never fails the pipeline.

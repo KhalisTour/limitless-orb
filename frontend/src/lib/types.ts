@@ -62,6 +62,9 @@ export interface Hitter {
   stats: HitterStats | null;
   tb: TbPrediction | null;
   xbh: XbhPrediction | null;
+  /** Per-PA hit probability from models_hit.py. Null on predictions generated
+   *  before the hit model was scored separately from the HR model. */
+  hit: XbhPrediction | null;
 }
 
 export interface Sim {
@@ -76,6 +79,8 @@ export interface SideOk {
   pitcher: string; // OPPOSING pitcher (the one this side's hitters face)
   hitters: Hitter[];
   sim: Sim;
+  /** Whether this side is fit to publish picks from. Absent on older payloads. */
+  quality?: SideQuality;
 }
 
 export interface SideError {
@@ -109,6 +114,26 @@ export interface TopPickTeaser {
   name: string;
   side: "home" | "away";
   p_per_pa: number;
+  /** Built on a lineup that is not fully posted, or against a starter whose
+   *  stats were regressed to a prior. Shown on game cards, gated off the
+   *  top-picks board. */
+  provisional?: boolean;
+}
+
+/** Why a game-side is or is not fit to publish a pick from. */
+export type ProvisionalReason = "lineup_not_posted" | "pitcher_regressed";
+
+export interface SideQuality {
+  /** False for predictions generated before data-quality tracking existed. */
+  known: boolean;
+  publishable: boolean;
+  reasons: ProvisionalReason[];
+  lineup_confirmed?: boolean | null;
+  lineup_slots?: number | null;
+  lineup_hitters?: number | null;
+  pitcher_level?: string | null;
+  pitcher_regressed?: boolean | null;
+  pitcher_n_pa?: number | null;
 }
 
 export interface GameListItem {
@@ -137,12 +162,24 @@ export interface TopPick extends Hitter {
   home_team: string;
   game_datetime: string | null;
   opp_pitcher: string;
+  provisional?: boolean;
+  provisional_reasons?: ProvisionalReason[];
 }
 
 export interface TopPicksResponse {
   date: string;
   stale: boolean;
   picks: TopPick[];
+  /** How many hitters the data-quality gate held back, and why. */
+  excluded?: {
+    total: number;
+    lineup_not_posted: number;
+    pitcher_regressed: number;
+  };
+  /** "on"  — the gate ran and filtered this slate.
+   *  "off" — caller asked for provisional picks too.
+   *  "none"— this date predates data-quality tracking; nothing was filtered. */
+  gating?: "on" | "off" | "none";
 }
 
 export interface DatesResponse {
@@ -213,6 +250,10 @@ export interface AccuracyResponse {
   rate_predicted: number;
   rate_actual: number;
   brier: number;
+  /** Brier a constant league-rate forecast would score over the same window.
+   *  A model that does not beat it is not adding information. */
+  baseline_brier?: number;
+  beats_baseline?: boolean;
   auc: number;
   log_loss: number;
   calibration_bins: CalibrationBin[];

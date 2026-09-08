@@ -72,5 +72,32 @@ PITCH_FAMILIES = {
 # League baselines (approx MLB-average for normalization & logistic intercept)
 LEAGUE = dict(
     hr_per_pa=0.032,      # ~3.2% baseline HR/PA
+    xbh_per_pa=0.076,     # doubles + triples + HR
+    hit_per_pa=0.218,     # all hits
+    tb_per_pa=0.360,      # total bases
     barrel=7.5, hardhit=40.0, ev=89.0, la=12.5, xslg=.400, k=22.5, whiff=24.5,
 )
+
+# Population moments the models standardize features against — mean and SD of
+# each rate stat over real plate appearances (data/backtest.csv joined to the
+# season batter board, n=110,256 PAs). PA-weighted on purpose: the fitted
+# coefficients are estimated on PA rows, so the scale has to match.
+#
+# The alternative, and what the code did before, is to take the moments from
+# whoever happens to be in HITTERS. Once predict_today swaps a live lineup in,
+# that population is nine hitters, and nine-hitter SDs are far tighter than the
+# league's — which both inflates every z-score and puts fitted coefficients on
+# the wrong scale. ingest_live overrides these when a fit supplies its own.
+LEAGUE_MOMENTS = {
+    "barrel":  (8.4226, 4.7857),
+    "xslg":    (0.4067, 0.0806),
+    "hardhit": (39.8741, 8.9872),
+    "la":      (13.8153, 4.9752),
+    "ev":      (89.0803, 2.5782),
+    "whiff":   (24.6174, 6.4724),
+    "k":       (21.6342, 6.4604),
+    "xwoba":   (0.3230, 0.0440),
+    "xba":     (0.2485, 0.0334),
+    "chase":   (30.1562, 6.4647),
+    "bb":      (9.2012, 3.6761),
+}

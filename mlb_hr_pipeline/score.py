@@ -6,9 +6,15 @@ day's Statcast PAs, count HRs per batter per game, and emit per-prediction
 calibration rows appended to data/calibration_log.csv. Also reports running
 Brier, log-loss, AUC across the full log.
 
-A "prediction" here is a per-game probability that a hitter goes deep at least
-once. We use sim's p_at_least_one_hr (the natural unit for "did Hitter X homer
-in Game Y?"). If sim wasn't run, fall back to 1 - (1 - p_per_pa) ** exp_pa.
+A "prediction" here is a per-game probability that a hitter records the outcome
+at least once. For HR we use sim's p_at_least_one_hr (the natural unit for "did
+Hitter X homer in Game Y?"); otherwise 1 - (1 - p_per_pa) ** exp_pa.
+
+XBH and hits are scored alongside HR. They were not before, which is how
+models_xbh.py and models_hit.py stayed byte-identical copies of the HR model for
+as long as they did: the pipeline published their numbers on the site but never
+compared a single one of them to a result, so there was no signal that anything
+was wrong. Anything published gets scored.
 """
 
 import json
@@ -30,16 +36,30 @@ DATA_DIR = REPO / "data"
 LOG_PATH = DATA_DIR / "calibration_log.csv"
 
 
+def _per_game(ppa, exp_pa):
+    """P(at least one) over a game's expected plate appearances."""
+    if ppa is None:
+        return None
+    ppa = min(max(float(ppa), 0.0), 1.0)
+    return 1.0 - (1.0 - ppa) ** float(exp_pa or 4.2)
+
+
 def _pred_p_hr_in_game(per_hitter_entry, sim_block, hitter):
     if sim_block and isinstance(sim_block, dict) and "p_at_least_one_hr" in sim_block:
         v = sim_block["p_at_least_one_hr"].get(hitter)
         if v is not None:
             return float(v)
-    ppa = per_hitter_entry.get("p_per_pa")
-    exp_pa = per_hitter_entry.get("exp_pa", 4.2)
-    if ppa is None:
-        return None
-    return 1.0 - (1.0 - float(ppa)) ** float(exp_pa)
+    return _per_game(per_hitter_entry.get("p_per_pa"), per_hitter_entry.get("exp_pa", 4.2))
+
+
+def _pred_p_xbh_in_game(per_hitter_entry):
+    blk = per_hitter_entry.get("xbh") or {}
+    return _per_game(blk.get("per_pa"), per_hitter_entry.get("exp_pa", 4.2))
+
+
+def _pred_p_hit_in_game(per_hitter_entry):
+    blk = per_hitter_entry.get("hit") or {}
+    return _per_game(blk.get("per_pa"), per_hitter_entry.get("exp_pa", 4.2))
 
 
 def _normalize_name(name: str) -> str:
@@ -95,8 +115,13 @@ def _load_batter_id_map(date: str) -> dict:
     return result
 
 
+XBH_EVENTS = ("double", "triple", "home_run")
+HIT_EVENTS = ("single", "double", "triple", "home_run")
+COLS = ["game_pk", "batter_id", "hr_count", "xbh_count", "hit_count"]
+
+
 def pull_actuals(date: str) -> pd.DataFrame:
-    """Per-(game, batter_id) HR counts from Statcast for `date`.
+    """Per-(game, batter_id) HR / XBH / hit counts from Statcast for `date`.
     NOTE: Statcast player_name is the PITCHER, not the batter.
     We use the numeric `batter` column (MLBAM ID) instead.
     """
@@ -104,15 +129,21 @@ def pull_actuals(date: str) -> pd.DataFrame:
     from pybaseball import cache
     cache.enable()
     df = statcast(start_dt=date, end_dt=date)
+    if df.empty or "events" not in df.columns:
+        return pd.DataFrame(columns=COLS)
+    df = df[df["events"].isin(HIT_EVENTS)]
     if df.empty:
-        return pd.DataFrame(columns=["game_pk", "batter_id", "hr_count"])
-    df = df[df["events"] == "home_run"]
-    if df.empty:
-        return pd.DataFrame(columns=["game_pk", "batter_id", "hr_count"])
-    agg = (df.groupby(["game_pk", "batter"])
-             .size().reset_index(name="hr_count")
-             .rename(columns={"batter": "batter_id"}))
-    return agg
+        return pd.DataFrame(columns=COLS)
+    df = df.assign(
+        _hr=(df["events"] == "home_run").astype(int),
+        _xbh=df["events"].isin(XBH_EVENTS).astype(int),
+        _hit=1,
+    )
+    agg = (df.groupby(["game_pk", "batter"])[["_hr", "_xbh", "_hit"]]
+             .sum().reset_index()
+             .rename(columns={"batter": "batter_id", "_hr": "hr_count",
+                              "_xbh": "xbh_count", "_hit": "hit_count"}))
+    return agg[COLS]
 
 
 def score_for_date(date: str):
@@ -134,15 +165,17 @@ def score_for_date(date: str):
             name = id_map.get(bid, f"?id={bid}")
             print(f"  game_pk={r['game_pk']}  batter_id={bid}  -> {name}  (count={r['hr_count']})")
 
-    actual_by_game = {}
-    actual_by_name = {}
+    TARGETS = ("hr", "xbh", "hit")
+    actual_by_game = {t: {} for t in TARGETS}
+    actual_by_name = {t: {} for t in TARGETS}
     for r in actuals.itertuples():
         bid = int(r.batter_id)
         name = id_map.get(bid)
         if name is None:
             continue
-        actual_by_game[(int(r.game_pk), name)] = int(r.hr_count)
-        actual_by_name[name] = actual_by_name.get(name, 0) + int(r.hr_count)
+        for t, col in (("hr", r.hr_count), ("xbh", r.xbh_count), ("hit", r.hit_count)):
+            actual_by_game[t][(int(r.game_pk), name)] = int(col)
+            actual_by_name[t][name] = actual_by_name[t].get(name, 0) + int(col)
 
     pred_game_ids = set()
     rows = []
@@ -161,16 +194,32 @@ def score_for_date(date: str):
                 if p_hr is None:
                     continue
                 hn = _normalize_name(hitter)
-                actual = actual_by_game.get((int(gid), hn))
-                if actual is None:
-                    actual = actual_by_name.get(hn, 0)
+
+                def _actual(t):
+                    v = actual_by_game[t].get((int(gid), hn))
+                    return actual_by_name[t].get(hn, 0) if v is None else v
+
+                a_hr, a_xbh, a_hit = _actual("hr"), _actual("xbh"), _actual("hit")
+                p_xbh = _pred_p_xbh_in_game(entry)
+                p_hit = _pred_p_hit_in_game(entry)
+                dq = sb.get("data_quality") or {}
                 rows.append(dict(
                     game_date=date, game_id=gid, side=side,
                     hitter=hitter, opp_pitcher=sb.get("pitcher"),
                     p_hr=p_hr, p_per_pa=entry.get("p_per_pa"),
+                    p_xbh=p_xbh, p_xbh_per_pa=(entry.get("xbh") or {}).get("per_pa"),
+                    p_hit=p_hit, p_hit_per_pa=(entry.get("hit") or {}).get("per_pa"),
                     exp_pa=entry.get("exp_pa"),
-                    actual_hr=int(actual >= 1), actual_hr_count=actual,
-                    residual=int(actual >= 1) - p_hr,
+                    actual_hr=int(a_hr >= 1), actual_hr_count=a_hr,
+                    actual_xbh=int(a_xbh >= 1), actual_xbh_count=a_xbh,
+                    actual_hit=int(a_hit >= 1), actual_hit_count=a_hit,
+                    # Recorded so calibrate.py can invert the map that was in
+                    # effect when the row was written, and so a calibration fit
+                    # from a different model generation is not applied silently.
+                    lineup_confirmed=(dq.get("lineup") or {}).get("confirmed"),
+                    pitcher_level=(dq.get("pitcher") or {}).get("level"),
+                    model_generation=preds.get("model_generation"),
+                    residual=int(a_hr >= 1) - p_hr,
                 ))
 
     # Debug: check for game_id overlap
@@ -197,21 +246,44 @@ def score_for_date(date: str):
     full.to_csv(LOG_PATH, index=False)
     print(f"[score] appended {len(new_df)} rows to {LOG_PATH}  (total={len(full)})")
 
-    # Running metrics
-    y = full["actual_hr"].values.astype(int)
-    p = full["p_hr"].clip(1e-6, 1 - 1e-6).values.astype(float)
-    metrics = {
-        "n": int(len(y)),
-        "rate_actual": float(y.mean()),
-        "rate_pred": float(p.mean()),
-        "brier": float(brier_score_loss(y, p)),
-        "log_loss": float(log_loss(y, p, labels=[0, 1])),
-    }
-    if len(set(y)) >= 2:
-        metrics["auc"] = float(roc_auc_score(y, p))
-    else:
-        metrics["auc"] = None
-        metrics["auc_note"] = "need both classes in y_true"
+    # Running metrics, per target. Each is reported against the metric a
+    # constant league-rate prediction would earn — a model that does not beat
+    # that number is not adding information, and the HR model shipped in that
+    # state (Brier 0.11096 against a 0.10830 baseline) until the calibration was
+    # re-estimated.
+    metrics = {}
+    for t, pcol, ycol in (("hr", "p_hr", "actual_hr"),
+                          ("xbh", "p_xbh", "actual_xbh"),
+                          ("hit", "p_hit", "actual_hit")):
+        if pcol not in full.columns or ycol not in full.columns:
+            continue
+        sub = full[[pcol, ycol]].dropna()
+        if len(sub) < 25:
+            continue
+        y = sub[ycol].values.astype(int)
+        p = sub[pcol].clip(1e-6, 1 - 1e-6).values.astype(float)
+        base = np.full(len(y), y.mean())
+        m = {
+            "n": int(len(y)),
+            "rate_actual": float(y.mean()),
+            "rate_pred": float(p.mean()),
+            "bias_pct": float((p.mean() / y.mean() - 1) * 100) if y.mean() else None,
+            "brier": float(brier_score_loss(y, p)),
+            "baseline_brier": float(brier_score_loss(y, base)),
+            "log_loss": float(log_loss(y, p, labels=[0, 1])),
+            "baseline_log_loss": float(log_loss(y, base, labels=[0, 1])),
+        }
+        m["auc"] = float(roc_auc_score(y, p)) if len(set(y)) >= 2 else None
+        m["beats_baseline"] = m["log_loss"] < m["baseline_log_loss"]
+        if not m["beats_baseline"]:
+            print(f"[score] WARNING: {t} predictions score worse than a constant "
+                  f"league-rate guess (log-loss {m['log_loss']:.5f} vs "
+                  f"{m['baseline_log_loss']:.5f}). Re-run calibrate.py.")
+        metrics[t] = m
+    # Keep the flat HR keys the older log consumers read.
+    if "hr" in metrics:
+        metrics.update({k: metrics["hr"][k] for k in
+                        ("n", "rate_actual", "rate_pred", "brier", "log_loss", "auc")})
     print(f"[score] running metrics: {json.dumps(metrics, indent=2)}")
     (DATA_DIR / "calibration_metrics.json").write_text(json.dumps(metrics, indent=2))
     return metrics

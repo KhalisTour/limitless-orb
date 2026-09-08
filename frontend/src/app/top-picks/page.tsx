@@ -31,7 +31,21 @@ export default async function TopPicksPage() {
   const res = await getTopPicks(undefined, 50);
   if (!res.ok) return <OfflineShell />;
 
-  const { picks, stale, date } = res.data;
+  const { picks, stale, date, excluded, gating } = res.data;
+
+  // Hitters held back because their lineup is not fully posted or because the
+  // opposing starter's stats were regressed to a league prior. Both make a
+  // hitter's number look better than the evidence behind it, which on a ranked
+  // board floats them straight to the top — so the board leaves them out and
+  // says how many it left out rather than silently showing a shorter list.
+  const heldBack = gating === "on" ? excluded?.total ?? 0 : 0;
+  const heldBackParts: string[] = [];
+  if (excluded?.lineup_not_posted) {
+    heldBackParts.push(`${excluded.lineup_not_posted} awaiting lineups`);
+  }
+  if (excluded?.pitcher_regressed) {
+    heldBackParts.push(`${excluded.pitcher_regressed} vs unproven starters`);
+  }
 
   // Edge odds (when a feed exists). Joined by batter_id; absent until the
   // pipeline writes an odds file — the UI just omits edges, never fakes them.
@@ -55,11 +69,20 @@ export default async function TopPicksPage() {
           {formatDate(date) ?? date} · {picks.length} hitters predicted
           {hasEdge && oddsBook ? ` · edge vs ${oddsBook}` : ""}
         </p>
+        {heldBack > 0 && (
+          <p className="mt-1.5 font-mono text-xs text-text-muted">
+            {heldBack} hitter{heldBack === 1 ? "" : "s"} held back
+            {heldBackParts.length > 0 ? ` — ${heldBackParts.join(", ")}` : ""}.
+            They rejoin the board once lineups post.
+          </p>
+        )}
       </header>
 
       {picks.length === 0 ? (
         <div className="rounded-lg border border-white/5 bg-card p-8 text-center font-sans text-sm text-text-muted">
-          No predictions yet for this slate.
+          {heldBack > 0
+            ? `No confirmed picks yet — ${heldBack} hitter${heldBack === 1 ? "" : "s"} waiting on posted lineups and probable starters.`
+            : "No predictions yet for this slate."}
         </div>
       ) : (
         <div className="space-y-2">

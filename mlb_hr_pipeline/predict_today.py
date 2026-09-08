@@ -59,39 +59,107 @@ TEAM_NAME_TO_ABBREV = {
 }
 
 
-def _apply_fitted_coefs():
-    """If fit_model.py has written coefficients, push them into models.M3."""
-    p = MODELS_OUT / "fitted_coefficients.json"
+PITCHER_COEF_PREFIX = "p_"
+
+
+def _apply_fitted_coefs_to(module, json_name: str):
+    """Install a fitted logistic model into a models module, whole.
+
+    Three things used to go wrong here and each of them moved every published
+    number:
+
+    1. Only five hard-coded feature names were copied across. A logistic fit's
+       coefficients are valid *jointly* — the shipped HR fit carried xwoba at
+       -0.198 largely to cancel xslg at +0.278 — so copying a subset silently
+       doubled the net power term. Every feature the fit produced is installed
+       now, and the module's feature list is replaced along with it, so a
+       partial install is not expressible.
+    2. The fit standardizes features against season-wide moments and saves them
+       as feature_means / feature_stds. Nothing read them back, so the
+       coefficients landed on z-scores taken over the nine hitters in that
+       night's lineup — a much tighter spread, which inflated every z-score and
+       put the coefficients on the wrong scale entirely. POP_STATS now carries
+       the fit's own moments.
+    3. CALIBRATION_DAMP was forced to 1.0 on the reasoning that a fitted model
+       needs no damping. The fit is one of three ensemble members, so that does
+       not follow; scored against real games it produced a top decile predicting
+       37% against 21% actual. Calibration is left to calibrate.py.
+    """
+    p = MODELS_OUT / json_name
     if not p.exists():
+        print(f"[predict] {json_name} not found — using {module.__name__} priors")
         return False
     fit = json.loads(p.read_text())
-    import models
-    # Map fitted feature names to M3 keys where they overlap.
-    overlap = {"barrel", "xslg", "hardhit", "la", "whiff"}
-    for k in overlap:
-        if k in fit["coefficients"]:
-            models.M3[k] = float(fit["coefficients"][k])
-    models.M3["intercept"] = float(fit["intercept"])
-    # Once fitted, no need to damp.
-    models.CALIBRATION_DAMP = 1.0
-    print(f"[predict] applied fitted M3 coefficients from {p}")
+    coefs = fit.get("coefficients") or {}
+    means = fit.get("feature_means") or {}
+    stds = fit.get("feature_stds") or {}
+
+    batter_keys = [k for k in coefs if not k.startswith(PITCHER_COEF_PREFIX)]
+    pitcher_keys = [k for k in coefs if k.startswith(PITCHER_COEF_PREFIX)]
+
+    new_m3 = {"intercept": float(fit["intercept"]),
+              "matchup": module.M3.get("matchup", 0.0)}
+    for k in batter_keys:
+        new_m3[k] = float(coefs[k])
+    module.M3 = new_m3
+    module.M3_FEATURE_KEYS = tuple(batter_keys)
+    module.M3_INTERCEPT_FITTED = True
+
+    module.M3_PITCHER = {k: float(coefs[k]) for k in pitcher_keys}
+
+    if means and stds:
+        # MERGE, do not replace. M3 reads only the fitted features, but M1 and
+        # M2 read others (ev, whiff, chase, xba depending on the module) and
+        # those still need league moments — dropping them here would send just
+        # those terms back to standardizing against the nine-hitter lineup,
+        # which is the exact bug the fit's moments are here to close.
+        fitted = {k: (float(means[k]), float(stds[k]) or 1.0)
+                  for k in batter_keys if k in means and k in stds}
+        module.POP_STATS = {**(module.POP_STATS or {}), **fitted}
+        module.PITCHER_POP_STATS = {
+            **(module.PITCHER_POP_STATS or {}),
+            **{k: (float(means[k]), float(stds[k]) or 1.0)
+               for k in pitcher_keys if k in means and k in stds}}
+    else:
+        print(f"[predict] {json_name} has no feature_means/feature_stds — "
+              f"keeping default league moments; refit to pin the scale")
+
+    print(f"[predict] applied fitted coefficients from {json_name}: "
+          f"{len(batter_keys)} batter + {len(pitcher_keys)} pitcher terms")
     return True
 
 
-def _apply_fitted_coefs_to(module, json_name: str,
-                           overlap=("barrel", "xslg", "hardhit", "la", "whiff")):
-    """Push fitted M3 coefficients into a model module (models_xbh / models_hit)."""
-    p = MODELS_OUT / json_name
+def _apply_fitted_coefs():
+    import models
+    return _apply_fitted_coefs_to(models, "fitted_coefficients.json")
+
+
+def _apply_calibration(module, target: str):
+    """Install DAMP/SHIFT measured by calibrate.py, if they belong to this model.
+
+    calibrate.py only writes a file when the fitted constants beat a constant
+    league-rate forecast on a holdout, and stamps it with the model generation
+    it was fitted against. A file from an older generation describes a model
+    that is no longer running, so applying it would land a correction on top of
+    a different model — refuse it and keep the shipped defaults.
+    """
+    p = MODELS_OUT / f"calibration_{target}.json"
     if not p.exists():
-        print(f"[predict] {json_name} not found — using reasoned {module.__name__} priors")
+        print(f"[predict] no calibration_{target}.json — using default "
+              f"damp={module.CALIBRATION_DAMP} shift={module.CALIBRATION_SHIFT}")
         return False
-    fit = json.loads(p.read_text())
-    for k in overlap:
-        if k in fit.get("coefficients", {}):
-            module.M3[k] = float(fit["coefficients"][k])
-    module.M3["intercept"] = float(fit["intercept"])
-    module.CALIBRATION_DAMP = 1.0
-    print(f"[predict] applied fitted coefficients from {json_name}")
+    cal = json.loads(p.read_text())
+    gen = cal.get("model_generation")
+    if gen != module.MODEL_GENERATION:
+        print(f"[predict] calibration_{target}.json was fitted against model "
+              f"generation {gen}, current is {module.MODEL_GENERATION} — ignoring "
+              f"it and keeping the shipped defaults. Re-run score.py then "
+              f"calibrate.py to refresh.")
+        return False
+    module.CALIBRATION_DAMP = float(cal["damp"])
+    module.CALIBRATION_SHIFT = float(cal["shift"])
+    print(f"[predict] applied {target} calibration: damp={cal['damp']:.3f} "
+          f"shift={cal['shift']:+.3f} (fitted on {cal['n_rows']} scored rows)")
     return True
 
 
@@ -150,11 +218,21 @@ def _tensor_breakdown(tf, batter_id, arsenal):
 
 
 def _inject_state(state: dict):
-    import models, sim
-    models.HITTERS = state["HITTERS"]
-    models.PITCHER = state["PITCHER"]
-    models.LEAGUE  = state["LEAGUE"]
-    models.PITCH_FAMILIES = state["PITCH_FAMILIES"]
+    """Swap one game-side's inputs into all three model modules.
+
+    The XBH and hit modules used to be updated separately and partially, so
+    which model saw which pitcher depended on the order of the calls. All three
+    read the same state here, and each is told to re-derive its league baseline
+    afterwards — rebinding LEAGUE alone leaves M3's intercept pinned to the
+    placeholder rate it was computed from at import.
+    """
+    import models, models_xbh, models_hit, sim
+    for mod in (models, models_xbh, models_hit):
+        mod.HITTERS = state["HITTERS"]
+        mod.PITCHER = state["PITCHER"]
+        mod.LEAGUE = state["LEAGUE"]
+        mod.PITCH_FAMILIES = state["PITCH_FAMILIES"]
+        mod.refresh_baseline()
     sim.HITTERS = state["HITTERS"]
     sim.LINEUP_ORDER = state["LINEUP_ORDER"]
 
@@ -164,13 +242,6 @@ def predict_side(state: dict, n_sims: int = 1000,
                   pitcher_throws: str = None, tensor: dict = None) -> dict:
     _inject_state(state)
     import models, models_xbh, models_hit, sim
-    # XBH/hit ensembles read module-level state too; share the same arsenal-bearing
-    # PITCHER so their matchup terms are live (same fix as the HR path).
-    for mod in (models_xbh, models_hit):
-        mod.HITTERS = state["HITTERS"]
-        mod.PITCHER = state["PITCHER"]
-        mod.LEAGUE = state["LEAGUE"]
-        mod.PITCH_FAMILIES = state["PITCH_FAMILIES"]
     arsenal = state["PITCHER"].get("arsenal", {})
     pf_map = platoon_factors or {}
     per_hitter = {}
@@ -190,16 +261,38 @@ def predict_side(state: dict, n_sims: int = 1000,
                      "platoon_factor": r["platoon_factor"]}
 
             # XBH and TB: calibrated logistic level + tensor matchup delta.
+            # Park and platoon reach the XBH and hit ensembles now. They used to
+            # be passed only to the HR model, so a Coors hitter got a
+            # park-boosted HR number bolted onto a park-blind XBH number and a
+            # total-bases figure that mixed the two conventions.
             p_hr = r["p_per_pa"]
-            p_xbh = models_xbh.model5_ensemble(name, state["LINEUP_ORDER"])["p_per_pa"]
-            p_hit = models_hit.model5_ensemble(name, state["LINEUP_ORDER"])["p_per_pa"]
-            tb_level = p_hit + p_xbh + 2.0 * p_hr   # E[TB]/PA ~ P(hit)+P(XBH)+2*P(HR)
+            p_xbh = models_xbh.model5_ensemble(
+                name, state["LINEUP_ORDER"],
+                park_factor=park_factor, platoon_factor=plat_f)["p_per_pa"]
+            p_hit = models_hit.model5_ensemble(
+                name, state["LINEUP_ORDER"],
+                park_factor=park_factor, platoon_factor=plat_f)["p_per_pa"]
+
+            # Three independently calibrated models can disagree about their own
+            # nesting: an XBH is a hit and a home run is an XBH, so the
+            # probabilities have to be ordered. Clamp rather than rescale, so the
+            # tighter-fit model wins and the looser one is pulled to meet it.
+            p_xbh = max(p_xbh, p_hr)
+            p_hit = max(p_hit, p_xbh)
+
+            # E[TB]/PA = P(1B) + 2*P(2B) + 3*P(3B) + 4*P(HR), which in terms of
+            # the nested probabilities is P(hit) + P(XBH) + P(3B) + 2*P(HR).
+            # Triples are ~0.4% of PAs and not separately modelled, so they are
+            # folded in at the league share of extra-base hits.
+            triple_share = 0.048
+            tb_level = p_hit + p_xbh + triple_share * (p_xbh - p_hr) + 2.0 * p_hr
             tb_d, xbh_d = _tensor_deltas(tensor, h.get("batter_id"), arsenal)
             exp_pa = r["exp_pa"]
-            xbh_pa = max(0.0, p_xbh + xbh_d)
+            xbh_pa = min(models_xbh.P_MAX, max(p_hr, p_xbh + xbh_d))
             tb_pa = max(0.0, tb_level + tb_d)
             entry["xbh"] = {"per_pa_level": p_xbh, "tensor_delta": xbh_d,
                             "per_pa": xbh_pa, "exp_per_game": xbh_pa * exp_pa}
+            entry["hit"] = {"per_pa": p_hit, "exp_per_game": p_hit * exp_pa}
             entry["tb"] = {"per_pa_level": tb_level, "tensor_delta": tb_d,
                            "per_pa": tb_pa, "exp_per_game": tb_pa * exp_pa,
                            "families": _tensor_breakdown(tensor, h.get("batter_id"), arsenal)}
@@ -221,7 +314,15 @@ def predict_side(state: dict, n_sims: int = 1000,
             }
         except Exception as e:
             sim_summary = {"error": str(e)}
-    return {"per_hitter": per_hitter, "sim": sim_summary, "pitcher": state["PITCHER"]["name"]}
+    return {"per_hitter": per_hitter, "sim": sim_summary,
+            "pitcher": state["PITCHER"]["name"],
+            # Travels to the API so a side built on a half-posted lineup or a
+            # league-average stand-in for the starter can be kept off the
+            # top-picks board instead of ranking alongside real matchups.
+            "data_quality": {
+                "lineup": state.get("LINEUP_QUALITY") or {},
+                "pitcher": state.get("PITCHER_QUALITY") or {},
+            }}
 
 
 def main(date: str = None):
@@ -232,16 +333,23 @@ def main(date: str = None):
         snap = ingest_live.snapshot(date)
     slate = json.loads((snap / "slate.json").read_text())
 
+    import models, models_xbh, models_hit
     _apply_fitted_coefs()
-    import models_xbh, models_hit
     _apply_fitted_coefs_to(models_xbh, "fitted_coefficients_xbh.json")
     _apply_fitted_coefs_to(models_hit, "fitted_coefficients_hit.json")
+    for mod, tgt in ((models, "hr"), (models_xbh, "xbh"), (models_hit, "hit")):
+        _apply_calibration(mod, tgt)
     tensor = _load_tensor()
 
     park_factors = _load_park_factors()
     platoon_factors_map = _load_platoon_factors()
 
-    out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z", "games": []}
+    import models as _m
+    out = {"date": date, "generated_at": dt.datetime.utcnow().isoformat() + "Z",
+           # Stamped so score.py can tell which model generation produced a row
+           # and calibrate.py will not fit constants across a model change.
+           "model_generation": _m.MODEL_GENERATION,
+           "games": []}
     for g in slate:
         home_team_full = g.get("home", "")
         home_abbrev = TEAM_NAME_TO_ABBREV.get(home_team_full, "")

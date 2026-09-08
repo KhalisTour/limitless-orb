@@ -366,6 +366,11 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     my_lineup = lineup[(lineup.game_id == game["game_id"]) & (lineup.side == side)].sort_values("slot")
     if my_lineup.empty:
         raise RuntimeError(f"No {side} lineup yet for game {game.get('game_id')}")
+    # A boxscore's battingOrder fills in as a lineup is posted, so a partial card
+    # reads as a real lineup to everything downstream. Record how much of it is
+    # actually there; predict_today carries it into the output and the API keeps
+    # unconfirmed sides off the top-picks board.
+    n_slots = int(my_lineup["slot"].nunique())
 
     name_col = find_name_col(bat)
     if name_col is None:
@@ -397,6 +402,19 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
     total = len(my_lineup)
     if total > 0 and len(skipped) / total > 0.5:
         print(f"[bridge] WARNING: skipped {len(skipped)}/{total} batters: {skipped}")
+
+    lineup_quality = {
+        "n_slots": n_slots,
+        "n_hitters": len(LINEUP_ORDER),
+        "skipped": skipped,
+        # Nine posted slots, all nine matched to a batter row. Anything less is
+        # a lineup still filling in or one the name index could not resolve, and
+        # either way it is not something to publish a pick from.
+        "confirmed": n_slots >= 9 and len(LINEUP_ORDER) >= 9,
+    }
+    if not lineup_quality["confirmed"]:
+        print(f"[bridge] {side} lineup provisional: {n_slots} slots posted, "
+              f"{len(LINEUP_ORDER)} hitters resolved")
 
     # Opposing SP — four-level cascade so we always have something real
     # Pre-load fallback boards once; they're small CSVs
@@ -435,10 +453,17 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
                 _thr = str(_hands.loc[_h_idx, "throws"] or "").strip().upper()
                 sp_throws = _thr if _thr in ("L", "R") else None
 
+    # How much of this starter's profile is his own measured performance versus
+    # a prior filled in for him. A start priced off league-average defaults is a
+    # prediction about a generic pitcher wearing his name, so the level travels
+    # with the output and gates the top-picks board.
+    pitcher_level, pitcher_n_pa = "measured", None
+
     p_idx = _fuzzy_lookup(opp_sp_name, pit_index)
     if p_idx is not None:
         # Level 1: primary board (≥50 PA, current year) — normal path
         pdict = row_to_pitcher_dict(pit.loc[p_idx])
+        pitcher_n_pa = _get_pa_count(pit.loc[p_idx]) or None
     else:
         # Look up both fallback boards before deciding what to blend
         _cur_row = None
@@ -459,6 +484,7 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
             if n_pa >= 50:
                 # Enough current-year sample — use at face value
                 pdict = row_to_pitcher_dict(_cur_row)
+                pitcher_n_pa = n_pa
                 print(f"[bridge] pitcher {opp_sp_name}: 2026 allpa ({n_pa:.0f} PA, full stats)")
             elif _prev_row is not None:
                 # Low current-year sample — blend toward 2025 stats as the informed prior
@@ -467,21 +493,25 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
                 _fill_defaults(prev_dict, PITCHER_DEFAULTS)
                 prior_2025 = {k: prev_dict[k] for k in PITCHER_DEFAULTS if prev_dict.get(k) is not None}
                 pdict = _regress_pitcher(cur_dict, n_pa, prior_2025)
+                pitcher_level, pitcher_n_pa = "regressed_prior_year", n_pa
                 print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, blended with {_prev_year} stats)")
             else:
                 # Low current-year sample, no prior-year data — regress toward handedness prior
                 defaults = _pitcher_defaults_by_hand(throws)
                 pdict = _regress_pitcher(row_to_pitcher_dict(_cur_row), n_pa, defaults)
+                pitcher_level, pitcher_n_pa = "regressed_league", n_pa
                 hand_label = "LHP" if throws == "L" else "RHP"
                 print(f"[bridge] pitcher {opp_sp_name}: low-sample 2026 ({n_pa:.0f} PA, regressed → {hand_label} prior, no {_prev_year} data)")
         elif _prev_row is not None:
             # No 2026 appearances at all — use prior-year full-season stats
             pdict = row_to_pitcher_dict(_prev_row)
+            pitcher_level = "prior_year"
             print(f"[bridge] pitcher {opp_sp_name}: {_prev_year} stats (no 2026 data)")
         else:
             # No data anywhere — handedness-aware league-average floor
             defaults = _pitcher_defaults_by_hand(sp_throws)
             pdict = dict(defaults)
+            pitcher_level = "league_floor"
             pdict["arsenal"] = _zero_arsenal()
             hand_label = "LHP" if sp_throws == "L" else ("RHP" if sp_throws else "RHP/unknown")
             print(f"[bridge] pitcher {opp_sp_name}: {hand_label} league-average floor (no data found)")
@@ -496,31 +526,44 @@ def build_inputs_for_game(game: dict, snapshot_dir: Path, side: str = "away") ->
         pdict["arsenal"] = _row_to_arsenal(_ars.loc[a_idx])
     elif not any(pdict.get("arsenal", {}).values()):
         print(f"[bridge] pitcher {opp_sp_name}: no arsenal match — matchup inert for this start")
+    arsenal_known = any(float(v or 0) for v in (pdict.get("arsenal") or {}).values())
 
     _fill_defaults(pdict, PITCHER_DEFAULTS)
     PITCHER = pdict
     PITCHER["name"] = opp_sp_name
 
     # League baselines from base_rates.json if present, else sensible defaults.
+    # All four measured baselines travel together. Only hr_per_pa used to be
+    # read across, so models_xbh/models_hit stayed pinned to guessed constants
+    # no matter what backtest.py measured.
+    league = dict(hr_per_pa=0.032, xbh_per_pa=0.076, hit_per_pa=0.218,
+                  tb_per_pa=0.360, barrel=7.5, hardhit=40.0, ev=89.0,
+                  la=12.5, xslg=0.400, k=22.5, whiff=24.5)
     base_rates_path = DATA_DIR / "base_rates.json"
     if base_rates_path.exists():
         br = json.loads(base_rates_path.read_text())
-        league = dict(
-            hr_per_pa=br.get("hr_per_pa", 0.032),
-            barrel=7.5, hardhit=40.0, ev=89.0, la=12.5,
-            xslg=0.400, k=22.5, whiff=24.5,
-        )
-    else:
-        league = dict(hr_per_pa=0.032, barrel=7.5, hardhit=40.0, ev=89.0,
-                      la=12.5, xslg=0.400, k=22.5, whiff=24.5)
+        for k in ("hr_per_pa", "xbh_per_pa", "hit_per_pa", "tb_per_pa"):
+            if br.get(k):
+                league[k] = float(br[k])
 
     pitch_families = {
         "rise": ["four_seam", "cutter"],
         "sink": ["sinker", "split"],
         "soft": ["change", "curve", "slider", "kn"],
     }
+    pitcher_quality = {
+        "level": pitcher_level,
+        "n_pa": float(pitcher_n_pa) if pitcher_n_pa else None,
+        "arsenal_known": arsenal_known,
+        # "regressed" means the published number leans on a prior rather than on
+        # this pitcher: either a low-sample blend or the league-average floor.
+        "regressed": pitcher_level in ("regressed_prior_year", "regressed_league",
+                                       "league_floor"),
+    }
+
     return dict(HITTERS=HITTERS, PITCHER=PITCHER, LINEUP_ORDER=LINEUP_ORDER,
-                LEAGUE=league, PITCH_FAMILIES=pitch_families)
+                LEAGUE=league, PITCH_FAMILIES=pitch_families,
+                LINEUP_QUALITY=lineup_quality, PITCHER_QUALITY=pitcher_quality)
 
 
 if __name__ == "__main__":

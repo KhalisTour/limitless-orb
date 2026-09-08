@@ -6,7 +6,7 @@ label, write the table + base-rate summary.
 
 Outputs (in ./data/):
   - backtest_<start>_<end>.csv   one row per PA, including label `hr`
-  - base_rates.json              HR/PA overall, by LA bin, by pitch_type, by count
+  - base_rates.json              HR/XBH/hit/TB per PA, plus HR by LA bin, pitch_type, count
 
 The pull is the expensive step (~30-40 min for a full season). pybaseball's
 on-disk cache is enabled so re-runs are cheap.
@@ -85,10 +85,30 @@ def collapse_to_pa(pitches: pd.DataFrame) -> pd.DataFrame:
     return pa
 
 
+# Outcome vocabulary shared with fit_model_xbh.py / fit_model_hit.py so the
+# three fits and the published baselines can never disagree about what an XBH is.
+XBH_EVENTS = ("double", "triple", "home_run")
+HIT_EVENTS = ("single", "double", "triple", "home_run")
+TOTAL_BASES = {"single": 1, "double": 2, "triple": 3, "home_run": 4}
+
+
 def base_rates(pa: pd.DataFrame) -> dict:
-    """Compute HR/PA overall, by LA bin, by pitch type, by count."""
+    """Compute HR / XBH / hit / TB per PA overall, plus HR by LA bin, pitch type, count."""
     out = {"n_pa": int(len(pa)), "n_hr": int(pa["hr"].sum())}
     out["hr_per_pa"] = float(pa["hr"].mean())
+
+    # The XBH / hit / total-base baselines the other three models anchor on.
+    # models_xbh.py and models_hit.py used to carry guessed constants (0.09 and
+    # 0.245 against measured 0.076 and 0.218), which put every hitter on the
+    # slate well above the real league rate before a single feature was read.
+    # They are derived from the same `events` column as `hr`, so there is no
+    # reason for them not to be measured here alongside it.
+    ev = pa["events"]
+    out["n_xbh"] = int(ev.isin(XBH_EVENTS).sum())
+    out["n_hit"] = int(ev.isin(HIT_EVENTS).sum())
+    out["xbh_per_pa"] = float(ev.isin(XBH_EVENTS).mean())
+    out["hit_per_pa"] = float(ev.isin(HIT_EVENTS).mean())
+    out["tb_per_pa"] = float(ev.map(TOTAL_BASES).fillna(0).mean())
 
     # LA bins (degrees). Only meaningful when the ball is in play.
     la_bins = [-90, 0, 10, 20, 30, 40, 90]
@@ -153,7 +173,9 @@ def main(start_dt: str = None, end_dt: str = None):
     rates_path = DATA_DIR / "base_rates.json"
     rates_path.write_text(json.dumps(summary, indent=2))
     print(f"[backtest] wrote {rates_path}")
-    print(json.dumps({k: summary[k] for k in ["n_pa", "n_hr", "hr_per_pa"]}, indent=2))
+    print(json.dumps({k: summary[k] for k in
+                      ["n_pa", "n_hr", "hr_per_pa", "xbh_per_pa",
+                       "hit_per_pa", "tb_per_pa"]}, indent=2))
     return summary
 
 

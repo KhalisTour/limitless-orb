@@ -15,6 +15,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -98,6 +99,46 @@ def _hydrate_batter(name: str) -> tuple[str | None, dict]:
     return entry.get("player_id"), entry.get("stats") or {}
 
 
+# --- data-quality gating ---------------------------------------------------
+#
+# A side is only "publishable" when the lineup it was built from is fully posted
+# AND the opposing starter was priced off his own measured performance. Both
+# conditions come from ingest_live via predictions JSON.
+#
+# Why it matters for the top-picks board specifically: the board is a ranking,
+# so anything that inflates one hitter's number relative to the field floats to
+# the top. A half-posted lineup does exactly that (fewer hitters, and the ones
+# posted first are the ones a team announces early), and a starter regressed to
+# a league-average prior is a prediction about a generic pitcher — those hitters
+# get a matchup term built from priors rather than from the man on the mound.
+# Neither belongs in a list whose whole purpose is "these are the best bets".
+
+
+def _side_quality(side: dict) -> dict:
+    """Publishability of one game-side. `known` is False for pre-gating files."""
+    dq = side.get("data_quality") if isinstance(side, dict) else None
+    if not isinstance(dq, dict) or not dq:
+        return {"known": False, "publishable": True, "reasons": []}
+    lineup = dq.get("lineup") or {}
+    pitcher = dq.get("pitcher") or {}
+    reasons = []
+    if lineup.get("confirmed") is False:
+        reasons.append("lineup_not_posted")
+    if pitcher.get("regressed"):
+        reasons.append("pitcher_regressed")
+    return {
+        "known": True,
+        "publishable": not reasons,
+        "reasons": reasons,
+        "lineup_confirmed": lineup.get("confirmed"),
+        "lineup_slots": lineup.get("n_slots"),
+        "lineup_hitters": lineup.get("n_hitters"),
+        "pitcher_level": pitcher.get("level"),
+        "pitcher_regressed": pitcher.get("regressed"),
+        "pitcher_n_pa": pitcher.get("n_pa"),
+    }
+
+
 def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, str | None, bool]:
     """Flatten all hitters across all games on a date.
 
@@ -114,6 +155,7 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
             if not isinstance(side, dict) or side.get("error"):
                 continue
             opp_pitcher = side.get("pitcher")
+            quality = _side_quality(side)
             per_hitter = side.get("per_hitter") or {}
             sim = side.get("sim") or {}
             p_game_lookup = (sim.get("p_at_least_one_hr") or {}) if isinstance(sim, dict) else {}
@@ -144,6 +186,8 @@ def _gather_hitters_for_date(date_str: str | None) -> tuple[list[dict], dict, st
                     "stats": stats,
                     "tb": entry.get("tb"),
                     "xbh": entry.get("xbh"),
+                    "hit": entry.get("hit"),
+                    "quality": quality,
                 })
     return flat, blob, served, stale
 
@@ -160,6 +204,12 @@ def _pctile_rank(values: list[float], x: float | None) -> int | None:
 
 
 def _top_pick_for_game(game: dict) -> dict | None:
+    """Best hitter in one game, for the schedule card.
+
+    Unlike /api/top-picks this does not drop provisional sides — a game card
+    should still show something for a game whose lineups are pending — but it
+    flags them so the card can mark the pick as not yet final.
+    """
     sides = game.get("sides") or {}
     best = None
     for side_key in ("away", "home"):
@@ -173,7 +223,8 @@ def _top_pick_for_game(game: dict) -> dict | None:
             if p is None:
                 continue
             if best is None or p > best["p_per_pa"]:
-                best = {"name": name, "side": side_key, "p_per_pa": p}
+                best = {"name": name, "side": side_key, "p_per_pa": p,
+                        "provisional": not _side_quality(side).get("publishable", True)}
     return best
 
 
@@ -302,11 +353,15 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
                 "stats": stats,
                 "tb": entry.get("tb"),
                 "xbh": entry.get("xbh"),
+                "hit": entry.get("hit"),
             })
         out_sides[side_key] = {
             "pitcher": side.get("pitcher"),
             "hitters": hitters_out,
             "sim": sim,
+            # Same signal the top-picks board gates on, surfaced here so a game
+            # page can explain why a side's hitters are missing from the board.
+            "quality": _side_quality(side),
         }
 
     return _sanitize({
@@ -332,14 +387,40 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
 def top_picks(
     date: str | None = Query(default=None),
     n: int = Query(default=10, ge=1, le=200),
+    include_provisional: bool = Query(
+        default=False,
+        description="Include hitters whose lineup is not fully posted or whose "
+                    "opposing starter was regressed to a prior."),
 ) -> dict:
     flat, blob, served, stale = _gather_hitters_for_date(date or _today_str())
     if not flat:
-        return _sanitize({"date": served, "stale": stale, "picks": []})
+        return _sanitize({"date": served, "stale": stale, "picks": [],
+                          "excluded": {"total": 0, "lineup_not_posted": 0,
+                                       "pitcher_regressed": 0},
+                          "gating": "none"})
+
+    # Count what the gate removes before removing it, so the page can say
+    # "12 hitters held back, lineups pending" rather than just showing fewer rows.
+    excluded = {"total": 0, "lineup_not_posted": 0, "pitcher_regressed": 0}
+    gated = [h for h in flat if (h.get("quality") or {}).get("known")]
+    if not include_provisional:
+        kept = []
+        for h in flat:
+            q = h.get("quality") or {}
+            if q.get("publishable", True):
+                kept.append(h)
+                continue
+            excluded["total"] += 1
+            for r in q.get("reasons", []):
+                excluded[r] = excluded.get(r, 0) + 1
+        flat = kept
+
+    # Percentiles rank a hitter against the field that is actually shown.
     all_p = [h["p_per_pa"] for h in flat if h.get("p_per_pa") is not None]
     flat.sort(key=lambda h: (h.get("p_per_pa") or -1.0), reverse=True)
     picks = []
     for rank, h in enumerate(flat[:n], start=1):
+        q = h.get("quality") or {}
         picks.append({
             "rank": rank,
             "name": h["name"],
@@ -358,8 +439,21 @@ def top_picks(
             "lineup_slot": h["lineup_slot"],
             "exp_pa": h["exp_pa"],
             "stats": h.get("stats"),
+            "xbh": h.get("xbh"),
+            "tb": h.get("tb"),
+            "hit": h.get("hit"),
+            "provisional": not q.get("publishable", True),
+            "provisional_reasons": q.get("reasons", []),
         })
-    return _sanitize({"date": served, "stale": stale, "picks": picks})
+    return _sanitize({
+        "date": served, "stale": stale, "picks": picks,
+        "excluded": excluded,
+        # "none" means this date's predictions predate data-quality tracking, so
+        # nothing could be gated and the board is unfiltered. Say so rather than
+        # implying a filter ran.
+        "gating": ("off" if include_provisional
+                   else ("on" if gated else "none")),
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -641,11 +735,33 @@ def trajectory(
 # accuracy
 
 
+def _per_game_p(df: pd.DataFrame) -> pd.Series:
+    """Per-GAME HR probability for each logged prediction.
+
+    The log carries both p_per_pa (per plate appearance) and p_hr (per game),
+    and actual_hr is a per-GAME 0/1. Comparing p_per_pa to it — which the
+    accuracy page did — is a unit mismatch: a per-PA rate is roughly a quarter
+    of the per-game one, so the page reported the model under-predicting by ~3x
+    when it was in fact over-predicting by 24%. The one screen whose job is to
+    say whether the models work was reporting the bias with the wrong sign.
+    """
+    if "p_hr" in df.columns and df["p_hr"].notna().any():
+        p = df["p_hr"].astype(float)
+        if p.isna().any() and "p_per_pa" in df.columns:
+            exp_pa = df.get("exp_pa", pd.Series(4.2, index=df.index)).fillna(4.2).astype(float)
+            fallback = 1.0 - (1.0 - df["p_per_pa"].astype(float).clip(0, 1)) ** exp_pa
+            p = p.fillna(fallback)
+        return p
+    exp_pa = df.get("exp_pa", pd.Series(4.2, index=df.index)).fillna(4.2).astype(float)
+    return 1.0 - (1.0 - df["p_per_pa"].astype(float).clip(0, 1)) ** exp_pa
+
+
 def _calibration_bins(df: pd.DataFrame) -> list[dict]:
-    bounds = [(0.0, 0.02), (0.02, 0.04), (0.04, 0.06), (0.06, 0.08), (0.08, 1.0)]
-    labels = ["0-2%", "2-4%", "4-6%", "6-8%", "8%+"]
+    # Bins are on the per-GAME scale, where the league average is ~12%.
+    bounds = [(0.0, 0.06), (0.06, 0.10), (0.10, 0.14), (0.14, 0.20), (0.20, 1.0)]
+    labels = ["0-6%", "6-10%", "10-14%", "14-20%", "20%+"]
     out = []
-    p = df["p_per_pa"].astype(float)
+    p = _per_game_p(df)
     a = df["actual_hr"].astype(float)
     for (lo, hi), label in zip(bounds, labels):
         mask = (p >= lo) & (p < hi) if hi < 1.0 else (p >= lo)
@@ -674,18 +790,36 @@ def accuracy(days: int = Query(default=30, ge=1, le=365)) -> dict:
     if len(recent) < 50:
         return _sanitize({"status": "insufficient_data", "n": int(len(recent)), "period_days": days})
 
+    recent = recent.copy()
+    recent["p_game"] = _per_game_p(recent)
+
     n_pred = int(len(recent))
     n_hrs = int(recent["actual_hr"].sum())
-    rate_pred = float(recent["p_per_pa"].mean())
+    rate_pred = float(recent["p_game"].mean())
     rate_actual = float(recent["actual_hr"].mean())
-    brier = float(((recent["p_per_pa"] - recent["actual_hr"]) ** 2).mean())
+    brier = float(((recent["p_game"] - recent["actual_hr"]) ** 2).mean())
 
-    metrics = d.get("calibration_metrics") or {}
-    auc = metrics.get("auc")
-    log_loss = metrics.get("log_loss")
+    # AUC and log-loss are computed over the same window as everything else.
+    # They used to be read out of calibration_metrics.json, which is a
+    # whole-history summary, so the page mixed a 30-day count and Brier with
+    # all-time AUC and log-loss and presented them as one number set.
+    y = recent["actual_hr"].astype(int).to_numpy()
+    p = recent["p_game"].astype(float).clip(1e-6, 1 - 1e-6).to_numpy()
+    log_loss = float(-(y * np.log(p) + (1 - y) * np.log(1 - p)).mean())
+    auc = None
+    if len(set(y.tolist())) >= 2:
+        order = np.argsort(p)
+        ranks = np.empty(len(p), dtype=float)
+        ranks[order] = np.arange(1, len(p) + 1)
+        n_pos, n_neg = int(y.sum()), int((1 - y).sum())
+        auc = float((ranks[y == 1].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
 
-    hrs = recent[recent["actual_hr"] == 1].sort_values("p_per_pa", ascending=False)
-    misses = recent[recent["actual_hr"] == 0].sort_values("p_per_pa", ascending=False)
+    # A model that cannot beat "predict the league rate for everyone" is not
+    # adding information, however good its Brier looks in isolation.
+    baseline_brier = float(((rate_actual - recent["actual_hr"]) ** 2).mean())
+
+    hrs = recent[recent["actual_hr"] == 1].sort_values("p_game", ascending=False)
+    misses = recent[recent["actual_hr"] == 0].sort_values("p_game", ascending=False)
 
     def _row(r: pd.Series) -> dict:
         return {
@@ -704,6 +838,8 @@ def accuracy(days: int = Query(default=30, ge=1, le=365)) -> dict:
         "rate_predicted": rate_pred,
         "rate_actual": rate_actual,
         "brier": brier,
+        "baseline_brier": baseline_brier,
+        "beats_baseline": brier < baseline_brier,
         "auc": auc,
         "log_loss": log_loss,
         "calibration_bins": _calibration_bins(recent),

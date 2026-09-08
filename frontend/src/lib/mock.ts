@@ -102,6 +102,12 @@ function makeHitter(
       exp_per_game: Math.max(0, tbLevel + tbDelta) * expPa,
       families,
     },
+    hit: {
+      per_pa_level: hitLevel,
+      tensor_delta: 0,
+      per_pa: hitLevel,
+      exp_per_game: hitLevel * expPa,
+    },
     ...opts,
   };
 }
@@ -373,7 +379,14 @@ export function mockTopPicks(date?: string, n = 50): TopPicksResponse {
   });
   picks.sort((a, b) => b.p_per_pa - a.p_per_pa);
   picks.forEach((p, i) => (p.rank = i + 1));
-  return { date: MOCK_DATE, stale, picks: picks.slice(0, n) };
+  // Mock a gated slate so the "held back" line renders in mock mode too.
+  return {
+    date: MOCK_DATE,
+    stale,
+    picks: picks.slice(0, n),
+    excluded: { total: 9, lineup_not_posted: 9, pitcher_regressed: 0 },
+    gating: "on",
+  };
 }
 
 function makeZoneCell(seed: number, base: number): ZoneCell {

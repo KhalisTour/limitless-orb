@@ -64,6 +64,18 @@ export default async function AccuracyPage() {
         <StatCard label="Predictions" value={String(a.n_predictions)} />
       </div>
 
+      {/* Brier alone reads as "small number, good model". It only means
+          anything next to what predicting the league rate for every hitter
+          would have scored, so show both and say which won. */}
+      {a.baseline_brier !== undefined && (
+        <p className="mt-2 font-mono text-xs text-text-muted">
+          Predicted {formatPct(a.rate_predicted)} vs {formatPct(a.rate_actual)} actual ·{" "}
+          {a.beats_baseline
+            ? `beats a flat league-rate forecast (${a.baseline_brier.toFixed(3)} Brier)`
+            : `does NOT beat a flat league-rate forecast (${a.baseline_brier.toFixed(3)} Brier)`}
+        </p>
+      )}
+
       <section className="mt-6">
         <h2 className="mb-3 font-mono text-xs uppercase tracking-wide text-text-muted">
           Calibration
