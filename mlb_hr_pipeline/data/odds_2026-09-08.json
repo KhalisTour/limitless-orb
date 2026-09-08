@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-08",
+  "book": "betrivers",
+  "pulled_at": "2026-09-08T21:35:39.253660Z",
+  "lines": [
+    {
+      "name": "Coby Mayo",
+      "american": 390,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "691723"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 310,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "624413"
+    },
+    {
+      "name": "Riley Greene",
+      "american": 525,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "682985"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 245,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "656941"
+    },
+    {
+      "name": "Yordan Alvarez",
+      "american": 250,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "670541"
+    },
+    {
+      "name": "Aaron Judge",
+      "american": 265,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "592450"
+    },
+    {
+      "name": "Ben Rice",
+      "american": 290,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "700250"
+    },
+    {
+      "name": "Spencer Jones",
+      "american": 370,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "682987"
+    },
+    {
+      "name": "Hunter Goodman",
+      "american": 440,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "696100"
+    },
+    {
+      "name": "Matt Olson",
+      "american": 325,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "621566"
+    }
+  ]
+}
