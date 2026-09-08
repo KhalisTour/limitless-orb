@@ -208,9 +208,12 @@ def score_for_date(date: str):
             name = id_map.get(bid, f"?id={bid}")
             print(f"  game_pk={r['game_pk']}  batter_id={bid}  -> {name}  (count={r['hr_count']})")
 
-    TARGETS = ("hr", "xbh", "hit")
-    actual_by_game = {t: {} for t in TARGETS}
-    actual_by_name = {t: {} for t in TARGETS}
+    # Names only — do NOT rebind TARGETS here: the module-level TARGETS is a
+    # tuple of (name, pred_col, actual_col) triples and the metrics loop below
+    # unpacks all three from it.
+    target_names = tuple(t for t, _, _ in TARGETS)
+    actual_by_game = {t: {} for t in target_names}
+    actual_by_name = {t: {} for t in target_names}
     for r in actuals.itertuples():
         bid = int(r.batter_id)
         name = id_map.get(bid)
