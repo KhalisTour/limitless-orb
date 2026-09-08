@@ -210,6 +210,7 @@ def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
     print(f"[odds] matched {len(matched_ids)}/{len(events)} event(s)")
 
     all_lines: list[dict] = []
+    skipped_points: dict[float, int] = {}
     used_book: str | None = None
 
     for event_id in matched_ids:
@@ -233,17 +234,38 @@ def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
         used_book = used_book or book_key
 
         for oc in outcomes:
-            # The-Odds-API HR props shape: name="Over"/"Under", description=player, point=0.5
+            # The-Odds-API HR props shape: name="Over"/"Under", description=player,
+            # point=the threshold. `point` is NOT always 0.5 — the same market
+            # returns 0.5 (anytime HR), 1.5 (2+) and 2.5 (3+) for the same player,
+            # and this loop used to drop it and store all three as if they were one
+            # line. Everything downstream then compared a 3+ HR price against
+            # P(>=1 HR) and reported a 57% edge on a +16000 line.
             if oc.get("name") != "Over":
                 continue
             player = str(oc.get("description") or "").strip()
             price = oc.get("price")
             if not player or price is None or _norm(player) not in target_names:
                 continue
+            point = oc.get("point")
             try:
-                all_lines.append({"name": player, "american": int(price)})
+                point = float(point) if point is not None else None
+            except (TypeError, ValueError):
+                point = None
+            # Only the anytime-HR threshold is comparable to the model's
+            # P(at least one HR). A missing point means the book returned a
+            # single-threshold market, which for batter_home_runs is anytime.
+            if point is not None and abs(point - 0.5) > 1e-6:
+                skipped_points[point] = skipped_points.get(point, 0) + 1
+                continue
+            try:
+                all_lines.append({"name": player, "american": int(price),
+                                  "point": 0.5, "market": HR_MARKET})
             except (TypeError, ValueError):
                 continue
+
+    if skipped_points:
+        print(f"[odds] skipped non-anytime thresholds: "
+              f"{', '.join(f'{k}+: {v}' for k, v in sorted(skipped_points.items()))}")
 
     if not all_lines:
         print("[odds] 0 matching lines for top picks; writing nothing.", file=sys.stderr)
@@ -252,6 +274,17 @@ def main(date: str, debug: bool = False, top_n: int = DEFAULT_TOP_N) -> None:
     name_idx = _name_to_id()
     for ln in all_lines:
         ln["batter_id"] = name_idx.get(_norm(ln["name"]))
+
+    # One line per batter. If a book still returns several anytime prices, keep
+    # the shortest (most probable) — never let an arbitrary iteration order pick.
+    best: dict = {}
+    for ln in all_lines:
+        key = ln.get("batter_id") or _norm(ln["name"])
+        if key not in best or ln["american"] < best[key]["american"]:
+            best[key] = ln
+    if len(best) < len(all_lines):
+        print(f"[odds] deduped {len(all_lines)} lines -> {len(best)} batters")
+    all_lines = list(best.values())
 
     out_path = DATA_DIR / f"odds_{date}.json"
     out_path.write_text(json.dumps({

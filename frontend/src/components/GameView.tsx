@@ -8,7 +8,14 @@ import EmptySideCard from "./EmptySideCard";
 import MonteCarloBar from "./MonteCarloBar";
 
 /* Page 2 interactive body — Away/Home batter tabs + per-side sim. */
-export default function GameView({ game }: { game: GameDetail }) {
+export default function GameView({
+  game,
+  date,
+}: {
+  game: GameDetail;
+  /** Slate being viewed; forwarded so matchup links resolve on past dates. */
+  date?: string;
+}) {
   // Default to the first side that actually has a lineup, so an errored
   // away side doesn't greet the user with an empty card.
   const initialTab: "away" | "home" = isSideError(game.sides.away) && !isSideError(game.sides.home)
@@ -53,6 +60,7 @@ export default function GameView({ game }: { game: GameDetail }) {
                   gameId={game.game_id}
                   oppPitcher={side.pitcher}
                   gameDatetime={game.game_datetime}
+                  date={date}
                 />
               ))}
           </div>

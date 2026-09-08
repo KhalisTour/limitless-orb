@@ -9,12 +9,14 @@ import type {
   RefreshResponse,
   ResultsResponse,
   Sim,
+  SlateContext,
   TopPick,
   TopPicksResponse,
   TrajectoryResponse,
   ZoneCell,
   ZonesResponse,
 } from "./types";
+import { STAT_KEYS } from "./types";
 
 /*
   Realistic mock data covering EVERY contract edge case (PART 5):
@@ -386,6 +388,42 @@ export function mockTopPicks(date?: string, n = 50): TopPicksResponse {
     picks: picks.slice(0, n),
     excluded: { total: 9, lineup_not_posted: 9, pitcher_regressed: 0 },
     gating: "on",
+  };
+}
+
+/* Slate context for mock mode. Derived from the same fixture hitters the rest
+   of mock.ts serves, so labels and percentile dots stay self-consistent — it
+   does not introduce numbers of its own. */
+export function mockSlateContext(date?: string): SlateContext {
+  const hitters: Hitter[] = [];
+  GAMES.forEach((g) =>
+    (["away", "home"] as const).forEach((k) => {
+      const side = g.sides[k];
+      if ("hitters" in side) hitters.push(...side.hitters);
+    }),
+  );
+  const q = (arr: number[], p: number): number => {
+    if (arr.length === 0) return 0;
+    const pos = (arr.length - 1) * p;
+    const b = Math.floor(pos);
+    const rest = pos - b;
+    return arr[b + 1] !== undefined ? arr[b] + rest * (arr[b + 1] - arr[b]) : arr[b];
+  };
+  const ps = hitters.map((h) => h.p_per_pa).sort((a, b) => a - b);
+  const stat_percentiles: Record<string, number[]> = {};
+  for (const key of STAT_KEYS) {
+    const vals = hitters
+      .map((h) => h.stats?.[key])
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v))
+      .sort((a, b) => a - b);
+    stat_percentiles[key] = Array.from({ length: 101 }, (_, i) => q(vals, i / 100));
+  }
+  return {
+    date: MOCK_DATE,
+    stale: date !== undefined && date !== MOCK_DATE,
+    n_hitters: hitters.length,
+    thresholds: { elite: q(ps, 0.9), high: q(ps, 0.75), med: q(ps, 0.5) },
+    stat_percentiles,
   };
 }
 

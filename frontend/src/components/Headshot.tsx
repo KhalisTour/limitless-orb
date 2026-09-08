@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /*
   Real MLB headshot by batter_id (MLBAM person id), with a graceful gradient
@@ -34,6 +34,22 @@ export default function Headshot({
   size?: number;
 }) {
   const [errored, setErrored] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // The <img> is server-rendered, so the browser starts (and can finish)
+  // loading it before React hydrates and attaches onError. An error that has
+  // already fired is gone — the handler never runs and the broken image sits
+  // there showing its alt text, which is the player's full name spilling out of
+  // a 48px circle. That is exactly the case the initials fallback exists for,
+  // and it was the only case where it never worked. Re-check on mount: a
+  // finished image with zero natural width is a failed image.
+  const check = useCallback((el: HTMLImageElement | null) => {
+    if (el && el.complete && el.naturalWidth === 0) setErrored(true);
+  }, []);
+  useEffect(() => {
+    check(imgRef.current);
+  }, [check, batterId]);
+
   const hue = hashHue(batterId ?? name);
   const gradient = `linear-gradient(135deg, hsl(${hue} 58% 28%), hsl(${(hue + 40) % 360} 52% 16%))`;
   const showImg = batterId !== null && !errored;
@@ -44,25 +60,37 @@ export default function Headshot({
       className="relative shrink-0 overflow-hidden rounded-full border border-white/10"
       style={{ width: size, height: size, background: gradient }}
     >
+      {/* Initials sit underneath the photo, so a failed image reveals them
+          instead of a blank circle even before the error is noticed. */}
+      <span
+        className="absolute inset-0 flex items-center justify-center font-mono font-bold text-text-pri/90"
+        style={{ fontSize: size * 0.32 }}
+        aria-hidden="true"
+      >
+        {initialsOf(name)}
+      </span>
       {showImg ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={(el) => {
+            imgRef.current = el;
+            check(el);
+          }}
           src={`https://midfield.mlbstatic.com/v1/people/${batterId}/spots/${spot}`}
-          alt={name}
+          // Empty alt: the initials underneath already carry the name, and a
+          // broken image should reveal them rather than paint the name across
+          // the avatar. The card's own text is the accessible label.
+          alt=""
           width={size}
           height={size}
           loading="lazy"
           onError={() => setErrored(true)}
+          onLoad={(e) => {
+            if (e.currentTarget.naturalWidth === 0) setErrored(true);
+          }}
           className="h-full w-full object-cover object-top"
         />
-      ) : (
-        <span
-          className="absolute inset-0 flex items-center justify-center font-mono font-bold text-text-pri/90"
-          style={{ fontSize: size * 0.32 }}
-        >
-          {initialsOf(name)}
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

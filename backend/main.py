@@ -457,6 +457,81 @@ def top_picks(
 
 
 # ---------------------------------------------------------------------------
+# slate context (label thresholds + stat percentile curves)
+
+
+SLATE_STAT_KEYS = ("barrel_pct", "hardhit_pct", "xslg", "ev",
+                   "la", "whiff_pct", "k_pct", "bb_pct")
+
+
+def _quantile(sorted_asc: list[float], q: float) -> float | None:
+    if not sorted_asc:
+        return None
+    pos = (len(sorted_asc) - 1) * q
+    base = int(math.floor(pos))
+    rest = pos - base
+    if base + 1 < len(sorted_asc):
+        return sorted_asc[base] + rest * (sorted_asc[base + 1] - sorted_asc[base])
+    return sorted_asc[base]
+
+
+def _breakpoints(sorted_asc: list[float], n: int = 101) -> list[float]:
+    """Percentile curve: n evenly spaced quantiles, 0th..100th."""
+    if not sorted_asc:
+        return []
+    return [_quantile(sorted_asc, i / (n - 1)) for i in range(n)]
+
+
+@app.get("/api/slate-context")
+def slate_context(date: str | None = Query(default=None)) -> dict:
+    """Label thresholds and stat percentile curves for a whole slate.
+
+    The frontend needs these to place a hitter against the field, and it used to
+    get them by fetching /api/top-picks?n=200 in the root layout — on every page
+    render. Three things were wrong with that:
+
+      * n is capped at 200 and a real slate has 235-260 hitters, so every
+        quantile was computed on the top 200 by probability with the weakest
+        hitters silently dropped, shifting all three thresholds up.
+      * once /api/top-picks started gating unposted lineups and regressed
+        starters, the thresholds came from the publishable subset while game
+        pages and Pick'em label the full slate against them.
+      * it shipped ~254 KB of hitter objects (tensor breakdowns, explanations,
+        stats) per page render to derive about a dozen numbers.
+
+    This computes them server-side over the ENTIRE ungated slate and returns a
+    few KB. Ungated on purpose: the thresholds describe the field, and a hitter
+    whose lineup is not posted is still part of the field.
+    """
+    flat, _blob, served, stale = _gather_hitters_for_date(date or _today_str())
+
+    ps = sorted(h["p_per_pa"] for h in flat if h.get("p_per_pa") is not None)
+    thresholds = {
+        "elite": _quantile(ps, 0.90),
+        "high": _quantile(ps, 0.75),
+        "med": _quantile(ps, 0.50),
+    }
+
+    stat_curves: dict[str, list[float]] = {}
+    for key in SLATE_STAT_KEYS:
+        vals = sorted(
+            v for v in (
+                (h.get("stats") or {}).get(key) for h in flat
+            )
+            if isinstance(v, (int, float)) and not math.isnan(float(v))
+        )
+        stat_curves[key] = _breakpoints([float(v) for v in vals])
+
+    return _sanitize({
+        "date": served,
+        "stale": stale,
+        "n_hitters": len(flat),
+        "thresholds": thresholds,
+        "stat_percentiles": stat_curves,
+    })
+
+
+# ---------------------------------------------------------------------------
 # zones
 
 
@@ -1034,8 +1109,36 @@ def get_odds(date: str) -> dict:
     if not odds_blob:
         return _sanitize({"date": date, "available": False, "book": None, "odds": []})
 
+    # One line per batter, anytime-HR only.
+    #
+    # The-Odds-API's batter_home_runs market returns several thresholds for the
+    # same player — 0.5 (anytime), 1.5 (2+), 2.5 (3+) — and the fetcher used to
+    # store all of them with the threshold stripped off. Only the anytime price
+    # is comparable to p_game_hr, so a +16000 3-HR line was being scored against
+    # P(at least one HR) and reported as a 57% edge. Worse, nothing deduped, so
+    # which line a page displayed came down to iteration order: the same hitter
+    # showed +32% edge on the board and +57% on his matchup page.
+    #
+    # Newer odds files carry `point`; older ones do not, so fall back to keeping
+    # the shortest price per batter, which is the anytime market by construction.
+    raw_lines = list(odds_blob.get("lines") or [])
+    typed = [ln for ln in raw_lines if ln.get("point") is not None]
+    if typed:
+        raw_lines = [ln for ln in typed if abs(float(ln["point"]) - 0.5) < 1e-6]
+    best: dict[str, dict] = {}
+    for ln in raw_lines:
+        key = str(ln.get("batter_id") or (ln.get("name") or "").lower())
+        if not key:
+            continue
+        cur = best.get(key)
+        a = ln.get("american")
+        if a is None:
+            continue
+        if cur is None or a < cur.get("american", float("inf")):
+            best[key] = ln
+
     out: list[dict] = []
-    for ln in odds_blob.get("lines") or []:
+    for ln in best.values():
         bid = ln.get("batter_id")
         name = ln.get("name")
         american = ln.get("american")

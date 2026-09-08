@@ -1,17 +1,18 @@
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
-import type { Hitter, ProbLabel, StatKey } from "./types";
-import { computeProbabilityLabels, computeStatPercentiles } from "./percentile";
+import type { ProbLabel, SlateContext, StatKey } from "./types";
+import {
+  FALLBACK_THRESHOLDS,
+  labelsFrom,
+  pctileFromCurves,
+  thresholdsFrom,
+} from "./percentile";
 
 /*
-  Slate context (PART 2 / PART 5). Holds the ELITE/HIGH/MED/LOW thresholds
-  and per-stat percentile data, computed ONCE from /api/top-picks?n=200 at
-  the top level and passed down. Next.js context + SWR is the whole state
-  surface — no Redux/Zustand.
-
-  We pass the raw `picks` array (serializable) from the server into this
-  client provider and memoize the derived functions here.
+  Slate context (PART 2 / PART 5). Holds the ELITE/HIGH/MED/LOW thresholds and
+  the per-stat percentile curves, both computed server-side over the whole slate
+  by /api/slate-context and passed in once from the root layout.
 */
 
 interface SlateValue {
@@ -20,39 +21,38 @@ interface SlateValue {
   pctileFor: (stat: StatKey, val: number | null) => number | null;
 }
 
-const SlateContext = createContext<SlateValue | null>(null);
+const SlateContextReact = createContext<SlateValue | null>(null);
 
 export function SlateProvider({
-  picks,
+  context,
   children,
 }: {
-  picks: Hitter[];
+  context: SlateContext | null;
   children: ReactNode;
 }) {
   const value = useMemo<SlateValue>(() => {
-    // Empty slate (API down / no picks yet) -> sane historical fallback so
-    // we don't label everything ELITE off zero thresholds.
-    if (picks.length === 0) return FALLBACK;
-    const probs = computeProbabilityLabels(picks);
-    const stats = computeStatPercentiles(picks);
+    // No slate context (API down, or a date with no predictions) -> sane
+    // historical fallback, so we never label a whole board ELITE off zeroes.
+    if (!context || !context.n_hitters) return FALLBACK;
     return {
-      thresholds: probs.thresholds,
-      labelFor: probs.labelFor,
-      pctileFor: stats.pctileFor,
+      thresholds: thresholdsFrom(context),
+      labelFor: labelsFrom(thresholdsFrom(context)).labelFor,
+      pctileFor: pctileFromCurves(context.stat_percentiles),
     };
-  }, [picks]);
+  }, [context]);
 
-  return <SlateContext.Provider value={value}>{children}</SlateContext.Provider>;
+  return (
+    <SlateContextReact.Provider value={value}>{children}</SlateContextReact.Provider>
+  );
 }
 
 /* Safe fallback so components never crash if used outside a provider. */
 const FALLBACK: SlateValue = {
-  thresholds: { elite: 0.0502, high: 0.0406, med: 0.0298 },
-  labelFor: (p) =>
-    p >= 0.0502 ? "ELITE" : p >= 0.0406 ? "HIGH" : p >= 0.0298 ? "MED" : "LOW",
+  thresholds: FALLBACK_THRESHOLDS,
+  labelFor: labelsFrom(FALLBACK_THRESHOLDS).labelFor,
   pctileFor: () => null,
 };
 
 export function useSlate(): SlateValue {
-  return useContext(SlateContext) ?? FALLBACK;
+  return useContext(SlateContextReact) ?? FALLBACK;
 }

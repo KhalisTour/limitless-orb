@@ -8,6 +8,7 @@ import type {
   OddsResponse,
   RefreshResponse,
   ResultsResponse,
+  SlateContext,
   TopPicksResponse,
   TrajectoryResponse,
   ZonesResponse,
@@ -18,14 +19,32 @@ import * as mock from "./mock";
   Typed fetch wrappers for every endpoint (PART 5). Each returns a
   discriminated ApiResult<T> — callers branch on `ok`, never try/catch.
 
-  When NEXT_PUBLIC_API_URL is unset -> mock mode (entire frontend
-  renderable before Railway is wired). When set -> live API.
+  MOCK MODE IS OPT-IN. It used to switch on automatically whenever
+  NEXT_PUBLIC_API_URL was empty, which meant a deploy that forgot the env var —
+  or typo'd it, or lost it in a new Vercel environment — served a full board of
+  INVENTED hitters, probabilities and edges with nothing on screen saying so.
+  For a page people bet off, silently fabricated numbers are worse than an
+  error, so an unset API URL is now an outage: every call fails and the pages
+  render OfflineShell. To develop against fixtures, set NEXT_PUBLIC_USE_MOCK=1
+  explicitly.
 */
 
 // Trailing slashes are a common copy-paste mistake in the Vercel env var;
 // strip them so `${API_BASE}/api/...` never becomes `//api/...`.
 export const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
-export const USE_MOCK = API_BASE === "";
+
+export const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "1";
+
+/** True when neither a real API nor an explicit mock opt-in is configured. */
+export const MISCONFIGURED = !USE_MOCK && API_BASE === "";
+
+if (MISCONFIGURED && typeof window === "undefined") {
+  console.error(
+    "[api] NEXT_PUBLIC_API_URL is not set and NEXT_PUBLIC_USE_MOCK is not 1. " +
+      "Serving no data rather than mock data — set NEXT_PUBLIC_API_URL to the " +
+      "backend origin.",
+  );
+}
 
 const DEFAULT_REVALIDATE = 300;
 
@@ -37,6 +56,9 @@ async function liveFetch<T>(
   path: string,
   opts: FetchOpts = {},
 ): Promise<ApiResult<T>> {
+  if (MISCONFIGURED) {
+    return { ok: false, error: "API not configured" };
+  }
   const url = `${API_BASE}${path}`;
   try {
     const res = await fetch(url, {
@@ -70,12 +92,18 @@ export async function getGames(date?: string): Promise<ApiResult<GamesList>> {
   return liveFetch<GamesList>(`/api/games${q}`);
 }
 
-export async function getGame(gameId: number | string): Promise<ApiResult<GameDetail>> {
+export async function getGame(
+  gameId: number | string,
+  date?: string,
+): Promise<ApiResult<GameDetail>> {
   if (USE_MOCK) {
     const g = mock.mockGame(gameId);
     return g ? ok(g) : { ok: false, error: "not found", status: 404 };
   }
-  return liveFetch<GameDetail>(`/api/game/${gameId}`);
+  // The date matters: /api/game looks the id up within one slate, so without it
+  // the backend searches today's games and any game from an earlier date 404s.
+  const q = date ? `?date=${encodeURIComponent(date)}` : "";
+  return liveFetch<GameDetail>(`/api/game/${gameId}${q}`);
 }
 
 export async function getTopPicks(
@@ -87,6 +115,14 @@ export async function getTopPicks(
   if (date) params.set("date", date);
   params.set("n", String(n));
   return liveFetch<TopPicksResponse>(`/api/top-picks?${params.toString()}`);
+}
+
+export async function getSlateContext(
+  date?: string,
+): Promise<ApiResult<SlateContext>> {
+  if (USE_MOCK) return ok(mock.mockSlateContext(date));
+  const q = date ? `?date=${encodeURIComponent(date)}` : "";
+  return liveFetch<SlateContext>(`/api/slate-context${q}`);
 }
 
 export async function getZones(
@@ -155,6 +191,7 @@ export async function refreshGame(
   gameId: number | string,
 ): Promise<ApiResult<RefreshResponse>> {
   if (USE_MOCK) return ok(mock.mockRefresh(gameId));
+  if (MISCONFIGURED) return { ok: false, error: "API not configured" };
   try {
     const res = await fetch(`${API_BASE}/api/refresh/${gameId}`, {
       method: "POST",

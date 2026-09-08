@@ -39,7 +39,7 @@ export default async function HomePage({
       ) : (
         <div className="space-y-2.5">
           {games.games.map((g) => (
-            <GameCard key={g.game_id} game={g} />
+            <GameCard key={g.game_id} game={g} date={currentDate} />
           ))}
         </div>
       )}

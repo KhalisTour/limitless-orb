@@ -13,11 +13,14 @@ export const revalidate = 300;
 
 export default async function GamePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ game_id: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
   const { game_id } = await params;
-  const res = await getGame(game_id);
+  const { date } = await searchParams;
+  const res = await getGame(game_id, date);
 
   if (!res.ok) {
     if (res.status === 404) notFound();
@@ -32,7 +35,11 @@ export default async function GamePage({
     <div>
       {game.stale && <StaleBanner date={game.date} />}
 
-      <Link href="/" className="mb-3 inline-block font-mono text-xs text-text-muted hover:text-text-pri">
+      {/* Back to the slate the user came from, not to today's. */}
+      <Link
+        href={date ? `/?date=${encodeURIComponent(date)}` : "/"}
+        className="mb-3 inline-block font-mono text-xs text-text-muted hover:text-text-pri"
+      >
         ‹ All games
       </Link>
 
@@ -53,7 +60,7 @@ export default async function GamePage({
       {bothErrored ? (
         <PendingLineupHero gameId={game.game_id} awaySp={game.away_sp} homeSp={game.home_sp} />
       ) : (
-        <GameView game={game} />
+        <GameView game={game} date={date} />
       )}
     </div>
   );

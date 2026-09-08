@@ -32,10 +32,18 @@ interface Props {
   oppPitcher: string;
   gameDatetime?: string | null;
   rank?: number;
+  /** Slate being viewed; travels into the matchup link so past dates resolve. */
+  date?: string;
 }
 
-function matchupHref(gameId: number, batterId: string, oppPitcher: string) {
-  return `/matchup/${gameId}/${batterId}/${encodeURIComponent(oppPitcher)}`;
+function matchupHref(
+  gameId: number,
+  batterId: string,
+  oppPitcher: string,
+  date?: string,
+) {
+  const q = date ? `?date=${encodeURIComponent(date)}` : "";
+  return `/matchup/${gameId}/${batterId}/${encodeURIComponent(oppPitcher)}${q}`;
 }
 
 export default function HitterCard({
@@ -45,6 +53,7 @@ export default function HitterCard({
   oppPitcher,
   gameDatetime,
   rank,
+  date,
 }: Props) {
   const slate = useSlate();
   const label = slate.labelFor(hitter.p_per_pa);
@@ -54,7 +63,7 @@ export default function HitterCard({
     barrelPctile: slate.pctileFor("barrel_pct", hitter.stats?.barrel_pct ?? null),
   });
   const disabled = hitter.batter_id === null;
-  const href = disabled ? "#" : matchupHref(gameId, hitter.batter_id!, oppPitcher);
+  const href = disabled ? "#" : matchupHref(gameId, hitter.batter_id!, oppPitcher, date);
 
   if (variant === "game") {
     const inner = (

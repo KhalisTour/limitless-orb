@@ -182,6 +182,17 @@ export interface TopPicksResponse {
   gating?: "on" | "off" | "none";
 }
 
+/* /api/slate-context — label thresholds + stat percentile curves, computed
+   server-side over the whole (ungated) slate. */
+export interface SlateContext {
+  date: string;
+  stale: boolean;
+  n_hitters: number;
+  thresholds: { elite: number; high: number; med: number };
+  /** 101-point percentile curve per stat; index i is the i-th percentile. */
+  stat_percentiles: Record<string, number[]>;
+}
+
 export interface DatesResponse {
   dates: string[];
   latest: string;

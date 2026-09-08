@@ -10,8 +10,17 @@ import LabelBadge from "./LabelBadge";
 import ParkBadge from "./ParkBadge";
 import EmblemRow from "./EmblemBadge";
 
-/* Level 1 game card (Page 1). Compact single-block row. Tap -> game detail. */
-export default function GameCard({ game }: { game: GameListItem }) {
+/* Level 1 game card (Page 1). Compact single-block row. Tap -> game detail.
+   `date` is the slate being viewed; it has to travel with the link, because a
+   game id only resolves within its own slate. Without it, browsing back to an
+   earlier date and tapping any game 404s. */
+export default function GameCard({
+  game,
+  date,
+}: {
+  game: GameListItem;
+  date?: string;
+}) {
   const slate = useSlate();
   const time = formatGameTime(game.game_datetime);
   const pick = game.top_pick;
@@ -20,7 +29,7 @@ export default function GameCard({ game }: { game: GameListItem }) {
 
   return (
     <Link
-      href={`/game/${game.game_id}`}
+      href={`/game/${game.game_id}${date ? `?date=${encodeURIComponent(date)}` : ""}`}
       className="flex items-center gap-3 rounded-lg border border-white/5 bg-card px-3 py-2 transition-colors hover:bg-hover"
     >
       <div className="min-w-0 flex-1">

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { getTopPicks } from "@/lib/api";
+import { getSlateContext } from "@/lib/api";
 import { SlateProvider } from "@/lib/slate";
 import { TopNav, BottomNav } from "@/components/Nav";
-import type { Hitter } from "@/lib/types";
+import type { SlateContext } from "@/lib/types";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -28,10 +28,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Slate-relative thresholds computed ONCE from today's full board (PART 2).
-  // n=200 so percentiles are stable. Falls back gracefully if API is down.
-  const picksRes = await getTopPicks(undefined, 200);
-  const picks: Hitter[] = picksRes.ok ? picksRes.data.picks : [];
+  // Slate-relative thresholds and stat percentile curves, computed server-side
+  // over the entire slate. This used to pull /api/top-picks?n=200 — 254 KB of
+  // hitter objects on every page render, capped below the size of a real slate
+  // and, once top-picks started gating, drawn from the publishable subset only.
+  // Falls back gracefully if the API is down.
+  const ctxRes = await getSlateContext();
+  const slateContext: SlateContext | null = ctxRes.ok ? ctxRes.data : null;
 
   return (
     <html
@@ -39,7 +42,7 @@ export default async function RootLayout({
       className={`${inter.variable} ${jetbrains.variable} h-full`}
     >
       <body className="min-h-full flex flex-col bg-base text-text-pri">
-        <SlateProvider picks={picks}>
+        <SlateProvider context={slateContext}>
           <TopNav />
           <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-4">{children}</main>
           <BottomNav />

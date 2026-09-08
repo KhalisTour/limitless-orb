@@ -26,10 +26,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default async function MatchupPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ game_id: string; batter_id: string; pitcher_name: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
   const { game_id, batter_id, pitcher_name } = await params;
+  // Same reason GameCard carries it: a game id only resolves inside its slate.
+  const { date: slateDate } = await searchParams;
   // Next 16 does NOT auto-decode the route segment, so decode it ourselves
   // (error #16). Guard against a stray literal % that isn't an escape.
   let pitcher = pitcher_name;
@@ -41,7 +45,7 @@ export default async function MatchupPage({
 
   // game + zones + matchup in parallel; trajectory depends on hottest_zone.
   const [gameRes, zonesRes, matchupRes] = await Promise.all([
-    getGame(game_id),
+    getGame(game_id, slateDate),
     getZones(batter_id, "all"),
     getMatchup(batter_id, pitcher, "all"),
   ]);
@@ -90,7 +94,7 @@ export default async function MatchupPage({
       {game.stale && <StaleBanner date={game.date} />}
 
       <Link
-        href={`/game/${game.game_id}`}
+        href={`/game/${game.game_id}${slateDate ? `?date=${encodeURIComponent(slateDate)}` : ""}`}
         className="mb-3 inline-block font-mono text-xs text-text-muted hover:text-text-pri"
       >
         ‹ {game.away_team} @ {game.home_team}

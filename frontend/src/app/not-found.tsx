@@ -4,8 +4,10 @@ export default function NotFound() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-24 text-center">
       <div className="font-mono text-3xl font-bold text-neon-lime">404</div>
+      {/* This is the app-wide 404, not just the game route's — it used to
+          claim every unknown URL was a missing game. */}
       <p className="mt-2 font-sans text-sm text-text-muted">
-        That game isn&apos;t on the board.
+        That page isn&apos;t on the board.
       </p>
       <Link
         href="/"

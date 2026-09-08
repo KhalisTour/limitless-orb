@@ -1,83 +1,68 @@
-import type { Hitter, ProbLabel, StatKey } from "./types";
-import { STAT_KEYS } from "./types";
+import type { ProbLabel, SlateContext, StatKey } from "./types";
 
 /*
-  Slate-relative thresholds (PART 2). Computed ONCE at the top level from
-  /api/top-picks?n=200 and passed down via React context. Never hardcode.
-*/
+  Slate-relative thresholds (PART 2).
 
-function quantile(sortedAsc: number[], q: number): number {
-  if (sortedAsc.length === 0) return 0;
-  const pos = (sortedAsc.length - 1) * q;
-  const base = Math.floor(pos);
-  const rest = pos - base;
-  if (sortedAsc[base + 1] !== undefined) {
-    return sortedAsc[base] + rest * (sortedAsc[base + 1] - sortedAsc[base]);
-  }
-  return sortedAsc[base];
-}
+  These used to be computed in the browser from /api/top-picks?n=200, which was
+  wrong three ways at once — the endpoint caps n at 200 while a slate carries
+  235-260 hitters, it gates unposted lineups out of the population, and it cost
+  ~254 KB per page render to derive a dozen numbers. The backend now computes
+  them over the whole ungated slate at /api/slate-context and this file just
+  reads that payload.
+*/
 
 export interface ProbabilityLabels {
   thresholds: { elite: number; high: number; med: number };
   labelFor: (p: number) => ProbLabel;
 }
 
-export function computeProbabilityLabels(picks: Hitter[]): ProbabilityLabels {
-  const ps = picks
-    .map((h) => h.p_per_pa)
-    .filter((p) => Number.isFinite(p))
-    .sort((a, b) => a - b);
+/** Historical fallback used when the slate context is unavailable. */
+export const FALLBACK_THRESHOLDS = { elite: 0.0502, high: 0.0406, med: 0.0298 };
 
-  const thresholds = {
-    elite: quantile(ps, 0.9),
-    high: quantile(ps, 0.75),
-    med: quantile(ps, 0.5),
-  };
-
+export function labelsFrom(
+  thresholds: { elite: number; high: number; med: number },
+): ProbabilityLabels {
   const labelFor = (p: number): ProbLabel => {
+    if (!Number.isFinite(p)) return "LOW";
     if (p >= thresholds.elite) return "ELITE";
     if (p >= thresholds.high) return "HIGH";
     if (p >= thresholds.med) return "MED";
     return "LOW";
   };
-
   return { thresholds, labelFor };
 }
 
-export interface StatPercentiles {
-  /** sorted-ascending values per stat, used for empirical percentile */
-  thresholdsByStat: Record<StatKey, number[]>;
-  /** Returns 0–100 percentile of val within the slate for that stat.
-      null val -> null (omit dot). Some stats are "lower is better"
-      (whiff_pct, k_pct) but the dot encodes raw distribution position;
-      we keep it simple and rank by value ascending for all. */
-  pctileFor: (stat: StatKey, val: number | null) => number | null;
-}
-
-export function computeStatPercentiles(picks: Hitter[]): StatPercentiles {
-  const thresholdsByStat = {} as Record<StatKey, number[]>;
-  for (const key of STAT_KEYS) {
-    const vals = picks
-      .map((h) => h.stats?.[key])
-      .filter((v): v is number => v !== null && v !== undefined && Number.isFinite(v))
-      .sort((a, b) => a - b);
-    thresholdsByStat[key] = vals;
-  }
-
-  const pctileFor = (stat: StatKey, val: number | null): number | null => {
+/**
+ * Percentile of `val` against the slate, read off the 101-point curve the API
+ * returns (index i is the i-th percentile). Counting how many breakpoints the
+ * value clears IS its percentile, so no interpolation is needed.
+ */
+export function pctileFromCurves(
+  curves: Record<string, number[]> | undefined,
+): (stat: StatKey, val: number | null) => number | null {
+  return (stat, val) => {
     if (val === null || val === undefined || !Number.isFinite(val)) return null;
-    const arr = thresholdsByStat[stat];
-    if (!arr || arr.length === 0) return null;
-    // count values <= val
+    const curve = curves?.[stat];
+    if (!curve || curve.length === 0) return null;
     let lo = 0;
-    let hi = arr.length;
+    let hi = curve.length;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      if (arr[mid] <= val) lo = mid + 1;
+      if (curve[mid] <= val) lo = mid + 1;
       else hi = mid;
     }
-    return Math.round((lo / arr.length) * 100);
+    return Math.round((lo / curve.length) * 100);
   };
+}
 
-  return { thresholdsByStat, pctileFor };
+export function thresholdsFrom(ctx: SlateContext | null): {
+  elite: number;
+  high: number;
+  med: number;
+} {
+  const t = ctx?.thresholds;
+  if (!t || !Number.isFinite(t.elite) || !Number.isFinite(t.high) || !Number.isFinite(t.med)) {
+    return FALLBACK_THRESHOLDS;
+  }
+  return { elite: t.elite, high: t.high, med: t.med };
 }
