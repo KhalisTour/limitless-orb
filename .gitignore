@@ -29,3 +29,9 @@ mlb_hr_pipeline/data/backtest*.csv
 mlb_hr_pipeline/data/pitches*.csv
 data/backtest*.csv
 data/pitches*.csv
+
+# Scheduler runtime state (schedule_runs.py). Per-machine and per-day: a lock
+# file committed from one machine would block runs on another, and the daily
+# plan is rebuilt from the live schedule anyway.
+mlb_hr_pipeline/data/run_plan_*.json
+mlb_hr_pipeline/data/scheduler.lock

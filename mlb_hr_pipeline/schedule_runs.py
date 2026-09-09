@@ -155,8 +155,19 @@ def _first_pitches(date: str) -> list[dt.datetime]:
     return sorted(times)
 
 
-def build_plan(date: str) -> dict:
-    times = _first_pitches(date)
+def build_plan(date: str) -> dict | None:
+    """Today's plan, or None when the schedule could not be read.
+
+    Returning None (rather than raising) keeps a transient network blip at 08:00
+    from dumping a traceback into cron.log every five minutes and mailing the
+    user a failure. Nothing is written, so the next tick simply tries again.
+    """
+    try:
+        times = _first_pitches(date)
+    except Exception as e:
+        log(f"could not read the schedule for {date} ({type(e).__name__}: {e}); "
+            f"will retry on the next tick")
+        return None
     plan = {
         "date": date,
         "timezone": "America/New_York",
@@ -167,7 +178,12 @@ def build_plan(date: str) -> dict:
         "runs": [],
     }
     if not times:
-        log(f"no games scheduled for {date}; nothing to run")
+        # A genuinely empty slate (off day, All-Star break) and a schedule feed
+        # that transiently returned nothing look identical here. Mark the plan
+        # provisional so it is rebuilt rather than a bad empty answer standing
+        # for the rest of the day.
+        plan["provisional"] = True
+        log(f"no games scheduled for {date}; will re-check")
         return plan
 
     slots = [("pre_first", times[0] - LEAD)]
@@ -192,6 +208,50 @@ def build_plan(date: str) -> dict:
         log(f"  {r['name']}: run at "
             f"{dt.datetime.fromisoformat(r['at']).strftime('%-I:%M %p')} ET")
     return plan
+
+
+# Re-read the schedule at most this often while runs are still pending.
+REFRESH_EVERY = dt.timedelta(minutes=90)
+
+
+def should_refresh(plan: dict) -> bool:
+    """True when the plan is stale and something it schedules has yet to fire."""
+    if not any(r["status"] == "pending" for r in plan.get("runs", [])):
+        return bool(plan.get("provisional"))
+    try:
+        planned_at = dt.datetime.fromisoformat(plan["planned_at"])
+    except (KeyError, ValueError):
+        return True
+    return (now_et() - planned_at) >= REFRESH_EVERY
+
+
+def merge_plan(old: dict, fresh: dict) -> dict:
+    """Adopt fresh start times, keeping what has already run.
+
+    A slot that already fired stays exactly as it was — its record is history.
+    A pending slot takes the new time, and the change is logged so a shifted
+    first pitch is visible in the log rather than silent.
+    """
+    by_name = {r["name"]: r for r in fresh.get("runs", [])}
+    merged = dict(fresh)
+    merged["runs"] = []
+    done = {r["name"]: r for r in old.get("runs", [])
+            if r["status"] in ("done", "failed", "running", "missed")}
+    for r in fresh.get("runs", []):
+        if r["name"] in done:
+            merged["runs"].append(done[r["name"]])
+            continue
+        prev = next((x for x in old.get("runs", []) if x["name"] == r["name"]), None)
+        if prev and prev["at"] != r["at"]:
+            log(f"{r['name']} moved "
+                f"{dt.datetime.fromisoformat(prev['at']).strftime('%-I:%M %p')} -> "
+                f"{dt.datetime.fromisoformat(r['at']).strftime('%-I:%M %p')} ET")
+        merged["runs"].append(r)
+    # Keep any already-run slot the new schedule no longer has (game postponed).
+    for name, r in done.items():
+        if name not in by_name:
+            merged["runs"].append(r)
+    return merged
 
 
 def load_plan(date: str) -> dict | None:
@@ -332,7 +392,18 @@ def main(argv=None) -> int:
         if not args.replan and now_et().hour < PLAN_HOUR_ET:
             return 0
         plan = build_plan(date)
+        if plan is None:
+            return 0
         save_plan(plan)
+    elif should_refresh(plan):
+        # Start times move: postponements, doubleheaders, a game pushed for
+        # weather. The plan is read hours before the second run fires, so a
+        # time that shifted after 08:00 would otherwise send the pipeline off
+        # at the wrong hour.
+        fresh = build_plan(date)
+        if fresh is not None:
+            plan = merge_plan(plan, fresh)
+            save_plan(plan)
 
     fire_due(plan, dry_run=args.dry_run)
     return 0
