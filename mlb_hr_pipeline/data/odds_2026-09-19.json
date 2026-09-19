@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-19",
+  "book": "betrivers",
+  "pulled_at": "2026-09-19T18:28:29.377237Z",
+  "lines": [
+    {
+      "name": "Miguel Vargas",
+      "american": 480,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "678246"
+    },
+    {
+      "name": "Munetaka Murakami",
+      "american": 575,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "808959"
+    },
+    {
+      "name": "Christian Encarnacion-Strand",
+      "american": 480,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "687952"
+    },
+    {
+      "name": "Jackson Chourio",
+      "american": 480,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "694192"
+    },
+    {
+      "name": "Pete Alonso",
+      "american": 360,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "624413"
+    },
+    {
+      "name": "Coby Mayo",
+      "american": 410,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "691723"
+    },
+    {
+      "name": "Junior Caminero",
+      "american": 300,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "691406"
+    },
+    {
+      "name": "Wilyer Abreu",
+      "american": 430,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "677800"
+    },
+    {
+      "name": "Juan Soto",
+      "american": 320,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "665742"
+    },
+    {
+      "name": "Kyle Schwarber",
+      "american": 275,
+      "point": 0.5,
+      "market": "batter_home_runs",
+      "batter_id": "656941"
+    }
+  ]
+}
