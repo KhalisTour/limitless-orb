@@ -1,0 +1,1622 @@
+[
+  {
+    "component": 0,
+    "name": "offspeed favoring in heart (3-1 count) at TOR",
+    "variance_fraction": 0.1603,
+    "factors": {
+      "batter": [
+        {
+          "id": 663728,
+          "loading": 1.3186,
+          "deviation": 5.614,
+          "name": "B-663728"
+        },
+        {
+          "id": 656941,
+          "loading": 1.1747,
+          "deviation": 4.256,
+          "name": "B-656941"
+        },
+        {
+          "id": 553993,
+          "loading": 1.1415,
+          "deviation": 3.942,
+          "name": "B-553993"
+        },
+        {
+          "id": 592450,
+          "loading": 1.1302,
+          "deviation": 3.835,
+          "name": "B-592450"
+        },
+        {
+          "id": 691406,
+          "loading": 1.1137,
+          "deviation": 3.68,
+          "name": "B-691406"
+        },
+        {
+          "id": 660271,
+          "loading": 1.1081,
+          "deviation": 3.627,
+          "name": "B-660271"
+        },
+        {
+          "id": 701762,
+          "loading": 1.1036,
+          "deviation": 3.584,
+          "name": "B-701762"
+        },
+        {
+          "id": 621439,
+          "loading": 1.0725,
+          "deviation": 3.29,
+          "name": "B-621439"
+        },
+        {
+          "id": 621493,
+          "loading": 1.0712,
+          "deviation": 3.278,
+          "name": "B-621493"
+        },
+        {
+          "id": 666176,
+          "loading": 1.0537,
+          "deviation": 3.112,
+          "name": "B-666176"
+        }
+      ],
+      "pitcher": [
+        {
+          "id": 571760,
+          "loading": 0.9817,
+          "deviation": 3.751,
+          "name": "Heaney, Andrew"
+        },
+        {
+          "id": 607625,
+          "loading": 0.946,
+          "deviation": 3.228,
+          "name": "Lugo, Seth"
+        },
+        {
+          "id": 571945,
+          "loading": 0.9432,
+          "deviation": 3.186,
+          "name": "Mikolas, Miles"
+        },
+        {
+          "id": 660730,
+          "loading": 0.9285,
+          "deviation": 2.971,
+          "name": "Rodr\u00edguez, Elvin"
+        },
+        {
+          "id": 680684,
+          "loading": 0.919,
+          "deviation": 2.832,
+          "name": "Hoglund, Gunnar"
+        },
+        {
+          "id": 670102,
+          "loading": 0.9168,
+          "deviation": 2.8,
+          "name": "Francis, Bowden"
+        },
+        {
+          "id": 684007,
+          "loading": 0.9148,
+          "deviation": 2.77,
+          "name": "Imanaga, Shota"
+        },
+        {
+          "id": 592791,
+          "loading": 0.9137,
+          "deviation": 2.754,
+          "name": "Taillon, Jameson"
+        },
+        {
+          "id": 502043,
+          "loading": 0.9098,
+          "deviation": 2.697,
+          "name": "Gibson, Kyle"
+        },
+        {
+          "id": 641927,
+          "loading": 0.9091,
+          "deviation": 2.688,
+          "name": "Ober, Bailey"
+        }
+      ],
+      "pitch_family": [
+        {
+          "id": "offspeed",
+          "loading": 0.8702,
+          "deviation": 1.307
+        },
+        {
+          "id": "breaking",
+          "loading": 0.8209,
+          "deviation": -0.186
+        },
+        {
+          "id": "fastball",
+          "loading": 0.7901,
+          "deviation": -1.121
+        }
+      ],
+      "zone": [
+        {
+          "id": 5.0,
+          "loading": 1.3446,
+          "deviation": 0.947,
+          "description": "heart"
+        },
+        {
+          "id": 3.0,
+          "loading": 1.2711,
+          "deviation": 0.813,
+          "description": "high-outside"
+        },
+        {
+          "id": 2.0,
+          "loading": 1.2659,
+          "deviation": 0.804,
+          "description": "high-middle"
+        },
+        {
+          "id": 6.0,
+          "loading": 1.2056,
+          "deviation": 0.694,
+          "description": "mid-outside"
+        },
+        {
+          "id": 8.0,
+          "loading": 1.1932,
+          "deviation": 0.671,
+          "description": "low-middle"
+        },
+        {
+          "id": 1.0,
+          "loading": 1.1747,
+          "deviation": 0.638,
+          "description": "high-inside"
+        },
+        {
+          "id": 4.0,
+          "loading": 1.1173,
+          "deviation": 0.533,
+          "description": "mid-inside"
+        },
+        {
+          "id": 9.0,
+          "loading": 1.0339,
+          "deviation": 0.381,
+          "description": "low-outside"
+        },
+        {
+          "id": 7.0,
+          "loading": 0.9658,
+          "deviation": 0.258,
+          "description": "low-inside"
+        },
+        {
+          "id": 12.0,
+          "loading": 0.3622,
+          "deviation": -0.841,
+          "description": "up-and-away (chase)"
+        }
+      ],
+      "count": [
+        {
+          "id": "3-1",
+          "loading": 1.1167,
+          "deviation": 1.173,
+          "description": "3-1 count"
+        },
+        {
+          "id": "2-0",
+          "loading": 1.0952,
+          "deviation": 1.035,
+          "description": "2-0 count"
+        },
+        {
+          "id": "1-0",
+          "loading": 1.079,
+          "deviation": 0.931,
+          "description": "1-0 count"
+        },
+        {
+          "id": "2-1",
+          "loading": 1.0521,
+          "deviation": 0.759,
+          "description": "2-1 count"
+        },
+        {
+          "id": "1-1",
+          "loading": 1.0346,
+          "deviation": 0.646,
+          "description": "1-1 count"
+        },
+        {
+          "id": "0-0",
+          "loading": 1.0088,
+          "deviation": 0.481,
+          "description": "0-0 count"
+        },
+        {
+          "id": "0-1",
+          "loading": 0.9845,
+          "deviation": 0.325,
+          "description": "0-1 count"
+        },
+        {
+          "id": "3-0",
+          "loading": 0.9126,
+          "deviation": -0.136,
+          "description": "3-0 count"
+        },
+        {
+          "id": "3-2",
+          "loading": 0.7874,
+          "deviation": -0.939,
+          "description": "3-2 count"
+        },
+        {
+          "id": "0-2",
+          "loading": 0.7873,
+          "deviation": -0.94,
+          "description": "0-2 count"
+        }
+      ],
+      "park": [
+        {
+          "id": "TOR",
+          "loading": 0.8575,
+          "deviation": 1.835
+        },
+        {
+          "id": "LAD",
+          "loading": 0.8468,
+          "deviation": 1.613
+        },
+        {
+          "id": "TB",
+          "loading": 0.8462,
+          "deviation": 1.6
+        },
+        {
+          "id": "BAL",
+          "loading": 0.8422,
+          "deviation": 1.518
+        },
+        {
+          "id": "CWS",
+          "loading": 0.8351,
+          "deviation": 1.37
+        },
+        {
+          "id": "MIL",
+          "loading": 0.8086,
+          "deviation": 0.821
+        },
+        {
+          "id": "DET",
+          "loading": 0.8058,
+          "deviation": 0.763
+        },
+        {
+          "id": "LAA",
+          "loading": 0.7978,
+          "deviation": 0.598
+        },
+        {
+          "id": "CHC",
+          "loading": 0.7939,
+          "deviation": 0.517
+        },
+        {
+          "id": "HOU",
+          "loading": 0.784,
+          "deviation": 0.312
+        }
+      ]
+    }
+  },
+  {
+    "component": 1,
+    "name": "breaking favoring in heart (3-1 count) at BAL",
+    "variance_fraction": 0.2449,
+    "factors": {
+      "batter": [
+        {
+          "id": 663728,
+          "loading": 1.3618,
+          "deviation": 5.616,
+          "name": "B-663728"
+        },
+        {
+          "id": 656941,
+          "loading": 1.2205,
+          "deviation": 4.373,
+          "name": "B-656941"
+        },
+        {
+          "id": 592450,
+          "loading": 1.1746,
+          "deviation": 3.969,
+          "name": "B-592450"
+        },
+        {
+          "id": 553993,
+          "loading": 1.1687,
+          "deviation": 3.917,
+          "name": "B-553993"
+        },
+        {
+          "id": 691406,
+          "loading": 1.147,
+          "deviation": 3.726,
+          "name": "B-691406"
+        },
+        {
+          "id": 660271,
+          "loading": 1.1444,
+          "deviation": 3.704,
+          "name": "B-660271"
+        },
+        {
+          "id": 701762,
+          "loading": 1.1314,
+          "deviation": 3.589,
+          "name": "B-701762"
+        },
+        {
+          "id": 666176,
+          "loading": 1.0942,
+          "deviation": 3.261,
+          "name": "B-666176"
+        },
+        {
+          "id": 621439,
+          "loading": 1.0932,
+          "deviation": 3.253,
+          "name": "B-621439"
+        },
+        {
+          "id": 621493,
+          "loading": 1.0877,
+          "deviation": 3.205,
+          "name": "B-621493"
+        }
+      ],
+      "pitcher": [
+        {
+          "id": 571760,
+          "loading": 0.9749,
+          "deviation": 3.413,
+          "name": "Heaney, Andrew"
+        },
+        {
+          "id": 660730,
+          "loading": 0.9525,
+          "deviation": 3.107,
+          "name": "Rodr\u00edguez, Elvin"
+        },
+        {
+          "id": 684007,
+          "loading": 0.945,
+          "deviation": 3.004,
+          "name": "Imanaga, Shota"
+        },
+        {
+          "id": 571945,
+          "loading": 0.9402,
+          "deviation": 2.938,
+          "name": "Mikolas, Miles"
+        },
+        {
+          "id": 607625,
+          "loading": 0.936,
+          "deviation": 2.88,
+          "name": "Lugo, Seth"
+        },
+        {
+          "id": 680684,
+          "loading": 0.9314,
+          "deviation": 2.817,
+          "name": "Hoglund, Gunnar"
+        },
+        {
+          "id": 621107,
+          "loading": 0.9312,
+          "deviation": 2.815,
+          "name": "Eflin, Zach"
+        },
+        {
+          "id": 502043,
+          "loading": 0.9219,
+          "deviation": 2.687,
+          "name": "Gibson, Kyle"
+        },
+        {
+          "id": 592791,
+          "loading": 0.9149,
+          "deviation": 2.591,
+          "name": "Taillon, Jameson"
+        },
+        {
+          "id": 670102,
+          "loading": 0.9149,
+          "deviation": 2.591,
+          "name": "Francis, Bowden"
+        }
+      ],
+      "pitch_family": [
+        {
+          "id": "breaking",
+          "loading": 0.9621,
+          "deviation": 1.087
+        },
+        {
+          "id": "fastball",
+          "loading": 0.9167,
+          "deviation": 0.24
+        },
+        {
+          "id": "offspeed",
+          "loading": 0.8327,
+          "deviation": -1.327
+        }
+      ],
+      "zone": [
+        {
+          "id": 5.0,
+          "loading": 1.3445,
+          "deviation": 0.89,
+          "description": "heart"
+        },
+        {
+          "id": 8.0,
+          "loading": 1.2913,
+          "deviation": 0.795,
+          "description": "low-middle"
+        },
+        {
+          "id": 2.0,
+          "loading": 1.2765,
+          "deviation": 0.768,
+          "description": "high-middle"
+        },
+        {
+          "id": 6.0,
+          "loading": 1.2487,
+          "deviation": 0.719,
+          "description": "mid-outside"
+        },
+        {
+          "id": 3.0,
+          "loading": 1.2403,
+          "deviation": 0.704,
+          "description": "high-outside"
+        },
+        {
+          "id": 1.0,
+          "loading": 1.1767,
+          "deviation": 0.59,
+          "description": "high-inside"
+        },
+        {
+          "id": 4.0,
+          "loading": 1.1519,
+          "deviation": 0.546,
+          "description": "mid-inside"
+        },
+        {
+          "id": 9.0,
+          "loading": 1.0689,
+          "deviation": 0.397,
+          "description": "low-outside"
+        },
+        {
+          "id": 7.0,
+          "loading": 1.0208,
+          "deviation": 0.311,
+          "description": "low-inside"
+        },
+        {
+          "id": 12.0,
+          "loading": 0.4138,
+          "deviation": -0.775,
+          "description": "up-and-away (chase)"
+        }
+      ],
+      "count": [
+        {
+          "id": "3-1",
+          "loading": 1.1467,
+          "deviation": 1.152,
+          "description": "3-1 count"
+        },
+        {
+          "id": "1-0",
+          "loading": 1.1392,
+          "deviation": 1.106,
+          "description": "1-0 count"
+        },
+        {
+          "id": "0-0",
+          "loading": 1.089,
+          "deviation": 0.799,
+          "description": "0-0 count"
+        },
+        {
+          "id": "2-0",
+          "loading": 1.0853,
+          "deviation": 0.777,
+          "description": "2-0 count"
+        },
+        {
+          "id": "2-1",
+          "loading": 1.0765,
+          "deviation": 0.723,
+          "description": "2-1 count"
+        },
+        {
+          "id": "1-1",
+          "loading": 1.0505,
+          "deviation": 0.564,
+          "description": "1-1 count"
+        },
+        {
+          "id": "0-1",
+          "loading": 0.9994,
+          "deviation": 0.252,
+          "description": "0-1 count"
+        },
+        {
+          "id": "3-0",
+          "loading": 0.9184,
+          "deviation": -0.243,
+          "description": "3-0 count"
+        },
+        {
+          "id": "0-2",
+          "loading": 0.8149,
+          "deviation": -0.876,
+          "description": "0-2 count"
+        },
+        {
+          "id": "3-2",
+          "loading": 0.7866,
+          "deviation": -1.049,
+          "description": "3-2 count"
+        }
+      ],
+      "park": [
+        {
+          "id": "BAL",
+          "loading": 0.873,
+          "deviation": 2.223
+        },
+        {
+          "id": "LAD",
+          "loading": 0.8348,
+          "deviation": 1.325
+        },
+        {
+          "id": "TB",
+          "loading": 0.8326,
+          "deviation": 1.273
+        },
+        {
+          "id": "COL",
+          "loading": 0.8254,
+          "deviation": 1.103
+        },
+        {
+          "id": "HOU",
+          "loading": 0.8197,
+          "deviation": 0.969
+        },
+        {
+          "id": "TOR",
+          "loading": 0.8178,
+          "deviation": 0.925
+        },
+        {
+          "id": "MIA",
+          "loading": 0.805,
+          "deviation": 0.623
+        },
+        {
+          "id": "CWS",
+          "loading": 0.8026,
+          "deviation": 0.567
+        },
+        {
+          "id": "MIL",
+          "loading": 0.8012,
+          "deviation": 0.534
+        },
+        {
+          "id": "CIN",
+          "loading": 0.799,
+          "deviation": 0.482
+        }
+      ]
+    }
+  },
+  {
+    "component": 2,
+    "name": "breaking favoring in heart (1-0 count) at BAL",
+    "variance_fraction": 0.1502,
+    "factors": {
+      "batter": [
+        {
+          "id": 663728,
+          "loading": 1.3185,
+          "deviation": 5.676,
+          "name": "B-663728"
+        },
+        {
+          "id": 656941,
+          "loading": 1.1888,
+          "deviation": 4.439,
+          "name": "B-656941"
+        },
+        {
+          "id": 553993,
+          "loading": 1.1492,
+          "deviation": 4.061,
+          "name": "B-553993"
+        },
+        {
+          "id": 691406,
+          "loading": 1.1267,
+          "deviation": 3.845,
+          "name": "B-691406"
+        },
+        {
+          "id": 660271,
+          "loading": 1.1251,
+          "deviation": 3.831,
+          "name": "B-660271"
+        },
+        {
+          "id": 592450,
+          "loading": 1.1175,
+          "deviation": 3.758,
+          "name": "B-592450"
+        },
+        {
+          "id": 701762,
+          "loading": 1.0856,
+          "deviation": 3.454,
+          "name": "B-701762"
+        },
+        {
+          "id": 666176,
+          "loading": 1.0729,
+          "deviation": 3.332,
+          "name": "B-666176"
+        },
+        {
+          "id": 621439,
+          "loading": 1.0676,
+          "deviation": 3.281,
+          "name": "B-621439"
+        },
+        {
+          "id": 621493,
+          "loading": 1.0608,
+          "deviation": 3.216,
+          "name": "B-621493"
+        }
+      ],
+      "pitcher": [
+        {
+          "id": 571760,
+          "loading": 0.9571,
+          "deviation": 3.466,
+          "name": "Heaney, Andrew"
+        },
+        {
+          "id": 571945,
+          "loading": 0.9335,
+          "deviation": 3.112,
+          "name": "Mikolas, Miles"
+        },
+        {
+          "id": 660730,
+          "loading": 0.9316,
+          "deviation": 3.084,
+          "name": "Rodr\u00edguez, Elvin"
+        },
+        {
+          "id": 607625,
+          "loading": 0.9273,
+          "deviation": 3.019,
+          "name": "Lugo, Seth"
+        },
+        {
+          "id": 680684,
+          "loading": 0.9227,
+          "deviation": 2.95,
+          "name": "Hoglund, Gunnar"
+        },
+        {
+          "id": 621107,
+          "loading": 0.9138,
+          "deviation": 2.817,
+          "name": "Eflin, Zach"
+        },
+        {
+          "id": 502043,
+          "loading": 0.898,
+          "deviation": 2.58,
+          "name": "Gibson, Kyle"
+        },
+        {
+          "id": 641927,
+          "loading": 0.8929,
+          "deviation": 2.503,
+          "name": "Ober, Bailey"
+        },
+        {
+          "id": 592791,
+          "loading": 0.8925,
+          "deviation": 2.498,
+          "name": "Taillon, Jameson"
+        },
+        {
+          "id": 666171,
+          "loading": 0.8915,
+          "deviation": 2.484,
+          "name": "Zeferjahn, Ryan"
+        }
+      ],
+      "pitch_family": [
+        {
+          "id": "breaking",
+          "loading": 0.8993,
+          "deviation": 0.972
+        },
+        {
+          "id": "offspeed",
+          "loading": 0.8483,
+          "deviation": 0.403
+        },
+        {
+          "id": "fastball",
+          "loading": 0.6888,
+          "deviation": -1.376
+        }
+      ],
+      "zone": [
+        {
+          "id": 5.0,
+          "loading": 1.3106,
+          "deviation": 0.881,
+          "description": "heart"
+        },
+        {
+          "id": 2.0,
+          "loading": 1.2861,
+          "deviation": 0.837,
+          "description": "high-middle"
+        },
+        {
+          "id": 8.0,
+          "loading": 1.2427,
+          "deviation": 0.758,
+          "description": "low-middle"
+        },
+        {
+          "id": 3.0,
+          "loading": 1.2329,
+          "deviation": 0.74,
+          "description": "high-outside"
+        },
+        {
+          "id": 6.0,
+          "loading": 1.1798,
+          "deviation": 0.643,
+          "description": "mid-outside"
+        },
+        {
+          "id": 1.0,
+          "loading": 1.1777,
+          "deviation": 0.639,
+          "description": "high-inside"
+        },
+        {
+          "id": 4.0,
+          "loading": 1.1727,
+          "deviation": 0.63,
+          "description": "mid-inside"
+        },
+        {
+          "id": 9.0,
+          "loading": 1.0122,
+          "deviation": 0.338,
+          "description": "low-outside"
+        },
+        {
+          "id": 7.0,
+          "loading": 0.9788,
+          "deviation": 0.277,
+          "description": "low-inside"
+        },
+        {
+          "id": 12.0,
+          "loading": 0.3626,
+          "deviation": -0.844,
+          "description": "up-and-away (chase)"
+        }
+      ],
+      "count": [
+        {
+          "id": "1-0",
+          "loading": 1.1144,
+          "deviation": 1.18,
+          "description": "1-0 count"
+        },
+        {
+          "id": "3-1",
+          "loading": 1.1065,
+          "deviation": 1.129,
+          "description": "3-1 count"
+        },
+        {
+          "id": "2-0",
+          "loading": 1.0792,
+          "deviation": 0.954,
+          "description": "2-0 count"
+        },
+        {
+          "id": "2-1",
+          "loading": 1.0549,
+          "deviation": 0.798,
+          "description": "2-1 count"
+        },
+        {
+          "id": "0-0",
+          "loading": 1.0461,
+          "deviation": 0.741,
+          "description": "0-0 count"
+        },
+        {
+          "id": "1-1",
+          "loading": 1.0025,
+          "deviation": 0.46,
+          "description": "1-1 count"
+        },
+        {
+          "id": "0-1",
+          "loading": 0.9498,
+          "deviation": 0.122,
+          "description": "0-1 count"
+        },
+        {
+          "id": "3-0",
+          "loading": 0.8929,
+          "deviation": -0.244,
+          "description": "3-0 count"
+        },
+        {
+          "id": "3-2",
+          "loading": 0.7847,
+          "deviation": -0.939,
+          "description": "3-2 count"
+        },
+        {
+          "id": "0-2",
+          "loading": 0.7646,
+          "deviation": -1.069,
+          "description": "0-2 count"
+        }
+      ],
+      "park": [
+        {
+          "id": "BAL",
+          "loading": 0.8688,
+          "deviation": 1.952
+        },
+        {
+          "id": "LAD",
+          "loading": 0.8511,
+          "deviation": 1.601
+        },
+        {
+          "id": "TOR",
+          "loading": 0.833,
+          "deviation": 1.243
+        },
+        {
+          "id": "DET",
+          "loading": 0.8209,
+          "deviation": 1.006
+        },
+        {
+          "id": "PHI",
+          "loading": 0.8207,
+          "deviation": 1.002
+        },
+        {
+          "id": "CWS",
+          "loading": 0.8191,
+          "deviation": 0.968
+        },
+        {
+          "id": "COL",
+          "loading": 0.8115,
+          "deviation": 0.818
+        },
+        {
+          "id": "CIN",
+          "loading": 0.8034,
+          "deviation": 0.658
+        },
+        {
+          "id": "HOU",
+          "loading": 0.8027,
+          "deviation": 0.646
+        },
+        {
+          "id": "MIL",
+          "loading": 0.8018,
+          "deviation": 0.628
+        }
+      ]
+    }
+  },
+  {
+    "component": 3,
+    "name": "breaking favoring in heart (2-0 count) at LAD",
+    "variance_fraction": 0.1982,
+    "factors": {
+      "batter": [
+        {
+          "id": 663728,
+          "loading": 1.3465,
+          "deviation": 5.604,
+          "name": "B-663728"
+        },
+        {
+          "id": 656941,
+          "loading": 1.2064,
+          "deviation": 4.342,
+          "name": "B-656941"
+        },
+        {
+          "id": 553993,
+          "loading": 1.1755,
+          "deviation": 4.064,
+          "name": "B-553993"
+        },
+        {
+          "id": 592450,
+          "loading": 1.1542,
+          "deviation": 3.873,
+          "name": "B-592450"
+        },
+        {
+          "id": 691406,
+          "loading": 1.1349,
+          "deviation": 3.698,
+          "name": "B-691406"
+        },
+        {
+          "id": 701762,
+          "loading": 1.1251,
+          "deviation": 3.611,
+          "name": "B-701762"
+        },
+        {
+          "id": 660271,
+          "loading": 1.1237,
+          "deviation": 3.598,
+          "name": "B-660271"
+        },
+        {
+          "id": 621439,
+          "loading": 1.0962,
+          "deviation": 3.351,
+          "name": "B-621439"
+        },
+        {
+          "id": 666176,
+          "loading": 1.0838,
+          "deviation": 3.239,
+          "name": "B-666176"
+        },
+        {
+          "id": 621493,
+          "loading": 1.0755,
+          "deviation": 3.164,
+          "name": "B-621493"
+        }
+      ],
+      "pitcher": [
+        {
+          "id": 571760,
+          "loading": 0.9858,
+          "deviation": 3.667,
+          "name": "Heaney, Andrew"
+        },
+        {
+          "id": 571945,
+          "loading": 0.9594,
+          "deviation": 3.295,
+          "name": "Mikolas, Miles"
+        },
+        {
+          "id": 607625,
+          "loading": 0.9536,
+          "deviation": 3.214,
+          "name": "Lugo, Seth"
+        },
+        {
+          "id": 660730,
+          "loading": 0.9474,
+          "deviation": 3.126,
+          "name": "Rodr\u00edguez, Elvin"
+        },
+        {
+          "id": 641927,
+          "loading": 0.9257,
+          "deviation": 2.82,
+          "name": "Ober, Bailey"
+        },
+        {
+          "id": 502043,
+          "loading": 0.9238,
+          "deviation": 2.794,
+          "name": "Gibson, Kyle"
+        },
+        {
+          "id": 621107,
+          "loading": 0.9203,
+          "deviation": 2.746,
+          "name": "Eflin, Zach"
+        },
+        {
+          "id": 592791,
+          "loading": 0.9201,
+          "deviation": 2.742,
+          "name": "Taillon, Jameson"
+        },
+        {
+          "id": 680684,
+          "loading": 0.9167,
+          "deviation": 2.695,
+          "name": "Hoglund, Gunnar"
+        },
+        {
+          "id": 684007,
+          "loading": 0.908,
+          "deviation": 2.572,
+          "name": "Imanaga, Shota"
+        }
+      ],
+      "pitch_family": [
+        {
+          "id": "breaking",
+          "loading": 0.9009,
+          "deviation": 0.708
+        },
+        {
+          "id": "offspeed",
+          "loading": 0.9008,
+          "deviation": 0.706
+        },
+        {
+          "id": "fastball",
+          "loading": 0.8655,
+          "deviation": -1.414
+        }
+      ],
+      "zone": [
+        {
+          "id": 5.0,
+          "loading": 1.3495,
+          "deviation": 0.934,
+          "description": "heart"
+        },
+        {
+          "id": 3.0,
+          "loading": 1.2644,
+          "deviation": 0.777,
+          "description": "high-outside"
+        },
+        {
+          "id": 2.0,
+          "loading": 1.2579,
+          "deviation": 0.765,
+          "description": "high-middle"
+        },
+        {
+          "id": 6.0,
+          "loading": 1.2268,
+          "deviation": 0.708,
+          "description": "mid-outside"
+        },
+        {
+          "id": 1.0,
+          "loading": 1.1965,
+          "deviation": 0.652,
+          "description": "high-inside"
+        },
+        {
+          "id": 8.0,
+          "loading": 1.1861,
+          "deviation": 0.633,
+          "description": "low-middle"
+        },
+        {
+          "id": 4.0,
+          "loading": 1.1476,
+          "deviation": 0.561,
+          "description": "mid-inside"
+        },
+        {
+          "id": 9.0,
+          "loading": 1.0736,
+          "deviation": 0.425,
+          "description": "low-outside"
+        },
+        {
+          "id": 7.0,
+          "loading": 1.0013,
+          "deviation": 0.291,
+          "description": "low-inside"
+        },
+        {
+          "id": 12.0,
+          "loading": 0.3946,
+          "deviation": -0.83,
+          "description": "up-and-away (chase)"
+        }
+      ],
+      "count": [
+        {
+          "id": "2-0",
+          "loading": 1.1254,
+          "deviation": 1.13,
+          "description": "2-0 count"
+        },
+        {
+          "id": "3-1",
+          "loading": 1.1218,
+          "deviation": 1.107,
+          "description": "3-1 count"
+        },
+        {
+          "id": "2-1",
+          "loading": 1.0994,
+          "deviation": 0.962,
+          "description": "2-1 count"
+        },
+        {
+          "id": "1-0",
+          "loading": 1.0751,
+          "deviation": 0.806,
+          "description": "1-0 count"
+        },
+        {
+          "id": "0-0",
+          "loading": 1.042,
+          "deviation": 0.592,
+          "description": "0-0 count"
+        },
+        {
+          "id": "1-1",
+          "loading": 1.0252,
+          "deviation": 0.484,
+          "description": "1-1 count"
+        },
+        {
+          "id": "0-1",
+          "loading": 1.0138,
+          "deviation": 0.41,
+          "description": "0-1 count"
+        },
+        {
+          "id": "3-0",
+          "loading": 0.9065,
+          "deviation": -0.283,
+          "description": "3-0 count"
+        },
+        {
+          "id": "0-2",
+          "loading": 0.8046,
+          "deviation": -0.941,
+          "description": "0-2 count"
+        },
+        {
+          "id": "3-2",
+          "loading": 0.7725,
+          "deviation": -1.148,
+          "description": "3-2 count"
+        }
+      ],
+      "park": [
+        {
+          "id": "LAD",
+          "loading": 0.8555,
+          "deviation": 1.86
+        },
+        {
+          "id": "BAL",
+          "loading": 0.8504,
+          "deviation": 1.745
+        },
+        {
+          "id": "CWS",
+          "loading": 0.8263,
+          "deviation": 1.199
+        },
+        {
+          "id": "TB",
+          "loading": 0.824,
+          "deviation": 1.148
+        },
+        {
+          "id": "TOR",
+          "loading": 0.8192,
+          "deviation": 1.039
+        },
+        {
+          "id": "MIL",
+          "loading": 0.811,
+          "deviation": 0.854
+        },
+        {
+          "id": "HOU",
+          "loading": 0.8107,
+          "deviation": 0.848
+        },
+        {
+          "id": "COL",
+          "loading": 0.8089,
+          "deviation": 0.807
+        },
+        {
+          "id": "DET",
+          "loading": 0.8056,
+          "deviation": 0.733
+        },
+        {
+          "id": "CHC",
+          "loading": 0.8006,
+          "deviation": 0.618
+        }
+      ]
+    }
+  },
+  {
+    "component": 4,
+    "name": "breaking favoring in heart (1-0 count) at CWS",
+    "variance_fraction": 0.2464,
+    "factors": {
+      "batter": [
+        {
+          "id": 663728,
+          "loading": 1.3519,
+          "deviation": 5.48,
+          "name": "B-663728"
+        },
+        {
+          "id": 656941,
+          "loading": 1.24,
+          "deviation": 4.502,
+          "name": "B-656941"
+        },
+        {
+          "id": 553993,
+          "loading": 1.1817,
+          "deviation": 3.993,
+          "name": "B-553993"
+        },
+        {
+          "id": 592450,
+          "loading": 1.1746,
+          "deviation": 3.931,
+          "name": "B-592450"
+        },
+        {
+          "id": 691406,
+          "loading": 1.1546,
+          "deviation": 3.756,
+          "name": "B-691406"
+        },
+        {
+          "id": 660271,
+          "loading": 1.1432,
+          "deviation": 3.657,
+          "name": "B-660271"
+        },
+        {
+          "id": 701762,
+          "loading": 1.122,
+          "deviation": 3.471,
+          "name": "B-701762"
+        },
+        {
+          "id": 695578,
+          "loading": 1.1076,
+          "deviation": 3.345,
+          "name": "B-695578"
+        },
+        {
+          "id": 621439,
+          "loading": 1.0957,
+          "deviation": 3.242,
+          "name": "B-621439"
+        },
+        {
+          "id": 666176,
+          "loading": 1.0907,
+          "deviation": 3.198,
+          "name": "B-666176"
+        }
+      ],
+      "pitcher": [
+        {
+          "id": 571760,
+          "loading": 0.9794,
+          "deviation": 3.402,
+          "name": "Heaney, Andrew"
+        },
+        {
+          "id": 607625,
+          "loading": 0.9712,
+          "deviation": 3.292,
+          "name": "Lugo, Seth"
+        },
+        {
+          "id": 660730,
+          "loading": 0.9509,
+          "deviation": 3.021,
+          "name": "Rodr\u00edguez, Elvin"
+        },
+        {
+          "id": 571945,
+          "loading": 0.9333,
+          "deviation": 2.785,
+          "name": "Mikolas, Miles"
+        },
+        {
+          "id": 680684,
+          "loading": 0.9257,
+          "deviation": 2.683,
+          "name": "Hoglund, Gunnar"
+        },
+        {
+          "id": 592791,
+          "loading": 0.9217,
+          "deviation": 2.63,
+          "name": "Taillon, Jameson"
+        },
+        {
+          "id": 687863,
+          "loading": 0.9175,
+          "deviation": 2.573,
+          "name": "Hodge, Porter"
+        },
+        {
+          "id": 621107,
+          "loading": 0.9169,
+          "deviation": 2.565,
+          "name": "Eflin, Zach"
+        },
+        {
+          "id": 641927,
+          "loading": 0.9139,
+          "deviation": 2.525,
+          "name": "Ober, Bailey"
+        },
+        {
+          "id": 684007,
+          "loading": 0.9129,
+          "deviation": 2.512,
+          "name": "Imanaga, Shota"
+        }
+      ],
+      "pitch_family": [
+        {
+          "id": "breaking",
+          "loading": 0.9722,
+          "deviation": 1.413
+        },
+        {
+          "id": "fastball",
+          "loading": 0.8982,
+          "deviation": -0.647
+        },
+        {
+          "id": "offspeed",
+          "loading": 0.894,
+          "deviation": -0.765
+        }
+      ],
+      "zone": [
+        {
+          "id": 5.0,
+          "loading": 1.3013,
+          "deviation": 0.802,
+          "description": "heart"
+        },
+        {
+          "id": 3.0,
+          "loading": 1.2933,
+          "deviation": 0.787,
+          "description": "high-outside"
+        },
+        {
+          "id": 2.0,
+          "loading": 1.2772,
+          "deviation": 0.759,
+          "description": "high-middle"
+        },
+        {
+          "id": 6.0,
+          "loading": 1.2569,
+          "deviation": 0.722,
+          "description": "mid-outside"
+        },
+        {
+          "id": 8.0,
+          "loading": 1.2505,
+          "deviation": 0.711,
+          "description": "low-middle"
+        },
+        {
+          "id": 1.0,
+          "loading": 1.2183,
+          "deviation": 0.654,
+          "description": "high-inside"
+        },
+        {
+          "id": 4.0,
+          "loading": 1.1977,
+          "deviation": 0.617,
+          "description": "mid-inside"
+        },
+        {
+          "id": 9.0,
+          "loading": 1.09,
+          "deviation": 0.425,
+          "description": "low-outside"
+        },
+        {
+          "id": 7.0,
+          "loading": 1.0115,
+          "deviation": 0.285,
+          "description": "low-inside"
+        },
+        {
+          "id": 12.0,
+          "loading": 0.371,
+          "deviation": -0.856,
+          "description": "up-and-away (chase)"
+        }
+      ],
+      "count": [
+        {
+          "id": "1-0",
+          "loading": 1.1625,
+          "deviation": 1.146,
+          "description": "1-0 count"
+        },
+        {
+          "id": "3-1",
+          "loading": 1.1612,
+          "deviation": 1.139,
+          "description": "3-1 count"
+        },
+        {
+          "id": "2-0",
+          "loading": 1.1163,
+          "deviation": 0.884,
+          "description": "2-0 count"
+        },
+        {
+          "id": "0-0",
+          "loading": 1.0986,
+          "deviation": 0.784,
+          "description": "0-0 count"
+        },
+        {
+          "id": "2-1",
+          "loading": 1.089,
+          "deviation": 0.729,
+          "description": "2-1 count"
+        },
+        {
+          "id": "1-1",
+          "loading": 1.0523,
+          "deviation": 0.521,
+          "description": "1-1 count"
+        },
+        {
+          "id": "0-1",
+          "loading": 0.9847,
+          "deviation": 0.138,
+          "description": "0-1 count"
+        },
+        {
+          "id": "3-0",
+          "loading": 0.9194,
+          "deviation": -0.232,
+          "description": "3-0 count"
+        },
+        {
+          "id": "3-2",
+          "loading": 0.8025,
+          "deviation": -0.896,
+          "description": "3-2 count"
+        },
+        {
+          "id": "0-2",
+          "loading": 0.8014,
+          "deviation": -0.902,
+          "description": "0-2 count"
+        }
+      ],
+      "park": [
+        {
+          "id": "CWS",
+          "loading": 0.8638,
+          "deviation": 2.035
+        },
+        {
+          "id": "LAD",
+          "loading": 0.8507,
+          "deviation": 1.709
+        },
+        {
+          "id": "BAL",
+          "loading": 0.8389,
+          "deviation": 1.412
+        },
+        {
+          "id": "COL",
+          "loading": 0.8239,
+          "deviation": 1.039
+        },
+        {
+          "id": "TOR",
+          "loading": 0.8214,
+          "deviation": 0.978
+        },
+        {
+          "id": "DET",
+          "loading": 0.8136,
+          "deviation": 0.782
+        },
+        {
+          "id": "PHI",
+          "loading": 0.8121,
+          "deviation": 0.743
+        },
+        {
+          "id": "HOU",
+          "loading": 0.8079,
+          "deviation": 0.639
+        },
+        {
+          "id": "CIN",
+          "loading": 0.8055,
+          "deviation": 0.579
+        },
+        {
+          "id": "TB",
+          "loading": 0.8038,
+          "deviation": 0.538
+        }
+      ]
+    }
+  }
+]
