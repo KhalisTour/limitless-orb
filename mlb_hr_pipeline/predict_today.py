@@ -292,7 +292,10 @@ def predict_side(state: dict, n_sims: int = 1000,
             tb_pa = max(0.0, tb_level + tb_d)
             entry["xbh"] = {"per_pa_level": p_xbh, "tensor_delta": xbh_d,
                             "per_pa": xbh_pa, "exp_per_game": xbh_pa * exp_pa}
-            entry["hit"] = {"per_pa": p_hit, "exp_per_game": p_hit * exp_pa}
+            # per_pa_level and tensor_delta mirror XbhPrediction shape even
+            # though the hit model has no separate tensor adjustment.
+            entry["hit"] = {"per_pa_level": p_hit, "tensor_delta": 0.0,
+                            "per_pa": p_hit, "exp_per_game": p_hit * exp_pa}
             entry["tb"] = {"per_pa_level": tb_level, "tensor_delta": tb_d,
                            "per_pa": tb_pa, "exp_per_game": tb_pa * exp_pa,
                            "families": _tensor_breakdown(tensor, h.get("batter_id"), arsenal)}

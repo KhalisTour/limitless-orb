@@ -328,11 +328,8 @@ def get_game(game_id: int, date: str | None = Query(default=None)) -> dict:
         hitters_out: list[dict] = []
         for slot, (name, entry) in enumerate(per_hitter.items(), start=1):
             if not isinstance(entry, dict) or "error" in entry:
-                hitters_out.append({
-                    "name": name,
-                    "lineup_slot": slot,
-                    "error": (entry or {}).get("error"),
-                })
+                # Skip error entries — leaking {"name","lineup_slot","error"}
+                # produces a shape the frontend Hitter type cannot handle.
                 continue
             p = entry.get("p_per_pa")
             batter_id, stats = _hydrate_batter(name)

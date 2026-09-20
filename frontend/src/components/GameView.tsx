@@ -65,15 +65,17 @@ export default function GameView({
               ))}
           </div>
 
-          <div className="mt-5 space-y-2">
-            <MonteCarloBar dist={side.sim.team_hr_dist} />
-            <p className="px-1 font-mono text-xs text-text-muted">
-              {team} back-to-back HR:{" "}
-              <span className="text-neon-cyan">
-                {(side.sim.back_to_back_per_game * 100).toFixed(1)}%
-              </span>
-            </p>
-          </div>
+          {side.sim && (
+            <div className="mt-5 space-y-2">
+              <MonteCarloBar dist={side.sim.team_hr_dist} />
+              <p className="px-1 font-mono text-xs text-text-muted">
+                {team} back-to-back HR:{" "}
+                <span className="text-neon-cyan">
+                  {(side.sim.back_to_back_per_game * 100).toFixed(1)}%
+                </span>
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>

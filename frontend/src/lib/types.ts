@@ -78,7 +78,8 @@ export interface Sim {
 export interface SideOk {
   pitcher: string; // OPPOSING pitcher (the one this side's hitters face)
   hitters: Hitter[];
-  sim: Sim;
+  /** Null when sim was skipped (n_sims=0) or errored out. */
+  sim: Sim | null;
   /** Whether this side is fit to publish picks from. Absent on older payloads. */
   quality?: SideQuality;
 }
