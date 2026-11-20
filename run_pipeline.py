@@ -12,8 +12,8 @@ from nba_prop_pipeline.pipeline import run_daily_pipeline
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the daily NBA player props pipeline.")
-    parser.add_argument("--season", default="2025-26", help="Season format YYYY-YY")
-    parser.add_argument("--min-games-started", type=int, default=35, help="Starter filter")
+    parser.add_argument("--season", default="2026-27", help="Season format YYYY-YY")
+    parser.add_argument("--min-games-started", type=int, default=14, help="Starter filter")
     parser.add_argument("--cache-dir", default="cache", help="Cache directory")
     parser.add_argument("--output", default="output/daily_player_props.json", help="Output JSON file")
     parser.add_argument("--odds-json", default=None, help="Path to optional odds JSON for EV")
@@ -26,7 +26,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rebound-stretch-big-weight", type=float, default=0.14, help="Rebound boost weight for stretch-big indicator")
     parser.add_argument("--blowout-minutes-penalty-weight", type=float, default=1.0, help="Multiplier for blowout minutes penalty")
     parser.add_argument("--foul-minutes-penalty-weight", type=float, default=1.0, help="Multiplier for foul-risk minutes penalty")
-    parser.add_argument("--require-confirmed-starters", action="store_true", help="Filter teams with lineup data to confirmed starters only")
     parser.add_argument("--no-db", action="store_true", help="Skip SQLite historical projection write")
     parser.add_argument("--log-level", default="INFO", help="Logging level")
     return parser.parse_args()
@@ -61,7 +60,6 @@ def main() -> None:
         odds_map=odds_map,
         include_monte_carlo=not args.no_monte_carlo,
         force_refresh=args.force_refresh,
-        require_confirmed_starters=args.require_confirmed_starters,
         write_to_db=not args.no_db,
     )
     print(f"Pipeline complete. Wrote {output}")

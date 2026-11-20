@@ -19,7 +19,6 @@ from .ingestion_nba_api import (
     get_player_stats,
     get_rebounding_tracking_stats,
     get_shot_locations_by_zone,
-    get_starting_lineups_scrape,
     get_synergy_play_types,
     get_team_defensive_scheme_stats,
     get_today_matchups,
@@ -27,6 +26,7 @@ from .ingestion_nba_api import (
     get_injury_report,
     get_catch_and_shoot_stats,
     get_pullup_shot_stats,
+    get_player_game_logs,
     get_player_game_logs_pbpstats,
 )
 from .probability import add_monte_carlo_probs, add_probabilities, attach_ev
@@ -41,7 +41,6 @@ def run_daily_pipeline(
     odds_map: Optional[Dict[str, Dict[str, float]]] = None,
     include_monte_carlo: bool = True,
     force_refresh: bool = False,
-    require_confirmed_starters: bool = False,
     write_to_db: bool = True,
 ) -> Path:
     config = config or PipelineConfig()
@@ -65,7 +64,12 @@ def run_daily_pipeline(
     team_scheme = get_team_defensive_scheme_stats(client, config)
     zone_shot_locations = get_shot_locations_by_zone(client, config)
     playtype_stats = get_synergy_play_types(client, config)
-    game_logs = get_player_game_logs_pbpstats(config, last_n_games=5)
+    # nba_api PlayerGameLogs is primary (fast, per-player last N games);
+    # PBP Stats is a fallback because it is slow and times out frequently.
+    game_logs = get_player_game_logs(client, config, last_n_games=5)
+    if game_logs.empty:
+        logger.warning("nba_api game logs empty; falling back to PBP Stats")
+        game_logs = get_player_game_logs_pbpstats(config, last_n_games=5)
     catch_and_shoot_stats = get_catch_and_shoot_stats(client, config)
     pullup_shot_stats = get_pullup_shot_stats(client, config)
     pbp_possessions = get_pbpstats_possessions_direct(config)
@@ -87,22 +91,7 @@ def run_daily_pipeline(
         pullup_shot_stats=pullup_shot_stats,
     )
 
-    # Optional starting lineup filter enhancement.
-    starters = get_starting_lineups_scrape(config)
-    if not starters.empty and {"PLAYER_NAME", "TEAM_ABBREVIATION"}.issubset(feature_df.columns):
-        feature_df = feature_df.merge(
-            starters[["TEAM_ABBREVIATION", "PLAYER_NAME", "IS_CONFIRMED_STARTER"]],
-            on=["TEAM_ABBREVIATION", "PLAYER_NAME"],
-            how="left",
-        )
-        if require_confirmed_starters:
-            teams_with_confirmed = set(starters["TEAM_ABBREVIATION"].dropna().unique().tolist())
-            keep_mask = (
-                ~feature_df["TEAM_ABBREVIATION"].isin(teams_with_confirmed)
-                | feature_df["IS_CONFIRMED_STARTER"].fillna(False)
-            )
-            feature_df = feature_df[keep_mask].copy()
-# Remove injured players (OUT and DOUBTFUL excluded, QUESTIONABLE kept)
+    # Remove injured players (OUT and DOUBTFUL excluded, QUESTIONABLE kept)
     try:
         injuries = get_injury_report(client, config)
         if not injuries.empty and "PLAYER_NAME" in feature_df.columns:

@@ -171,7 +171,7 @@ def build_feature_table(
     # Filter to starter-caliber players.
     # Use GS/GP start rate when GS column exists, otherwise fall back to GP + minutes threshold.
     gp_col = pd.to_numeric(base["GP"], errors="coerce").fillna(0) if "GP" in base.columns else pd.Series(0, index=base.index)
-    min_gp = max(15, config.min_games_started // 2)
+    min_gp = max(5, config.min_games_started // 2)
 
     if "GS" in base.columns:
         gs_col = pd.to_numeric(base["GS"], errors="coerce").fillna(0)
@@ -238,8 +238,11 @@ def build_feature_table(
         and {"TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"}.issubset(matchups.columns)
     )
     if valid_matchups:
+        mu_cols = ["TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"] + [
+            c for c in ("GAME_HOME", "GAME_AWAY") if c in matchups.columns
+        ]
         base = base.merge(
-            matchups[["TEAM_ABBREVIATION", "OPPONENT_ABBREVIATION", "GAME_ID", "GAME_DATETIME"]],
+            matchups[mu_cols],
             on="TEAM_ABBREVIATION",
             how="inner",
         )

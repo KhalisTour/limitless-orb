@@ -8,9 +8,9 @@ from typing import Dict
 
 @dataclass(frozen=True)
 class PipelineConfig:
-    season: str = "2025-26"
+    season: str = "2026-27"
     season_type: str = "Regular Season"
-    min_games_started: int = 35
+    min_games_started: int = 14
     slate_date: date | None = None
     cache_dir: Path = Path("cache")
     output_json: Path = Path("output/daily_player_props.json")

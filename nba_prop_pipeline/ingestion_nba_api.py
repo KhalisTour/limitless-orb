@@ -486,6 +486,10 @@ def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_
             recent_fg3m_avg=("FG3M", "mean"),
             recent_fta_avg=("FTA", "mean"),
             recent_ftm_avg=("FTM", "mean"),
+            recent_pts_median=("PTS", "median"),
+            recent_ast_median=("AST", "median"),
+            recent_reb_median=("REB", "median"),
+            recent_fg3m_median=("FG3M", "median"),
             recent_pts_std=("PTS", "std"),
             recent_ast_std=("AST", "std"),
             recent_reb_std=("REB", "std"),
@@ -503,6 +507,36 @@ def get_player_game_logs(client: CachedHTTPClient, config: PipelineConfig, last_
         return pd.DataFrame()
 
 
+def _pbpstats_recent_games(config: PipelineConfig, headers: dict, last_n: int) -> list:
+    """Most recent N games, trying Playoffs then Regular Season.
+
+    Each season type is tried independently: PBP Stats returns a 502 for a
+    Playoffs query before any playoff games exist, which must not stop us
+    from falling through to Regular Season.
+    """
+    import requests as req
+
+    for season_type in ["Playoffs", "Regular Season"]:
+        try:
+            resp = req.get(
+                "https://api.pbpstats.com/get-games/nba",
+                params={"Season": config.season, "SeasonType": season_type},
+                headers=headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:
+            logger.info("PBP Stats games list (%s) unavailable: %s", season_type, exc)
+            continue
+        found = data.get("results") or data.get("games") or []
+        if found:
+            logger.info("PBP Stats using %s (%d games available)", season_type, len(found))
+            return found[-last_n:]
+    logger.warning("PBP Stats games list: no games found for %s", config.season)
+    return []
+
+
 def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
     """
     Pull player possession data directly from PBP Stats API.
@@ -518,19 +552,8 @@ def get_pbpstats_possessions_direct(config: PipelineConfig) -> pd.DataFrame:
         "Accept": "application/json",
     }
 
-    try:
-         for season_type in ["Playoffs", "Regular Season"]:
-            resp = req.get(
-                GAMES_URL,
-                params={"Season": config.season, "SeasonType": season_type},
-                headers=headers,
-                timeout=30,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            games = (data.get("results") or data.get("games") or [])[-15:]
-    except Exception as exc:
-        logger.warning("PBP Stats games list failed: %s", exc)
+    games = _pbpstats_recent_games(config, headers, 15)
+    if not games:
         return pd.DataFrame(columns=["PLAYER_ID", "PBP_MINUTES", "POSS_PER_GAME_EST", "PBP_REB_CHANCES", "PBP_POT_AST"])
 
     records = []
@@ -623,24 +646,8 @@ def get_player_game_logs_pbpstats(config: PipelineConfig, last_n_games: int = 10
         "Accept": "application/json",
     }
 
-    try:
-        games = []
-        for season_type in ["Playoffs", "Regular Season"]:
-            resp = req.get(
-                GAMES_URL,
-                params={"Season": config.season, "SeasonType": season_type},
-                headers=headers,
-                timeout=30,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            found = data.get("results") or data.get("games") or []
-            if found:
-                games = found[-last_n_games:]
-                logger.info("PBP Stats game logs using %s (%d games)", season_type, len(games))
-                break
-    except Exception as exc:
-        logger.warning("PBP Stats game logs - games list failed: %s", exc)
+    games = _pbpstats_recent_games(config, headers, last_n_games)
+    if not games:
         return pd.DataFrame()
 
     player_games = []
@@ -816,5 +823,4 @@ def get_injury_report(client: CachedHTTPClient, config: PipelineConfig) -> pd.Da
 # These two don't go through stats.nba.com so they're imported from the original ingestion module
 from .ingestion import (  # noqa: E402
     get_today_matchups,
-    get_starting_lineups_scrape,
 )

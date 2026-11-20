@@ -364,6 +364,20 @@ def get_team_defensive_scheme_stats(client: CachedHTTPClient, config: PipelineCo
     return out
 
 
+def _tip_times_utc(game_date: str, timeout: int) -> Dict[str, str]:
+    """GAME_ID -> tip-off time (UTC ISO string) from ScoreboardV3. Best effort: {} on failure."""
+    try:
+        from nba_api.stats.endpoints import ScoreboardV3
+
+        frames = ScoreboardV3(game_date=game_date, league_id="00", timeout=timeout).get_data_frames()
+        for df in frames:
+            if {"gameId", "gameTimeUTC"}.issubset(df.columns):
+                return {str(g): str(t) for g, t in zip(df["gameId"], df["gameTimeUTC"]) if t}
+    except Exception:  # noqa: BLE001
+        pass
+    return {}
+
+
 def get_today_matchups(client: CachedHTTPClient, config: PipelineConfig) -> pd.DataFrame:
     try:
         from nba_api.stats.endpoints import ScoreboardV2
@@ -401,6 +415,12 @@ def get_today_matchups(client: CachedHTTPClient, config: PipelineConfig) -> pd.D
         header_cols = [c for c in ["GAME_ID", "GAME_DATE_EST"] if c in game_header.columns]
         games = game_header[header_cols].drop_duplicates()
 
+        # Home/away (header gives team ids; line score maps ids -> abbreviations) and real tip times.
+        abbr_by_id = dict(zip(line_score["TEAM_ID"], line_score["TEAM_ABBREVIATION"])) if "TEAM_ID" in line_score.columns else {}
+        home_by_game = dict(zip(game_header["GAME_ID"], game_header["HOME_TEAM_ID"])) if "HOME_TEAM_ID" in game_header.columns else {}
+        away_by_game = dict(zip(game_header["GAME_ID"], game_header["VISITOR_TEAM_ID"])) if "VISITOR_TEAM_ID" in game_header.columns else {}
+        tip_utc = _tip_times_utc(game_date, config.timeout_seconds)
+
         rows = []
         for game_id, group in line_score.groupby("GAME_ID"):
             teams = group["TEAM_ABBREVIATION"].dropna().tolist()
@@ -411,22 +431,20 @@ def get_today_matchups(client: CachedHTTPClient, config: PipelineConfig) -> pd.D
             if not hit.empty and "GAME_DATE_EST" in hit.columns:
                 game_dt = hit.iloc[0]["GAME_DATE_EST"]
 
-            rows.append(
-                {
-                    "GAME_ID": game_id,
-                    "TEAM_ABBREVIATION": teams[0],
-                    "OPPONENT_ABBREVIATION": teams[1],
-                    "GAME_DATETIME": game_dt,
-                }
-            )
-            rows.append(
-                {
-                    "GAME_ID": game_id,
-                    "TEAM_ABBREVIATION": teams[1],
-                    "OPPONENT_ABBREVIATION": teams[0],
-                    "GAME_DATETIME": game_dt,
-                }
-            )
+            game_home = abbr_by_id.get(home_by_game.get(game_id))
+            game_away = abbr_by_id.get(away_by_game.get(game_id))
+            game_dt = tip_utc.get(str(game_id)) or game_dt  # real tip time when ScoreboardV3 has it
+            for team, opp in ((teams[0], teams[1]), (teams[1], teams[0])):
+                rows.append(
+                    {
+                        "GAME_ID": game_id,
+                        "TEAM_ABBREVIATION": team,
+                        "OPPONENT_ABBREVIATION": opp,
+                        "GAME_DATETIME": game_dt,
+                        "GAME_HOME": game_home,
+                        "GAME_AWAY": game_away,
+                    }
+                )
 
         return pd.DataFrame(rows)
 
